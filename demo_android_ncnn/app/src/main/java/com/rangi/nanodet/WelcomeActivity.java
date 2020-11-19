@@ -14,10 +14,9 @@ import android.widget.ToggleButton;
 public class WelcomeActivity extends AppCompatActivity {
 
     private ToggleButton tbUseGpu;
+    private Button nanodet;
     private Button yolov5s;
     private Button yolov4tiny;
-    private Button mobilenetyolov3nano;
-    private Button nanodet;
 
     private boolean useGPU = false;
 
@@ -44,6 +43,16 @@ public class WelcomeActivity extends AppCompatActivity {
             }
         });
 
+        nanodet = findViewById(R.id.btn_start_detect0);
+        nanodet.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MainActivity.USE_MODEL = MainActivity.NANODET;
+                Intent intent = new Intent(WelcomeActivity.this, MainActivity.class);
+                WelcomeActivity.this.startActivity(intent);
+            }
+        });
+
         yolov5s = findViewById(R.id.btn_start_detect1);
         yolov5s.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -64,27 +73,6 @@ public class WelcomeActivity extends AppCompatActivity {
             }
         });
 
-        mobilenetyolov3nano = findViewById(R.id.btn_start_detect3);
-        mobilenetyolov3nano.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                MainActivity.USE_MODEL = MainActivity.MOBILENETV2_YOLOV3_NANO;
-                Intent intent = new Intent(WelcomeActivity.this, MainActivity.class);
-                WelcomeActivity.this.startActivity(intent);
-            }
-        });
-
-        nanodet = findViewById(R.id.btn_start_detect10);
-        nanodet.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                MainActivity.USE_MODEL = MainActivity.NANODET;
-                Intent intent = new Intent(WelcomeActivity.this, MainActivity.class);
-                WelcomeActivity.this.startActivity(intent);
-            }
-        });
-
     }
-
 
 }

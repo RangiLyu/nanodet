@@ -46,12 +46,20 @@
             app:layout_constraintTop_toTopOf="parent">
 
             <Button
+                android:id="@+id/btn_start_detect0"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="NanoDet"
+                android:textAllCaps="false"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <Button
                 android:id="@+id/btn_start_detect1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="YOLOv5s"
                 android:textAllCaps="false"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toBottomOf="@id/btn_start_detect0" />
 
             <Button
                 android:id="@+id/btn_start_detect2"
@@ -60,23 +68,6 @@
                 android:text="YOLOv4_tiny"
                 android:textAllCaps="false"
                 app:layout_constraintTop_toBottomOf="@id/btn_start_detect1" />
-
-            <Button
-                android:id="@+id/btn_start_detect3"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="MobileNetV2_YOLOv3_nano"
-                android:textAllCaps="false"
-                app:layout_constraintTop_toBottomOf="@id/btn_start_detect2" />
-
-            
-            <Button
-                android:id="@+id/btn_start_detect10"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="NanoDet"
-                android:textAllCaps="false"
-                app:layout_constraintTop_toBottomOf="@id/btn_start_detect3" />
 
         </LinearLayout>
     </ScrollView>

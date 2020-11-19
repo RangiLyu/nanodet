@@ -48,12 +48,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MainActivity extends AppCompatActivity {
-    public static int YOLOV5S = 1;
-    public static int YOLOV4_TINY = 2;
-    public static int MOBILENETV2_YOLOV3_NANO = 3;
-    public static int NANODET = 9;
+    public static int NANODET = 1;
+    public static int YOLOV5S = 2;
+    public static int YOLOV4_TINY = 3;
 
-    public static int USE_MODEL = MOBILENETV2_YOLOV3_NANO;
+    public static int USE_MODEL = NANODET;
     public static boolean USE_GPU = false;
 
     public static CameraX.LensFacing CAMERA_ID = CameraX.LensFacing.BACK;
@@ -103,10 +102,8 @@ public class MainActivity extends AppCompatActivity {
         if (USE_MODEL == YOLOV5S) {
             YOLOv5.init(getAssets(), USE_GPU);
         } else if (USE_MODEL == YOLOV4_TINY) {
-            YOLOv4.init(getAssets(), true, USE_GPU);
-        } else if (USE_MODEL == MOBILENETV2_YOLOV3_NANO) {
-            YOLOv4.init(getAssets(), false, USE_GPU);
-        } else if (USE_MODEL == NANODET) {
+            YOLOv4.init(getAssets(), USE_GPU);
+        }  else if (USE_MODEL == NANODET) {
             NanoDet.init(getAssets(), USE_GPU);
         }
         resultImageView = findViewById(R.id.imageView);
@@ -311,7 +308,7 @@ public class MainActivity extends AppCompatActivity {
                 Box[] result = null;
                 if (USE_MODEL == YOLOV5S) {
                     result = YOLOv5.detect(bitmap, threshold, nms_threshold);
-                } else if (USE_MODEL == YOLOV4_TINY || USE_MODEL == MOBILENETV2_YOLOV3_NANO) {
+                } else if (USE_MODEL == YOLOV4_TINY) {
                     result = YOLOv4.detect(bitmap, threshold, nms_threshold);
                 } else if (USE_MODEL == NANODET) {
                     result = NanoDet.detect(bitmap, threshold, nms_threshold);
@@ -321,7 +318,7 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
                 mutableBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
-                if (USE_MODEL == YOLOV5S || USE_MODEL == YOLOV4_TINY || USE_MODEL == MOBILENETV2_YOLOV3_NANO || USE_MODEL == NANODET) {
+                if (USE_MODEL == YOLOV5S || USE_MODEL == YOLOV4_TINY || USE_MODEL == NANODET) {
                     mutableBitmap = drawBoxRects(mutableBitmap, result);
                 }
                 runOnUiThread(new Runnable() {
@@ -360,15 +357,6 @@ public class MainActivity extends AppCompatActivity {
         boxPaint.setStrokeWidth(4 * mutableBitmap.getWidth() / 800.0f);
         boxPaint.setTextSize(40 * mutableBitmap.getWidth() / 800.0f);
         for (Box box : results) {
-            if (USE_MODEL == MOBILENETV2_YOLOV3_NANO) {
-                if (box.getScore() < 0.3f) {
-                    // 模型比较小，置信度太低就不要了
-                    continue;
-                }
-                // 有时候差太多了，手动改一下
-                box.x0 = box.x0 < 0 ? box.x0 / 6 : box.x0;
-                box.y0 = box.y0 < 0 ? box.y0 / 6 : box.y0;
-            }
             boxPaint.setColor(box.getColor());
             boxPaint.setStyle(Paint.Style.FILL);
             canvas.drawText(box.getLabel() + String.format(Locale.CHINESE, " %.3f", box.getScore()), box.x0 + 3, box.y0 + 40 * mutableBitmap.getWidth() / 1000.0f, boxPaint);
@@ -385,8 +373,6 @@ public class MainActivity extends AppCompatActivity {
             modelName = "YOLOv5s";
         } else if (USE_MODEL == YOLOV4_TINY) {
             modelName = "YOLOv4-tiny";
-        } else if (USE_MODEL == MOBILENETV2_YOLOV3_NANO) {
-            modelName = "MobileNetV2-YOLOv3-Nano";
         } else if (USE_MODEL == NANODET) {
             modelName = "NanoDet";
         }
@@ -432,12 +418,12 @@ public class MainActivity extends AppCompatActivity {
         Box[] result = null;
         if (USE_MODEL == YOLOV5S) {
             result = YOLOv5.detect(image, threshold, nms_threshold);
-        } else if (USE_MODEL == YOLOV4_TINY || USE_MODEL == MOBILENETV2_YOLOV3_NANO) {
+        } else if (USE_MODEL == YOLOV4_TINY) {
             result = YOLOv4.detect(image, threshold, nms_threshold);
         } else if (USE_MODEL == NANODET) {
             result = NanoDet.detect(image, threshold, nms_threshold);
         }
-        if (USE_MODEL == YOLOV5S || USE_MODEL == YOLOV4_TINY || USE_MODEL == MOBILENETV2_YOLOV3_NANO || USE_MODEL == NANODET) {
+        if (USE_MODEL == YOLOV5S || USE_MODEL == YOLOV4_TINY|| USE_MODEL == NANODET) {
             mutableBitmap = drawBoxRects(mutableBitmap, result);
         }
         resultImageView.setImageBitmap(mutableBitmap);

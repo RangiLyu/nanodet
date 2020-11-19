@@ -222,9 +222,9 @@ void draw_bboxes(const cv::Mat& bgr, const std::vector<BoxInfo>& bboxes, object_
 }
 
 
-int image_demo(NanoDet &detector)
+int image_demo(NanoDet &detector, const char* imagepath)
 {
-    const char* imagepath = "D:/Dataset/coco/val2017/*.jpg";
+    // const char* imagepath = "D:/Dataset/coco/val2017/*.jpg";
 
     std::vector<std::string> filenames;
     cv::glob(imagepath, filenames, false);
@@ -248,10 +248,10 @@ int image_demo(NanoDet &detector)
     return 0;
 }
 
-int webcam_demo(NanoDet& detector)
+int webcam_demo(NanoDet& detector, int cam_id)
 {
     cv::Mat image;
-    cv::VideoCapture cap(0);
+    cv::VideoCapture cap(cam_id);
 
     while (true)
     {
@@ -266,6 +266,23 @@ int webcam_demo(NanoDet& detector)
     return 0;
 }
 
+int video_demo(NanoDet& detector, const char* path)
+{
+    cv::Mat image;
+    cv::VideoCapture cap(path);
+
+    while (true)
+    {
+        cap >> image;
+        object_rect effect_roi;
+        cv::Mat resized_img;
+        resize_uniform(image, resized_img, cv::Size(320, 320), effect_roi);
+        auto results = detector.detect(resized_img, 0.4, 0.5);
+        draw_bboxes(image, results, effect_roi);
+        cv::waitKey(1);
+    }
+    return 0;
+}
 
 int benchmark(NanoDet& detector)
 {
@@ -307,10 +324,32 @@ int benchmark(NanoDet& detector)
 
 int main(int argc, char** argv)
 {
+    if (argc != 3)
+    {
+        fprintf(stderr, "usage: %s [mode] [path]. \n For webcam mode=0, path is cam id; \n For image demo, mode=1, path=xxx/xxx/*.jpg; \n For video, mode=2; \n For benchmark, mode=3 path=0.\n", argv[0]);
+        return -1;
+    }
     NanoDet detector = NanoDet("./nanodet_m.param", "./nanodet_m.bin", true);
-
-    benchmark(detector);
-
+    int mode = atoi(argv[1]);
+    if (mode==0)
+    {
+        int cam_id = atoi(argv[2]);
+        webcam_demo(detector, cam_id);
+    }
+    else if (mode==1)
+    {
+        const char* images = argv[2];
+        image_demo(detector, images);
+    }
+    else if (mode==2)
+    {
+        const char* path = argv[2];
+        video_demo(detector, path);
+    }
+    else if (mode==3)
+    {
+        benchmark(detector);
+    }
     return 0;
 }
 

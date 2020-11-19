@@ -72,7 +72,6 @@ Java_com_rangi_nanodet_YOLOv4_init(JNIEnv *env, jclass, jobject assetManager, jb
         } else if (v4tiny == 0) {
             YoloV4::detector = new YoloV4(mgr, "MobileNetV2-YOLOv3-Nano-coco.param",
                                           "MobileNetV2-YOLOv3-Nano-coco.bin", useGPU);
-//            YoloV4::detector = new YoloV4(mgr,"export_demo.param","export_demo.bin");
         }
     }
 }
@@ -102,7 +101,7 @@ extern "C" JNIEXPORT void JNICALL
 Java_com_rangi_nanodet_NanoDet_init(JNIEnv *env, jclass, jobject assetManager, jboolean useGPU) {
     if (NanoDet::detector == nullptr) {
         AAssetManager *mgr = AAssetManager_fromJava(env, assetManager);
-        NanoDet::detector = new NanoDet(mgr, "nanodet.param", "nanodet.bin", useGPU);
+        NanoDet::detector = new NanoDet(mgr, "nanodet_m.param", "nanodet_m.bin", useGPU);
     }
 }
 

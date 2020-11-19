@@ -25,6 +25,6 @@ Open demo_android_ncnn folder with Android Studio and then build it.
 
 # Reference
 
-* [NCNN by Tencent](https://github.com/tencent/ncnn)
+* [ncnn](https://github.com/tencent/ncnn)
 * [YOLOv5_NCNN](https://github.com/WZTENG/YOLOv5_NCNN) 
 

@@ -43,12 +43,12 @@ private:
     ncnn::Net *Net;
     int input_size = 320;
     int num_class = 80;
-    int reg_max = 10;
+    int reg_max = 7;
     std::vector<HeadInfo> heads_info{
         // cls_pred|dis_pred|stride
-            {"839", "842",    8},
-            {"872", "875",   16},
-            {"905", "908",   32},
+            {"792", "795",    8},
+            {"814", "817",   16},
+            {"836", "839",   32},
     };
 
 public:

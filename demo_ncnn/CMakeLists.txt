@@ -20,7 +20,6 @@ message(STATUS "Vulkan Lib = ${Vulkan_LIBRARY}")
 
 set(NCNN_LIBS D:/Programs/ncnn/build-vs2019/install/lib)
 set(NCNN_INCLUDE_DIRS D:/Programs/ncnn/build-vs2019/install/include)
-#set(Vulkan_LIBS C:/VulkanSDK/1.2.148.1/Lib)
 
 
 include_directories(
@@ -32,7 +31,6 @@ include_directories(
 )
 
 link_directories(
-    #${Vulkan_LIB}
     ${NCNN_LIBS}
 )
 

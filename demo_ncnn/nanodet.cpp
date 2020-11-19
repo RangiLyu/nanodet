@@ -5,6 +5,7 @@
 
 #include "nanodet.h"
 #include <ncnn/benchmark.h>
+// #include <iostream>
 
 inline float fast_exp(float x) 
 {
@@ -94,6 +95,7 @@ std::vector<BoxInfo> NanoDet::detect(cv::Mat image, float score_threshold, float
         ncnn::Mat cls_pred;
         ex.extract(head_info.dis_layer.c_str(), dis_pred);
         ex.extract(head_info.cls_layer.c_str(), cls_pred); 
+        // std::cout << "c:" << cls_pred.c << " h:" << cls_pred.h <<" w:" <<cls_pred.w <<std::endl;
 
         this->decode_infer(cls_pred, dis_pred, head_info.stride, score_threshold, results);
     }

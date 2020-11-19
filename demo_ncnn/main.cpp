@@ -184,8 +184,8 @@ void draw_bboxes(const cv::Mat& bgr, const std::vector<BoxInfo>& bboxes, object_
     int src_h = image.rows;
     int dst_w = effect_roi.width;
     int dst_h = effect_roi.height;
-    float width_ratio = src_w / dst_w;
-    float height_ratio = src_h / dst_h;
+    float width_ratio = (float)src_w / (float)dst_w;
+    float height_ratio = (float)src_h / (float)dst_h;
 
 
     for (size_t i = 0; i < bboxes.size(); i++)
@@ -307,7 +307,7 @@ int benchmark(NanoDet& detector)
 
 int main(int argc, char** argv)
 {
-    NanoDet detector = NanoDet("./nanodet.param", "./nanodet.bin", true);
+    NanoDet detector = NanoDet("./nanodet_m.param", "./nanodet_m.bin", true);
 
     benchmark(detector);
 

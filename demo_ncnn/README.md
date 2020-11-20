@@ -18,7 +18,7 @@ Download and install Vulkan SDK from https://vulkan.lunarg.com/sdk/home
 ### Step4.
 Clone NCNN repository
 
-``` bash
+``` shell script
 git clone --recursive https://github.com/nihui/ncnn.git 
 ```
 Build NCNN following this tutorial: [Build for Windows x64 using VS2017](https://github.com/Tencent/ncnn/wiki/how-to-build#build-for-windows-x64-using-visual-studio-community-2017)
@@ -47,7 +47,7 @@ Download Vulkan SDK from https://vulkan.lunarg.com/sdk/home
 ### Step3.
 Clone NCNN repository
 
-``` bash
+``` shell script
 git clone --recursive https://github.com/nihui/ncnn.git 
 ```
 
@@ -56,7 +56,7 @@ Build NCNN following this tutorial: [Build for Linux / NVIDIA Jetson / Raspberry
 ### Step4.
 Build project
 
-``` bash
+``` shell script
 cd <this-folder>
 mkdir build
 cd build
@@ -66,20 +66,42 @@ make
 
 # Run demo
 
-## Inference images
+Download NanoDet ncnn model.
 
-```bash
-
-```
+Copy nanodet_m.param and nanodet_m.bin to demo program folder.
 
 ## Webcam
 
-```bash
+```shell script
+nanodet_demo 0 0
+```
 
+## Inference images
+
+```shell script
+nanodet_demo 1 IMAGE_FOLDER/*.jpg
+```
+
+## Inference video
+
+```shell script
+nanodet_demo 2 VIDEO_PATH
 ```
 
 ## Benchmark
 
-```bash
+```shell script
+nanodet_demo 3 0
+```
 
+****
+
+Notice:
+
+If benchmark speed is slow, try to limit omp thread num.
+
+Linux:
+
+```shell script
+export OMP_THREAD_LIMIT=4
 ```

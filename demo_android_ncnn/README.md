@@ -14,7 +14,11 @@ Download ncnn-android-vulkan-lib.zip from ncnn repo or build ncnn-android from s
 Unzip ncnn library into demo_android_ncnn/app/src/main/cpp or change the ncnn path in demo_android_ncnn/app/src/main/cpp/CMakeLists.txt
 
 ## Step3.
-Copy the NanoDet ncnn model file (nanodet.param and nanodet.bin) from models folder into demo_android_ncnn/app/src/main/assets
+Copy the NanoDet ncnn model file (nanodet_m.param and nanodet_m.bin) from models folder into demo_android_ncnn/app/src/main/assets
+
+If you want to run yolov4-tiny and yolov5s, download them and also put in demo_android_ncnn/app/src/main/assets.
+
+* [Yolov4 and v5 ncnn model download link](https://drive.google.com/file/d/1Qk_1fDvOcFmNppDnaMFW-xFpMgLDyeAs/view?usp=sharing)
 
 ## Step4.
 Open demo_android_ncnn folder with Android Studio and then build it.

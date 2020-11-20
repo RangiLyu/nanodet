@@ -48,7 +48,7 @@ int resize_uniform(cv::Mat& src, cv::Mat& dst, cv::Size dst_size, object_rect& e
     cv::Mat tmp;
     cv::resize(src, tmp, cv::Size(tmp_w, tmp_h));
 
-    if (tmp_w != dst_w) { //�߶��룬��û����
+    if (tmp_w != dst_w) {
         int index_w = floor((dst_w - tmp_w) / 2.0);
         //std::cout << "index_w: " << index_w << std::endl;
         for (int i = 0; i < dst_h; i++) {
@@ -59,7 +59,7 @@ int resize_uniform(cv::Mat& src, cv::Mat& dst, cv::Size dst_size, object_rect& e
         effect_area.width = tmp_w;
         effect_area.height = tmp_h;
     }
-    else if (tmp_h != dst_h) { //�����룬 ��û�ж���
+    else if (tmp_h != dst_h) {
         int index_h = floor((dst_h - tmp_h) / 2.0);
         //std::cout << "index_h: " << index_h << std::endl;
         memcpy(dst.data + index_h * dst_w * 3, tmp.data, tmp_w * tmp_h * 3);
@@ -331,25 +331,31 @@ int main(int argc, char** argv)
     }
     NanoDet detector = NanoDet("./nanodet_m.param", "./nanodet_m.bin", true);
     int mode = atoi(argv[1]);
-    if (mode==0)
+    switch (mode)
     {
+    case 0:{
         int cam_id = atoi(argv[2]);
         webcam_demo(detector, cam_id);
-    }
-    else if (mode==1)
-    {
+        break;
+        }
+    case 1:{
         const char* images = argv[2];
         image_demo(detector, images);
-    }
-    else if (mode==2)
-    {
+        break;
+        }
+    case 2:{
         const char* path = argv[2];
         video_demo(detector, path);
-    }
-    else if (mode==3)
-    {
+        break;
+        }
+    case 3:{
         benchmark(detector);
+        break;
+        }
+    default:{
+        fprintf(stderr, "usage: %s [mode] [path]. \n For webcam mode=0, path is cam id; \n For image demo, mode=1, path=xxx/xxx/*.jpg; \n For video, mode=2; \n For benchmark, mode=3 path=0.\n", argv[0]);
+        break;
+        }
     }
-    return 0;
 }
 

@@ -18,9 +18,9 @@ android {
         }
 
         ndk {
-            moduleName "WztNcnnJniLog" //编译后会生成 .so
+            moduleName "NcnnJniLog"
             ldLibs "log", "z", "m"
-            abiFilters "armeabi-v7a", "arm64-v8a"  // opencv库太大只留需要的
+            abiFilters "armeabi-v7a", "arm64-v8a"
         }
 
         multiDexEnabled true

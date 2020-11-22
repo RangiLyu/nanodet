@@ -3,23 +3,23 @@
 ### Super fast and lightweight anchor-free object detection model. Real-time on mobile devices.
 
 * ⚡Super lightweight: Model file is only 1.8 mb.
-* ⚡Super fast: 384fps(2.6ms) on GPU; 97fps(10.23ms) on mobile ARM CPU.
+* ⚡Super fast: 97fps(10.23ms) on mobile ARM CPU.
 * 😎Training friendly:  Much lower GPU memory cost than other models. Batch-size=80 is available on GTX1060 6G.
 * 😎Easy to deploy: Provide **C++ implementation** and **Android demo** based on ncnn inference framework.
 
 ****
 ## Benchmarks
 
-Model     |Resolution|COCO mAP|Latency(GPU)|Latency(ARM 4xCore)|FLOPS|Params   | Model Size(ncnn bin)
-:--------:|:--------:|:------:|:----------:|:-----------------:|:---:|:-------:|:-------:
-NanoDet-m | 320*320 |  20.6 |2.6ms | 10.23ms | 0.72B   | 0.95M | 1.8mb
-NanoDet-m | 416*416 |  21.7 |~     | 16.44ms | 1.2B    | 0.95M | 1.8mb
-YoloV3-Tiny| 416*416 | 16.6 | ~    | 37.6ms  | 5.62B   | 8.86M | 33.7mb
-YoloV4-Tiny| 416*416 | 21.7 | ~    | 32.81ms | 6.96B   | 6.06M | 23.0mb
+Model     |Resolution|COCO mAP|Latency(ARM 4xCore)|FLOPS|Params   | Model Size(ncnn bin)
+:--------:|:--------:|:------:|:-----------------:|:---:|:-------:|:-------:
+NanoDet-m | 320*320 |  20.6 | 10.23ms | 0.72B   | 0.95M | 1.8mb
+NanoDet-m | 416*416 |  21.7 | 16.44ms | 1.2B    | 0.95M | 1.8mb
+YoloV3-Tiny| 416*416 | 16.6 | 37.6ms  | 5.62B   | 8.86M | 33.7mb
+YoloV4-Tiny| 416*416 | 21.7 | 32.81ms | 6.96B   | 6.06M | 23.0mb
 
 Note:
 
-* Performance is measured on RTX3090 GPU and Kirin 980(4xA76+4xA55) ARM CPU based on ncnn
+* Performance is measured on Kirin 980(4xA76+4xA55) ARM CPU based on ncnn.
 
 * NanoDet mAP(0.5:0.95) is validated on COCO val2017 dataset with no testing time augmentation.
 
@@ -29,36 +29,37 @@ Note:
 
 ## Demo
 
-### Pytorch Demo
+### Android demo
+
+![android_demo](docs/imgs/Android_demo.jpg)
+
+Android demo project is in ***demo_android_ncnn*** folder. Please refer to [Android demo guide](demo_android_ncnn/README.md).
+
+### C++ demo
+
+C++ demo based on ncnn is in ***demo_ncnn*** folder. Please refer to [Cpp demo guide](demo_ncnn/README.md).
+
+### Python demo
+
+First, install requirements and setup NanoDet following installation guide. Then download COCO pretrain weight from [here]().
 
 * Inference images
 
 ```bash
-cd [nanodet dir]
 python demo/demo.py image --config CONFIG_PATH --model MODEL_PATH --path IMAGE_PATH
 ```
 
 * Inference video
 
 ```bash
-cd [nanodet dir]
 python demo/demo.py video --config CONFIG_PATH --model MODEL_PATH --path VIDEO_PATH
 ```
 
 * Inference webcam
 
 ```bash
-cd [nanodet dir]
 python demo/demo.py webcam --config CONFIG_PATH --model MODEL_PATH --camid YOUR_CAMERA_ID
 ```
-
-### C++ inference demo
-
-Referring Cpp demo guide
-
-### Android demo
-
-Referring Android demo guide
 
 ****
 
@@ -156,11 +157,11 @@ NanoDet provide C++ and Android demo based on ncnn library.
 
 2. Run NanoDet model with C++
 
-    Please refer to this ->
+    Please refer to [demo_ncnn](demo_ncnn/README.md).
 
 3. Run NanoDet on Android
 
-    Please refer to this->
+    Please refer to [android_demo](demo_android_ncnn/README.md).
 
 ****
 

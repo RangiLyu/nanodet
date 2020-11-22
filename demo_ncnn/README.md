@@ -24,6 +24,9 @@ git clone --recursive https://github.com/nihui/ncnn.git
 Build NCNN following this tutorial: [Build for Windows x64 using VS2017](https://github.com/Tencent/ncnn/wiki/how-to-build#build-for-windows-x64-using-visual-studio-community-2017)
 
 ### Step5.
+
+Modify CMakeLists.txt to your environment settings.
+
 Build project
 
 Open x64 Native Tools Command Prompt for VS 2019 or 2017
@@ -54,6 +57,9 @@ git clone --recursive https://github.com/nihui/ncnn.git
 Build NCNN following this tutorial: [Build for Linux / NVIDIA Jetson / Raspberry Pi](https://github.com/Tencent/ncnn/wiki/how-to-build#build-for-linux)
 
 ### Step4.
+
+Modify CMakeLists.txt to your environment settings.
+
 Build project
 
 ``` shell script
@@ -93,7 +99,7 @@ nanodet_demo 2 VIDEO_PATH
 ```shell script
 nanodet_demo 3 0
 ```
-
+![bench_mark](benchmark.jpg)
 ****
 
 Notice:

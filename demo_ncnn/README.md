@@ -19,7 +19,7 @@ Download and install Vulkan SDK from https://vulkan.lunarg.com/sdk/home
 Clone NCNN repository
 
 ``` shell script
-git clone --recursive https://github.com/nihui/ncnn.git 
+git clone --recursive https://github.com/Tencent/ncnn.git
 ```
 Build NCNN following this tutorial: [Build for Windows x64 using VS2017](https://github.com/Tencent/ncnn/wiki/how-to-build#build-for-windows-x64-using-visual-studio-community-2017)
 

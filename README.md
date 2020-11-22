@@ -41,7 +41,7 @@ C++ demo based on ncnn is in ***demo_ncnn*** folder. Please refer to [Cpp demo g
 
 ### Python demo
 
-First, install requirements and setup NanoDet following installation guide. Then download COCO pretrain weight from [here]().
+First, install requirements and setup NanoDet following installation guide. Then download COCO pretrain weight from [here](https://drive.google.com/file/d/1EhMqGozKfqEfw8y9ftbi1jhYu86XoW62/view?usp=sharing).
 
 * Inference images
 

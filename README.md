@@ -25,6 +25,8 @@ Note:
 
 * YOLO mAP refers from [Scaled-YOLOv4: Scaling Cross Stage Partial Network](https://arxiv.org/abs/2011.08036)
 
+* NanoDet ncnn model download link -> [nanodet ncnn model](https://github.com/RangiLyu/nanodet/releases/download/v0.0.1/nanodet_ncnn_model.zip)
+
 ****
 
 ## Demo

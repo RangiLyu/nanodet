@@ -73,6 +73,7 @@ make
 # Run demo
 
 Download NanoDet ncnn model.
+* [NanoDet ncnn model download link](https://github.com/RangiLyu/nanodet/releases/download/v0.0.1/nanodet_ncnn_model.zip)
 
 Copy nanodet_m.param and nanodet_m.bin to demo program folder.
 

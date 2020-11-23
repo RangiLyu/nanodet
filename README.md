@@ -1,4 +1,7 @@
+![](docs/imgs/Title.jpg)
+
 # NanoDet
+
 
 ### Super fast and lightweight anchor-free object detection model. Real-time on mobile devices.
 
@@ -8,6 +11,7 @@
 * 😎Easy to deploy: Provide **C++ implementation** and **Android demo** based on ncnn inference framework.
 
 ****
+
 ## Benchmarks
 
 Model     |Resolution|COCO mAP|Latency(ARM 4xCore)|FLOPS|Params   | Model Size(ncnn bin)
@@ -21,14 +25,25 @@ Note:
 
 * Performance is measured on Kirin 980(4xA76+4xA55) ARM CPU based on ncnn.
 
-* NanoDet mAP(0.5:0.95) is validated on COCO val2017 dataset with no testing time augmentation.
+* NanoDet mAP(0.5:0.95) is validated on COCO val2017 dataset with no testing time augmentation. 
 
 * YOLO mAP refers from [Scaled-YOLOv4: Scaling Cross Stage Partial Network](https://arxiv.org/abs/2011.08036)
 
-* NanoDet ncnn model download link -> [nanodet ncnn model](https://github.com/RangiLyu/nanodet/releases/download/v0.0.1/nanodet_ncnn_model.zip)
+****
+NanoDet is a FCOS-style one-stage anchor-free object detection model which using ATSS for target sampling and using Generalized Focal Loss for classification and box regression. Please refer to these papers for more detail.
+
+[Fcos: Fully convolutional one-stage object detection](http://openaccess.thecvf.com/content_ICCV_2019/papers/Tian_FCOS_Fully_Convolutional_One-Stage_Object_Detection_ICCV_2019_paper.pdf)
+
+[ATSS:Bridging the Gap Between Anchor-based and Anchor-free Detection via Adaptive Training Sample Selection](https://arxiv.org/pdf/1912.02424.pdf)
+
+[Generalized Focal Loss: Learning Qualified and Distributed Bounding Boxes for Dense Object Detection](https://arxiv.org/pdf/2006.04388.pdf)
+
+
+![](docs/imgs/Model_arch.png)
+
+[知乎中文介绍](https://zhuanlan.zhihu.com/p/306530300)
 
 ****
-
 ## Demo
 
 ### Android demo
@@ -43,7 +58,7 @@ C++ demo based on ncnn is in ***demo_ncnn*** folder. Please refer to [Cpp demo g
 
 ### Python demo
 
-First, install requirements and setup NanoDet following installation guide. Then download COCO pretrain weight from here->[Google Drive](https://drive.google.com/file/d/1EhMqGozKfqEfw8y9ftbi1jhYu86XoW62/view?usp=sharing).
+First, install requirements and setup NanoDet following installation guide. Then download COCO pretrain weight from [here](https://drive.google.com/file/d/1EhMqGozKfqEfw8y9ftbi1jhYu86XoW62/view?usp=sharing).
 
 * Inference images
 
@@ -127,7 +142,7 @@ python setup.py develop
 
     Set ***total_epochs***, ***lr*** and ***lr_schedule*** according to your dataset and batchsize.
 
-    If you want to modify network, data augmentation or other things, please refer to [Config File Detail](docs/config_file_detail.md)
+    If you want to modify network, data augmentation or other things, please refer to [Config File Detail]()
 
 3. **Start training**
 

@@ -41,7 +41,7 @@ C++ demo based on ncnn is in ***demo_ncnn*** folder. Please refer to [Cpp demo g
 
 ### Python demo
 
-First, install requirements and setup NanoDet following installation guide. Then download COCO pretrain weight from [here](https://drive.google.com/file/d/1EhMqGozKfqEfw8y9ftbi1jhYu86XoW62/view?usp=sharing).
+First, install requirements and setup NanoDet following installation guide. Then download COCO pretrain weight from here->[Google Drive](https://drive.google.com/file/d/1EhMqGozKfqEfw8y9ftbi1jhYu86XoW62/view?usp=sharing).
 
 * Inference images
 
@@ -125,7 +125,7 @@ python setup.py develop
 
     Set ***total_epochs***, ***lr*** and ***lr_schedule*** according to your dataset and batchsize.
 
-    If you want to modify network, data augmentation or other things, please refer to [Config File Detail]()
+    If you want to modify network, data augmentation or other things, please refer to [Config File Detail](docs/config_file_detail.md)
 
 3. **Start training**
 

@@ -142,7 +142,7 @@ python setup.py develop
 
     Set ***total_epochs***, ***lr*** and ***lr_schedule*** according to your dataset and batchsize.
 
-    If you want to modify network, data augmentation or other things, please refer to [Config File Detail]()
+    If you want to modify network, data augmentation or other things, please refer to [Config File Detail](docs/config_file_detail.md)
 
 3. **Start training**
 

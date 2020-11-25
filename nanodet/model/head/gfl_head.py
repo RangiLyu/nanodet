@@ -303,9 +303,9 @@ class GFLHead(AnchorHead):
         avg_factor = sum(avg_factor)
         avg_factor = reduce_mean(avg_factor).item()
         if avg_factor <= 0:
-            loss_qfl = torch.tensor(0, dtype=torch.float32).cuda()
-            loss_bbox = torch.tensor(0, dtype=torch.float32).cuda()
-            loss_dfl = torch.tensor(0, dtype=torch.float32).cuda()
+            loss_qfl = torch.tensor(0, dtype=torch.float32, requires_grad=True).cuda()
+            loss_bbox = torch.tensor(0, dtype=torch.float32, requires_grad=True).cuda()
+            loss_dfl = torch.tensor(0, dtype=torch.float32, requires_grad=True).cuda()
         else:
             losses_bbox = list(map(lambda x: x / avg_factor, losses_bbox))
             losses_dfl = list(map(lambda x: x / avg_factor, losses_dfl))

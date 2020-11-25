@@ -42,6 +42,7 @@ NanoDet is a FCOS-style one-stage anchor-free object detection model which using
 ![](docs/imgs/Model_arch.png)
 
 [知乎中文介绍](https://zhuanlan.zhihu.com/p/306530300)
+ | QQ交流群：908606542 (答案：炼丹)
 
 ****
 ## Demo
@@ -58,7 +59,7 @@ C++ demo based on ncnn is in ***demo_ncnn*** folder. Please refer to [Cpp demo g
 
 ### Python demo
 
-First, install requirements and setup NanoDet following installation guide. Then download COCO pretrain weight from [here](https://drive.google.com/file/d/1EhMqGozKfqEfw8y9ftbi1jhYu86XoW62/view?usp=sharing).
+First, install requirements and setup NanoDet following installation guide. Then download COCO pretrain weight from here👉[COCO pretrain weight(Google Drive)](https://drive.google.com/file/d/1EhMqGozKfqEfw8y9ftbi1jhYu86XoW62/view?usp=sharing).
 
 * Inference images
 
@@ -84,10 +85,11 @@ python demo/demo.py webcam --config CONFIG_PATH --model MODEL_PATH --camid YOUR_
 
 ### Requirements
 
-* Linux or MacOS (Windows not support distributed training)
+* Linux or MacOS
 * CUDA >= 10.0
 * Python >= 3.6
 * Pytorch >= 1.3
+* experimental support Windows (Notice: Windows not support distributed training before pytorch1.7)
 
 ### Step
 
@@ -170,7 +172,11 @@ NanoDet provide C++ and Android demo based on ncnn library.
 
     To export onnx model, run tools/export.py. Then using [onnx-simplifier](https://github.com/daquexian/onnx-simplifier) to simplify onnx structure.
 
-    Run onnx2ncnn in ncnn tools to generate ncnn .param and .bin file
+    Run **onnx2ncnn** in ncnn tools to generate ncnn .param and .bin file. 
+    
+    After that, using **ncnnoptimize** to optimize ncnn model.
+
+    If you have quentions about converting ncnn model, refer to ncnn wiki. https://github.com/Tencent/ncnn/wiki 
 
 2. Run NanoDet model with C++
 

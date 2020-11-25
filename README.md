@@ -23,7 +23,7 @@ YoloV4-Tiny| 416*416 | 21.7 | 32.81ms | 6.96B   | 6.06M | 23.0mb
 
 Note:
 
-* Performance is measured on Kirin 980(4xA76+4xA55) ARM CPU based on ncnn.
+* Performance is measured on Kirin 980(4xA76+4xA55) ARM CPU based on ncnn. You can test latency on your phone with [ncnn_android_benchmark](https://github.com/nihui/ncnn-android-benchmark).
 
 * NanoDet mAP(0.5:0.95) is validated on COCO val2017 dataset with no testing time augmentation. 
 

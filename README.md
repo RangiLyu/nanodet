@@ -128,8 +128,6 @@ python setup.py develop
 
     Convert your dataset annotations to MS COCO format[(COCO annotation format details)](https://cocodataset.org/#format-data). 
 
-    If your dataset annotations are pascal voc xml format, using this repo to convert data. 👉 [voc2coco](https://github.com/yukkyo/voc2coco)
-
 2. **Prepare config file**
 
     Copy and modify an example yml config file in config/ folder.

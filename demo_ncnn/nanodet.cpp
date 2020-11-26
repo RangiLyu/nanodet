@@ -46,10 +46,10 @@ NanoDet* NanoDet::detector = nullptr;
 NanoDet::NanoDet(const char* param, const char* bin, bool useGPU)
 {
     this->Net = new ncnn::Net();
-    // opt ��Ҫ�ڼ���ǰ����
+    // opt 
     this->hasGPU = ncnn::get_gpu_count() > 0;
-    this->Net->opt.use_vulkan_compute = this->hasGPU && useGPU;  // gpu
-    this->Net->opt.use_fp16_arithmetic = true;  // fp16�������
+    this->Net->opt.use_vulkan_compute = this->hasGPU && useGPU;
+    this->Net->opt.use_fp16_arithmetic = true;
     this->Net->load_param(param);
     this->Net->load_model(bin);
 }

@@ -72,8 +72,8 @@ def get_image_list(path):
 
 def main():
     args = parse_args()
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
+    torch.backends.cudnn.enabled = True
+    torch.backends.cudnn.benchmark = True
 
     load_config(cfg, args.config)
     logger = Logger(-1, use_tensorboard=False)

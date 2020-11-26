@@ -1,4 +1,7 @@
+![](docs/imgs/Title.jpg)
+
 # NanoDet
+
 
 ### Super fast and lightweight anchor-free object detection model. Real-time on mobile devices.
 
@@ -8,6 +11,7 @@
 * 😎Easy to deploy: Provide **C++ implementation** and **Android demo** based on ncnn inference framework.
 
 ****
+
 ## Benchmarks
 
 Model     |Resolution|COCO mAP|Latency(ARM 4xCore)|FLOPS|Params   | Model Size(ncnn bin)
@@ -19,16 +23,28 @@ YoloV4-Tiny| 416*416 | 21.7 | 32.81ms | 6.96B   | 6.06M | 23.0mb
 
 Note:
 
-* Performance is measured on Kirin 980(4xA76+4xA55) ARM CPU based on ncnn.
+* Performance is measured on Kirin 980(4xA76+4xA55) ARM CPU based on ncnn. You can test latency on your phone with [ncnn_android_benchmark](https://github.com/nihui/ncnn-android-benchmark).
 
-* NanoDet mAP(0.5:0.95) is validated on COCO val2017 dataset with no testing time augmentation.
+* NanoDet mAP(0.5:0.95) is validated on COCO val2017 dataset with no testing time augmentation. 
 
 * YOLO mAP refers from [Scaled-YOLOv4: Scaling Cross Stage Partial Network](https://arxiv.org/abs/2011.08036)
 
-* NanoDet ncnn model download link -> [nanodet ncnn model](https://github.com/RangiLyu/nanodet/releases/download/v0.0.1/nanodet_ncnn_model.zip)
+****
+NanoDet is a FCOS-style one-stage anchor-free object detection model which using ATSS for target sampling and using Generalized Focal Loss for classification and box regression. Please refer to these papers for more detail.
+
+[Fcos: Fully convolutional one-stage object detection](http://openaccess.thecvf.com/content_ICCV_2019/papers/Tian_FCOS_Fully_Convolutional_One-Stage_Object_Detection_ICCV_2019_paper.pdf)
+
+[ATSS:Bridging the Gap Between Anchor-based and Anchor-free Detection via Adaptive Training Sample Selection](https://arxiv.org/pdf/1912.02424.pdf)
+
+[Generalized Focal Loss: Learning Qualified and Distributed Bounding Boxes for Dense Object Detection](https://arxiv.org/pdf/2006.04388.pdf)
+
+
+![](docs/imgs/Model_arch.png)
+
+[知乎中文介绍](https://zhuanlan.zhihu.com/p/306530300)
+ | QQ交流群：908606542 (答案：炼丹)
 
 ****
-
 ## Demo
 
 ### Android demo
@@ -43,7 +59,7 @@ C++ demo based on ncnn is in ***demo_ncnn*** folder. Please refer to [Cpp demo g
 
 ### Python demo
 
-First, install requirements and setup NanoDet following installation guide. Then download COCO pretrain weight from here->[Google Drive](https://drive.google.com/file/d/1EhMqGozKfqEfw8y9ftbi1jhYu86XoW62/view?usp=sharing).
+First, install requirements and setup NanoDet following installation guide. Then download COCO pretrain weight from here👉[COCO pretrain weight(Google Drive)](https://drive.google.com/file/d/1EhMqGozKfqEfw8y9ftbi1jhYu86XoW62/view?usp=sharing).
 
 * Inference images
 
@@ -69,10 +85,11 @@ python demo/demo.py webcam --config CONFIG_PATH --model MODEL_PATH --camid YOUR_
 
 ### Requirements
 
-* Linux or MacOS (Windows not support distributed training)
+* Linux or MacOS
 * CUDA >= 10.0
 * Python >= 3.6
 * Pytorch >= 1.3
+* experimental support Windows (Notice: Windows not support distributed training before pytorch1.7)
 
 ### Step
 
@@ -111,7 +128,7 @@ python setup.py develop
 
     Convert your dataset annotations to MS COCO format[(COCO annotation format details)](https://cocodataset.org/#format-data). 
 
-    If your dataset annotations are pascal voc xml format, using this repo to convert data. 👉 [voc2coco]()
+    If your dataset annotations are pascal voc xml format, using this repo to convert data. 👉 [voc2coco](https://github.com/yukkyo/voc2coco)
 
 2. **Prepare config file**
 
@@ -155,7 +172,11 @@ NanoDet provide C++ and Android demo based on ncnn library.
 
     To export onnx model, run tools/export.py. Then using [onnx-simplifier](https://github.com/daquexian/onnx-simplifier) to simplify onnx structure.
 
-    Run onnx2ncnn in ncnn tools to generate ncnn .param and .bin file
+    Run **onnx2ncnn** in ncnn tools to generate ncnn .param and .bin file. 
+    
+    After that, using **ncnnoptimize** to optimize ncnn model.
+
+    If you have quentions about converting ncnn model, refer to ncnn wiki. https://github.com/Tencent/ncnn/wiki 
 
 2. Run NanoDet model with C++
 

@@ -12,7 +12,7 @@
 
 ****
 ## NEWS!!!
-Great thanks to nuhui, now you can try NanoDet running in web browser! 👉 https://nihui.github.io/ncnn-webassembly-nanodet/ 
+Great thanks to nihui, now you can try NanoDet running in web browser! 👉 https://nihui.github.io/ncnn-webassembly-nanodet/ 
 
 ****
 ## Benchmarks

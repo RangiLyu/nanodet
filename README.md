@@ -11,7 +11,10 @@
 * 😎Easy to deploy: Provide **C++ implementation** and **Android demo** based on ncnn inference framework.
 
 ****
+## NEWS!!!
+Great thanks to nihui, now you can try NanoDet running in web browser! 👉 https://nihui.github.io/ncnn-webassembly-nanodet/ 
 
+****
 ## Benchmarks
 
 Model     |Resolution|COCO mAP|Latency(ARM 4xCore)|FLOPS|Params   | Model Size(ncnn bin)

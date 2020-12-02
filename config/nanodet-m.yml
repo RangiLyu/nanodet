@@ -52,7 +52,7 @@ data:
       stretch: [[1, 1], [1, 1]]
       rotation: 0
       shear: 0
-      translate: 0
+      translate: 0.2
       flip: 0.5
       brightness: 0.2
       contrast: [0.8, 1.2]

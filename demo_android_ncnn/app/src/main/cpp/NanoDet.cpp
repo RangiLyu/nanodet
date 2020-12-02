@@ -64,7 +64,7 @@ void NanoDet::preprocess(JNIEnv *env, jobject image, ncnn::Mat& in)
     //in = ncnn::Mat::from_pixels_resize(image.data, ncnn::Mat::PIXEL_BGR, img_w, img_h, this->input_width, this->input_height);
 
     const float mean_vals[3] = { 103.53f, 116.28f, 123.675f };
-    const float norm_vals[3] = { 0.017429f, 0.017507f, 0.01712475 };
+    const float norm_vals[3] = { 0.017429f, 0.017507f, 0.017125f };
     in.substract_mean_normalize(mean_vals, norm_vals);
 }
 

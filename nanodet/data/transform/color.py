@@ -14,10 +14,9 @@ def random_contrast(img, alpha_low, alpha_up):
 
 
 def random_saturation(img, alpha_low, alpha_up):
-    hsv_img = cv2.cvtColor(img.astype(np.float32)/255, cv2.COLOR_BGR2HSV)
+    hsv_img = cv2.cvtColor(img.astype(np.float32), cv2.COLOR_BGR2HSV)
     hsv_img[..., 1] *= random.uniform(alpha_low, alpha_up)
-    img = cv2.cvtColor(hsv_img, cv2.COLOR_HSV2BGR) * 255
-    # cv2.imshow('img', img/255)
+    img = cv2.cvtColor(hsv_img, cv2.COLOR_HSV2BGR)
     return img
 
 

@@ -12,7 +12,10 @@
 
 ****
 ## NEWS!!!
-Great thanks to nihui, now you can try NanoDet running in web browser! 👉 https://nihui.github.io/ncnn-webassembly-nanodet/ 
+
+* [2020.12.05] Support voc .xml format dataset! Refer to [config/nanodet_custom_xml_dataset.yml](config/nanodet_custom_xml_dataset.yml).
+
+* [2020.12.01] Great thanks to nihui, now you can try NanoDet running in web browser! 👉 https://nihui.github.io/ncnn-webassembly-nanodet/ 
 
 ****
 ## Benchmarks
@@ -129,8 +132,10 @@ python setup.py develop
 
 1. **Prepare dataset**
 
-    Convert your dataset annotations to MS COCO format[(COCO annotation format details)](https://cocodataset.org/#format-data). 
+    If your dataset annotations are pascal voc xml format, refer to [config/nanodet_custom_xml_dataset.yml](config/nanodet_custom_xml_dataset.yml)
 
+    Or convert your dataset annotations to MS COCO format[(COCO annotation format details)](https://cocodataset.org/#format-data). 
+    
 2. **Prepare config file**
 
     Copy and modify an example yml config file in config/ folder.

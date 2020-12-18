@@ -6,12 +6,12 @@ This repo is an Android object detection demo of NanoDet using
 # Tutorial
 
 ## Step1. 
-Download ncnn-android-vulkan-lib.zip from ncnn repo or build ncnn-android from source.
+Download ncnn-android-vulkan.zip from ncnn repo or build ncnn-android from source.
 
-- [ncnn-android-vulkan-lib.zip download link](https://github.com/Tencent/ncnn/releases)
+- [ncnn-android-vulkan.zip download link](https://github.com/Tencent/ncnn/releases)
 
 ## Step2.
-Unzip ncnn library into demo_android_ncnn/app/src/main/cpp or change the ncnn path in demo_android_ncnn/app/src/main/cpp/CMakeLists.txt
+Unzip ncnn-android-vulkan.zip into demo_android_ncnn/app/src/main/cpp or change the ncnn_DIR path to yours in demo_android_ncnn/app/src/main/cpp/CMakeLists.txt
 
 ## Step3.
 Copy the NanoDet ncnn model file (nanodet_m.param and nanodet_m.bin) from models folder into demo_android_ncnn/app/src/main/assets

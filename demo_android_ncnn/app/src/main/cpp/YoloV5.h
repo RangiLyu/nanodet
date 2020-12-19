@@ -5,7 +5,7 @@
 #ifndef YOLOV5_H
 #define YOLOV5_H
 
-#include "ncnn/net.h"
+#include "net.h"
 
 namespace yolocv {
     typedef struct {

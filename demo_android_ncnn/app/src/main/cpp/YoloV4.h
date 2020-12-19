@@ -1,7 +1,7 @@
 #ifndef YOLOV4_H
 #define YOLOV4_H
 
-#include "ncnn/net.h"
+#include "net.h"
 #include "YoloV5.h"
 
 

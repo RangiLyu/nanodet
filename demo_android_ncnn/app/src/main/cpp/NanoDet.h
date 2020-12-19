@@ -6,7 +6,7 @@
 #ifndef NANODET_H
 #define NANODET_H
 
-#include "ncnn/net.h"
+#include "net.h"
 #include "YoloV5.h"
 
 typedef struct HeadInfo

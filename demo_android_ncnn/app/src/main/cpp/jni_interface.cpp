@@ -1,6 +1,6 @@
 #include <jni.h>
 #include <string>
-#include <ncnn/gpu.h>
+#include <gpu.h>
 #include <android/asset_manager_jni.h>
 #include <android/log.h>
 #include "YoloV5.h"

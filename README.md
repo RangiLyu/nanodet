@@ -13,6 +13,8 @@
 ****
 ## NEWS!!!
 
+* [2020.12.19] [MNN demo](demo_mnn/) are available. 
+
 * [2020.12.05] Support voc .xml format dataset! Refer to [config/nanodet_custom_xml_dataset.yml](config/nanodet_custom_xml_dataset.yml).
 
 * [2020.12.01] Great thanks to nihui, now you can try NanoDet running in web browser! 👉 https://nihui.github.io/ncnn-webassembly-nanodet/ 
@@ -59,11 +61,15 @@ NanoDet is a FCOS-style one-stage anchor-free object detection model which using
 
 Android demo project is in ***demo_android_ncnn*** folder. Please refer to [Android demo guide](demo_android_ncnn/README.md).
 
-### C++ demo
+### NCNN C++ demo
 
-C++ demo based on ncnn is in ***demo_ncnn*** folder. Please refer to [Cpp demo guide](demo_ncnn/README.md).
+C++ demo based on [ncnn](https://github.com/Tencent/ncnn) is in ***demo_ncnn*** folder. Please refer to [Cpp demo guide](demo_ncnn/README.md).
 
-### Python demo
+### MNN demo
+
+Inference using [Alibaba's MNN framework](https://github.com/alibaba/MNN) is in ***demo_mnn*** folder. Including python and cpp inference code. Please refer to [MNN demo guide](demo_mnn/README.md).
+
+### Pytorch demo
 
 First, install requirements and setup NanoDet following installation guide. Then download COCO pretrain weight from here👉[COCO pretrain weight for torch>=1.6(Google Drive)](https://drive.google.com/file/d/1EhMqGozKfqEfw8y9ftbi1jhYu86XoW62/view?usp=sharing) | [COCO pretrain weight for torch<=1.5(Google Drive)](https://drive.google.com/file/d/10h-0qLMCgYvWQvKULqbkLvmirFR-w9NN/view?usp=sharing).
 

@@ -4,7 +4,7 @@
 //
 
 #ifndef NANODET_H
-#define NAMODET_H
+#define NANODET_H
 
 #include <opencv2/core/core.hpp>
 #include "ncnn/net.h"

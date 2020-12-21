@@ -13,7 +13,7 @@
 ****
 ## NEWS!!!
 
-* [2020.12.19] [MNN demo](demo_mnn/) are available. 
+* [2020.12.19] [MNN python and cpp demos](demo_mnn/) are available. 
 
 * [2020.12.05] Support voc .xml format dataset! Refer to [config/nanodet_custom_xml_dataset.yml](config/nanodet_custom_xml_dataset.yml).
 

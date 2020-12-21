@@ -13,36 +13,24 @@ endif()
 
 find_package(OpenCV REQUIRED)
 
-find_package(Vulkan REQUIRED)
-message(STATUS "Vulkan FOUND = ${Vulkan_FOUND}")
-message(STATUS "Vulkan Include = ${Vulkan_INCLUDE_DIRS}")
-message(STATUS "Vulkan Lib = ${Vulkan_LIBRARY}")
-
-set(NCNN_LIBS D:/Programs/ncnn/build-vs2019/install/lib)
-set(NCNN_INCLUDE_DIRS D:/Programs/ncnn/build-vs2019/install/include)
-
+find_package(ncnn REQUIRED)
+if(NOT TARGET ncnn)
+    message(WARNING "ncnn NOT FOUND!  Please set ncnn_DIR environment variable")
+else()
+    message("ncnn FOUND ")
+endif()
 
 include_directories(
-    ${Vulkan_INCLUDE_DIRS}
-    ${NCNN_INCLUDE_DIRS}
     ${OpenCV_INCLUDE_DIRS}
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-link_directories(
-    ${NCNN_LIBS}
-)
 
 add_executable(nanodet_demo main.cpp nanodet.cpp)
 
 target_link_libraries(
     nanodet_demo 
-    ncnn.lib
-    glslang.lib
-    OGLCompiler.lib
-    OSDependent.lib
-    SPIRV.lib
-    ${Vulkan_LIBRARY}
+    ncnn
     ${OpenCV_LIBS} 
 )

@@ -4,7 +4,7 @@
 //
 
 #include "nanodet.h"
-#include <ncnn/benchmark.h>
+#include <benchmark.h>
 // #include <iostream>
 
 inline float fast_exp(float x) 

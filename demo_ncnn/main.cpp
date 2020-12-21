@@ -2,9 +2,9 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <iostream>
-#include <ncnn/net.h>
+#include <net.h>
 #include "nanodet.h"
-#include <ncnn/benchmark.h>
+#include <benchmark.h>
 
 struct object_rect {
     int x;

@@ -174,7 +174,7 @@ class EfficientNetLite(nn.Module):
                                          has_se=False))
 
             self.blocks.append(stage)
-        self._initialize_weights()
+        self._initialize_weights(pretrain)
 
     def forward(self, x):
         x = self.stem(x)

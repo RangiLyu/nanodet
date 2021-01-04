@@ -172,6 +172,17 @@ python setup.py develop
     python -m torch.distributed.launch --nproc_per_node=GPU_NUM --master_port 29501 tools/train.py CONFIG_PATH
     ```
 
+4. **Visualize Logs**
+    
+    TensorBoard logs are saved in `save_dir` which you set in config file.
+    
+    To visualize tensorboard logs, run:
+    
+    ```shell script
+    cd SVAE_DIR
+    tensorboard --logdir ./logs
+    ```
+    
 ****
 
 ## How to Deploy

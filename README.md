@@ -12,6 +12,8 @@
 
 ****
 ## NEWS!!!
+* [2021.01.10] **NanoDet-g** with lower memory access cost, which designed for edge NPU or GPU, is now available! 
+  Check [config/nanodet-g.yml](config/nanodet-g.yml) and download [COCO pre-trained model](https://drive.google.com/file/d/10uW7oqZKw231l_tr4C1bJWkbCXgBf7av/view?usp=sharing).
 
 * [2020.12.19] [MNN python and cpp demos](demo_mnn/) are available. 
 
@@ -24,10 +26,11 @@
 
 Model     |Resolution|COCO mAP|Latency(ARM 4xCore)|FLOPS|Params   | Model Size(ncnn bin)
 :--------:|:--------:|:------:|:-----------------:|:---:|:-------:|:-------:
-NanoDet-m | 320*320 |  20.6 | 10.23ms | 0.72B   | 0.95M | 1.8mb
-NanoDet-m | 416*416 |  21.7 | 16.44ms | 1.2B    | 0.95M | 1.8mb
-YoloV3-Tiny| 416*416 | 16.6 | 37.6ms  | 5.62B   | 8.86M | 33.7mb
-YoloV4-Tiny| 416*416 | 21.7 | 32.81ms | 6.96B   | 6.06M | 23.0mb
+NanoDet-m | 320*320 |  20.6 | 10.23ms              | 0.72B      | 0.95M | 1.8mb
+NanoDet-m | 416*416 |  21.7 | 16.44ms              | 1.2B       | 0.95M | 1.8mb
+NanoDet-g | 416*416 |  22.9 | Not Designed For ARM | 4.2B       | 3.81M | 7.7mb
+YoloV3-Tiny| 416*416 | 16.6 | 37.6ms               | 5.62B      | 8.86M | 33.7mb
+YoloV4-Tiny| 416*416 | 21.7 | 32.81ms              | 6.96B      | 6.06M | 23.0mb
 
 Note:
 
@@ -35,7 +38,10 @@ Note:
 
 * NanoDet mAP(0.5:0.95) is validated on COCO val2017 dataset with no testing time augmentation. 
 
-* YOLO mAP refers from [Scaled-YOLOv4: Scaling Cross Stage Partial Network](https://arxiv.org/abs/2011.08036)
+* YOLO mAP refers from [Scaled-YOLOv4: Scaling Cross Stage Partial Network](https://arxiv.org/abs/2011.08036).
+
+* **NanoDet-g** is designed for **edge NPU, GPU or TPU** with high parallel computing power but low memory bandwidth. 
+  It has much lower memory access cost than NanoDet-m. 
 
 ****
 NanoDet is a FCOS-style one-stage anchor-free object detection model which using ATSS for target sampling and using Generalized Focal Loss for classification and box regression. Please refer to these papers for more detail.

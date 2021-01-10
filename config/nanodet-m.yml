@@ -82,10 +82,10 @@ schedule:
     name: linear
     steps: 300
     ratio: 0.1
-  total_epochs: 160
+  total_epochs: 190
   lr_schedule:
     name: MultiStepLR
-    milestones: [130,160,150,155]
+    milestones: [130,160,175,185]
     gamma: 0.1
   val_intervals: 10
 evaluator:

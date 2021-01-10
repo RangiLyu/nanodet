@@ -19,6 +19,7 @@ class NanoDetHead(GFLHead):
                  stacked_convs=2,
                  octave_base_scale=5,
                  scales_per_octave=1,
+                 conv_type='DWConv',
                  conv_cfg=None,
                  norm_cfg=dict(type='BN'),
                  reg_max=16,
@@ -27,6 +28,7 @@ class NanoDetHead(GFLHead):
                  **kwargs):
         self.share_cls_reg = share_cls_reg
         self.activation = activation
+        self.ConvModule = ConvModule if conv_type == 'Conv' else DepthwiseConvModule
         super(NanoDetHead, self).__init__(num_classes,
                                           loss,
                                           input_channel,
@@ -63,7 +65,17 @@ class NanoDetHead(GFLHead):
         for i in range(self.stacked_convs):
             chn = self.in_channels if i == 0 else self.feat_channels
             cls_convs.append(
-                DepthwiseConvModule(chn,
+                self.ConvModule(chn,
+                                self.feat_channels,
+                                3,
+                                stride=1,
+                                padding=1,
+                                norm_cfg=self.norm_cfg,
+                                bias=self.norm_cfg is None,
+                                activation=self.activation))
+            if not self.share_cls_reg:
+                reg_convs.append(
+                    self.ConvModule(chn,
                                     self.feat_channels,
                                     3,
                                     stride=1,
@@ -71,28 +83,16 @@ class NanoDetHead(GFLHead):
                                     norm_cfg=self.norm_cfg,
                                     bias=self.norm_cfg is None,
                                     activation=self.activation))
-            if not self.share_cls_reg:
-                reg_convs.append(
-                    DepthwiseConvModule(chn,
-                                        self.feat_channels,
-                                        3,
-                                        stride=1,
-                                        padding=1,
-                                        norm_cfg=self.norm_cfg,
-                                        bias=self.norm_cfg is None,
-                                        activation=self.activation))
 
         return cls_convs, reg_convs
 
     def init_weights(self):
-        for seq in self.cls_convs:
-            for m in seq:
-                normal_init(m.depthwise, std=0.01)
-                normal_init(m.pointwise, std=0.01)
-        for seq in self.reg_convs:
-            for m in seq:
-                normal_init(m.depthwise, std=0.01)
-                normal_init(m.pointwise, std=0.01)
+        for m in self.cls_convs.modules():
+            if isinstance(m, nn.Conv2d):
+                normal_init(m, std=0.01)
+        for m in self.reg_convs.modules():
+            if isinstance(m, nn.Conv2d):
+                normal_init(m, std=0.01)
         bias_cls = -4.595  # 用0.01的置信度初始化
         for i in range(len(self.anchor_strides)):
             normal_init(self.gfl_cls[i], std=0.01, bias=bias_cls)
@@ -124,7 +124,5 @@ class NanoDetHead(GFLHead):
 
         if torch.onnx.is_in_onnx_export():
             cls_score = torch.sigmoid(cls_score).reshape(1, self.num_classes, -1).permute(0, 2, 1)
-            bbox_pred = bbox_pred.reshape(1, (self.reg_max+1)*4, -1).permute(0, 2, 1)
+            bbox_pred = bbox_pred.reshape(1, (self.reg_max + 1) * 4, -1).permute(0, 2, 1)
         return cls_score, bbox_pred
-
-

@@ -2,6 +2,7 @@
 # COCO mAP(0.5:0.95) = 22.9
 # Flops = 4.2B
 # Params = 3.8M
+# COCO pre-trained weight link: https://drive.google.com/file/d/10uW7oqZKw231l_tr4C1bJWkbCXgBf7av/view?usp=sharing
 save_dir: workspace/nanodet_g
 model:
   arch:

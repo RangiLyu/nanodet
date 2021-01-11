@@ -126,6 +126,11 @@ class Trainer:
 
         self._init_scheduler()
         self.lr_scheduler.last_epoch = start_epoch - 1
+        
+        # resume learning rate of last epoch
+        if start_epoch > 1:
+            for param_group, lr in zip(self.optimizer.param_groups, self.lr_scheduler.get_lr()):
+                param_group['lr'] = lr
 
         for epoch in range(start_epoch, self.cfg.schedule.total_epochs + 1):
             results, train_loss_dict = self.run_epoch(epoch, train_loader, mode='train')

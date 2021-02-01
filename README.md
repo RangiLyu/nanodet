@@ -14,8 +14,7 @@
 ## NEWS!!!
 * [2021.01.10] **NanoDet-g** with lower memory access cost, which designed for edge NPU or GPU, is now available! 
   Check [config/nanodet-g.yml](config/nanodet-g.yml) and download:
-  <br>[COCO pre-trained model(Google Drive)](https://drive.google.com/file/d/10uW7oqZKw231l_tr4C1bJWkbCXgBf7av/view?usp=sharing)
-  <br>[COCO pre-trained model(百度网盘)](https://pan.baidu.com/s/1IJLdtLBvmQVOmzzNY_Ci5A) code:otcd
+  [COCO pre-trained model(Google Drive)](https://drive.google.com/file/d/10uW7oqZKw231l_tr4C1bJWkbCXgBf7av/view?usp=sharing) | [(BaiduDisk百度网盘)](https://pan.baidu.com/s/1IJLdtLBvmQVOmzzNY_Ci5A) code:otcd
 
 * [2020.12.19] [MNN python and cpp demos](demo_mnn/) are available. 
 
@@ -80,10 +79,8 @@ Inference using [Alibaba's MNN framework](https://github.com/alibaba/MNN) is in 
 ### Pytorch demo
 
 First, install requirements and setup NanoDet following installation guide. Then download COCO pretrain weight from here
-<br>👉[COCO pretrain weight for torch>=1.6(Google Drive)](https://drive.google.com/file/d/1EhMqGozKfqEfw8y9ftbi1jhYu86XoW62/view?usp=sharing)
-<br>👉[COCO pretrain weight for torch>=1.6(百度云盘)](https://pan.baidu.com/s/1LCnmj2Pqhv0tsDX__1j2gg) code:6au1
-<br>👉[COCO pretrain weight for torch<=1.5(Google Drive)](https://drive.google.com/file/d/10h-0qLMCgYvWQvKULqbkLvmirFR-w9NN/view?usp=sharing)
-<br>👉[COCO pretrain weight for torch<=1.5(百度云盘)](https://pan.baidu.com/s/1OTcPiajCcqKLg3Q0vwho3A) code:topw
+👉[COCO pretrain weight for torch>=1.6(Google Drive)](https://drive.google.com/file/d/1EhMqGozKfqEfw8y9ftbi1jhYu86XoW62/view?usp=sharing) | [(百度网盘)](https://pan.baidu.com/s/1LCnmj2Pqhv0tsDX__1j2gg) code:6au1
+👉[COCO pretrain weight for torch<=1.5(Google Drive)](https://drive.google.com/file/d/10h-0qLMCgYvWQvKULqbkLvmirFR-w9NN/view?usp=sharing) | [(百度云盘)](https://pan.baidu.com/s/1OTcPiajCcqKLg3Q0vwho3A) code:topw
 
 * Inference images
 

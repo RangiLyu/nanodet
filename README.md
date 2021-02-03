@@ -12,6 +12,8 @@
 
 ****
 ## NEWS!!!
+* [2021.02.03] Support [EfficientNet-Lite](https://github.com/RangiLyu/EfficientNet-Lite) and [Rep-VGG](https://github.com/DingXiaoH/RepVGG) backbone. Please check the [config folder](config/).
+
 * [2021.01.10] **NanoDet-g** with lower memory access cost, which designed for edge NPU or GPU, is now available! 
   Check [config/nanodet-g.yml](config/nanodet-g.yml) and download:
   [COCO pre-trained model(Google Drive)](https://drive.google.com/file/d/10uW7oqZKw231l_tr4C1bJWkbCXgBf7av/view?usp=sharing) | [(BaiduDisk百度网盘)](https://pan.baidu.com/s/1IJLdtLBvmQVOmzzNY_Ci5A) code:otcd

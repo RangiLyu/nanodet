@@ -94,13 +94,13 @@ class RepVGG(nn.Module):
         return tuple(output)
 
 
-def repvgg_model_convert(model, arch, save_path=None):
+def repvgg_model_convert(model, deploy_model, save_path=None):
     """
     Examples:
         >>> train_model = RepVGG(arch='A0', deploy=False)
-        >>> deploy_model = repvgg_model_convert(train_model, 'A0', save_path='repvgg_deploy.pth')
+        >>> deploy_model = RepVGG(arch='A0', deploy=True)
+        >>> deploy_model = repvgg_model_convert(train_model, deploy_model, save_path='repvgg_deploy.pth')
     """
-    # TODO: support convert when export to onnx in export.py
     converted_weights = {}
     for name, module in model.named_modules():
         if hasattr(module, 'repvgg_convert'):
@@ -112,7 +112,6 @@ def repvgg_model_convert(model, arch, save_path=None):
             converted_weights[name + '.bias'] = module.bias.detach().cpu().numpy()
     del model
 
-    deploy_model = RepVGG(arch=arch, deploy=True)
     for name, param in deploy_model.named_parameters():
         print('deploy param: ', name, param.size(), np.mean(converted_weights[name]))
         param.data = torch.from_numpy(converted_weights[name]).float()
@@ -120,4 +119,21 @@ def repvgg_model_convert(model, arch, save_path=None):
     if save_path is not None:
         torch.save(deploy_model.state_dict(), save_path)
 
+    return deploy_model
+
+
+def repvgg_det_model_convert(model, deploy_model):
+    converted_weights = {}
+    for name, module in model.backbone.named_modules():
+        if hasattr(module, 'repvgg_convert'):
+            kernel, bias = module.repvgg_convert()
+            converted_weights[name + '.rbr_reparam.weight'] = kernel
+            converted_weights[name + '.rbr_reparam.bias'] = bias
+        elif isinstance(module, torch.nn.Linear):
+            converted_weights[name + '.weight'] = module.weight.detach().cpu().numpy()
+            converted_weights[name + '.bias'] = module.bias.detach().cpu().numpy()
+    del model
+    for name, param in deploy_model.backbone.named_parameters():
+        print('deploy param: ', name, param.size(), np.mean(converted_weights[name]))
+        param.data = torch.from_numpy(converted_weights[name]).float()
     return deploy_model

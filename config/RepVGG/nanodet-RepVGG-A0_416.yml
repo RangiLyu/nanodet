@@ -1,5 +1,4 @@
 # nanodet-EfficientNet-Lite1_416
-# Notice: Not tested yet!!!
 save_dir: workspace/RepVGG-A0-416
 model:
   arch:
@@ -9,6 +8,7 @@ model:
       arch: A0
       out_stages: [2,3,4]
       activation: ReLU
+      deploy: False
     fpn:
       name: PAN
       in_channels: [96, 192, 1280]

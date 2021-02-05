@@ -8,6 +8,7 @@ model:
       arch: A0
       out_stages: [2,3,4]
       activation: ReLU
+      last_channel: 512
       deploy: False
     fpn:
       name: PAN

@@ -5,7 +5,7 @@
 
 ### Super fast and lightweight anchor-free object detection model. Real-time on mobile devices.
 
-* ⚡Super lightweight: Model file is only 1.8 mb.
+* ⚡Super lightweight: Model file is only 1.8 MB.
 * ⚡Super fast: 97fps(10.23ms) on mobile ARM CPU.
 * 😎Training friendly:  Much lower GPU memory cost than other models. Batch-size=80 is available on GTX1060 6G.
 * 😎Easy to deploy: Provide **C++ implementation** and **Android demo** based on ncnn inference framework.
@@ -29,11 +29,11 @@
 
 Model     |Resolution|COCO mAP|Latency(ARM 4xCore)|FLOPS|Params   | Model Size(ncnn bin)
 :--------:|:--------:|:------:|:-----------------:|:---:|:-------:|:-------:
-NanoDet-m | 320*320 |  20.6 | 10.23ms              | 0.72B      | 0.95M | 1.8mb
-NanoDet-m | 416*416 |  21.7 | 16.44ms              | 1.2B       | 0.95M | 1.8mb
-NanoDet-g | 416*416 |  22.9 | Not Designed For ARM | 4.2B       | 3.81M | 7.7mb
-YoloV3-Tiny| 416*416 | 16.6 | 37.6ms               | 5.62B      | 8.86M | 33.7mb
-YoloV4-Tiny| 416*416 | 21.7 | 32.81ms              | 6.96B      | 6.06M | 23.0mb
+NanoDet-m | 320*320 |  20.6 | 10.23ms              | 0.72B      | 0.95M | 1.8MB
+NanoDet-m | 416*416 |  21.7 | 16.44ms              | 1.2B       | 0.95M | 1.8MB
+NanoDet-g | 416*416 |  22.9 | Not Designed For ARM | 4.2B       | 3.81M | 7.7MB
+YoloV3-Tiny| 416*416 | 16.6 | 37.6ms               | 5.62B      | 8.86M | 33.7MB
+YoloV4-Tiny| 416*416 | 21.7 | 32.81ms              | 6.96B      | 6.06M | 23.0MB
 
 Note:
 

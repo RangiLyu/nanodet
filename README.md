@@ -14,15 +14,15 @@
 ## NEWS!!!
 * [2021.02.03] Support [EfficientNet-Lite](https://github.com/RangiLyu/EfficientNet-Lite) and [Rep-VGG](https://github.com/DingXiaoH/RepVGG) backbone. Please check the [config folder](config/).
 
-* [2021.01.10] **NanoDet-g** with lower memory access cost, which designed for edge NPU or GPU, is now available! 
+* [2021.01.10] **NanoDet-g** with lower memory access cost, which designed for edge NPU or GPU, is now available!
   Check [config/nanodet-g.yml](config/nanodet-g.yml) and download:
   [COCO pre-trained model(Google Drive)](https://drive.google.com/file/d/10uW7oqZKw231l_tr4C1bJWkbCXgBf7av/view?usp=sharing) | [(BaiduDisk百度网盘)](https://pan.baidu.com/s/1IJLdtLBvmQVOmzzNY_Ci5A) code:otcd
 
-* [2020.12.19] [MNN python and cpp demos](demo_mnn/) are available. 
+* [2020.12.19] [MNN python and cpp demos](demo_mnn/) are available.
 
 * [2020.12.05] Support voc .xml format dataset! Refer to [config/nanodet_custom_xml_dataset.yml](config/nanodet_custom_xml_dataset.yml).
 
-* [2020.12.01] Great thanks to nihui, now you can try NanoDet running in web browser! 👉 https://nihui.github.io/ncnn-webassembly-nanodet/ 
+* [2020.12.01] Great thanks to nihui, now you can try NanoDet running in web browser! 👉 https://nihui.github.io/ncnn-webassembly-nanodet/
 
 ****
 ## Benchmarks
@@ -39,12 +39,12 @@ Note:
 
 * Performance is measured on Kirin 980(4xA76+4xA55) ARM CPU based on ncnn. You can test latency on your phone with [ncnn_android_benchmark](https://github.com/nihui/ncnn-android-benchmark).
 
-* NanoDet mAP(0.5:0.95) is validated on COCO val2017 dataset with no testing time augmentation. 
+* NanoDet mAP(0.5:0.95) is validated on COCO val2017 dataset with no testing time augmentation.
 
 * YOLO mAP refers from [Scaled-YOLOv4: Scaling Cross Stage Partial Network](https://arxiv.org/abs/2011.08036).
 
-* **NanoDet-g** is designed for **edge NPU, GPU or TPU** with high parallel computing power but low memory bandwidth. 
-  It has much lower memory access cost than NanoDet-m. 
+* **NanoDet-g** is designed for **edge NPU, GPU or TPU** with high parallel computing power but low memory bandwidth.
+  It has much lower memory access cost than NanoDet-m.
 
 ****
 NanoDet is a FCOS-style one-stage anchor-free object detection model which using ATSS for target sampling and using Generalized Focal Loss for classification and box regression. Please refer to these papers for more detail.
@@ -152,8 +152,8 @@ python setup.py develop
 
     If your dataset annotations are pascal voc xml format, refer to [config/nanodet_custom_xml_dataset.yml](config/nanodet_custom_xml_dataset.yml)
 
-    Or convert your dataset annotations to MS COCO format[(COCO annotation format details)](https://cocodataset.org/#format-data). 
-    
+    Or convert your dataset annotations to MS COCO format[(COCO annotation format details)](https://cocodataset.org/#format-data).
+
 2. **Prepare config file**
 
     Copy and modify an example yml config file in config/ folder.
@@ -185,16 +185,16 @@ python setup.py develop
     ```
 
 4. **Visualize Logs**
-    
+
     TensorBoard logs are saved in `save_dir` which you set in config file.
-    
+
     To visualize tensorboard logs, run:
-    
+
     ```shell script
     cd SVAE_DIR
     tensorboard --logdir ./logs
     ```
-    
+
 ****
 
 ## How to Deploy
@@ -205,13 +205,23 @@ NanoDet provide C++ and Android demo based on ncnn library.
 
     To convert NanoDet pytorch model to ncnn, you can choose this way: pytorch->onnx->ncnn
 
-    To export onnx model, run tools/export.py. Then using [onnx-simplifier](https://github.com/daquexian/onnx-simplifier) to simplify onnx structure.
+    To export onnx model, run `tools/export.py`.
 
-    Run **onnx2ncnn** in ncnn tools to generate ncnn .param and .bin file. 
-    
+    ```shell script
+    python tools/export.py --cfg_path ${CONFIG_PATH} --model_path ${PYTORCH_MODEL_PATH}
+    ```
+
+    Then using [onnx-simplifier](https://github.com/daquexian/onnx-simplifier) to simplify onnx structure.
+
+    ```shell script
+    python -m onnxsim ${INPUT_ONNX_MODEL} ${OUTPUT_ONNX_MODEL}
+    ```
+
+    Run **onnx2ncnn** in ncnn tools to generate ncnn .param and .bin file.
+
     After that, using **ncnnoptimize** to optimize ncnn model.
 
-    If you have quentions about converting ncnn model, refer to ncnn wiki. https://github.com/Tencent/ncnn/wiki 
+    If you have quentions about converting ncnn model, refer to ncnn wiki. https://github.com/Tencent/ncnn/wiki
 
 2. Run NanoDet model with C++
 

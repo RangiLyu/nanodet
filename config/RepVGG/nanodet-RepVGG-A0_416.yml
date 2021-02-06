@@ -12,7 +12,7 @@ model:
       deploy: False
     fpn:
       name: PAN
-      in_channels: [96, 192, 1280]
+      in_channels: [96, 192, 512]
       out_channels: 128
       start_level: 0
       num_outs: 3

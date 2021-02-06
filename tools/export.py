@@ -1,4 +1,5 @@
 import os
+import argparse
 import torch
 from nanodet.model.arch import build_model
 from nanodet.util import Logger, cfg, load_config, load_model_weight
@@ -20,9 +21,41 @@ def main(config, model_path, output_path, input_shape=(320, 320)):
     print('finished exporting onnx ')
 
 
+def parse_args():
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        description='Convert .pth model to onnx.')
+    parser.add_argument('--cfg_path',
+                        type=str,
+                        help='Path to .yml config file.')
+    parser.add_argument('--model_path',
+                        type=str,
+                        default=None,
+                        help='Path to .pth model.')
+    parser.add_argument('--out_path',
+                        type=str,
+                        default='nanodet.onnx',
+                        help='Onnx model output path.')
+    parser.add_argument('--input_shape',
+                        type=str,
+                        default=None,
+                        help='Model intput shape.')
+    return parser.parse_args()
+
+
 if __name__ == '__main__':
-    cfg_path = r"config/nanodet-m.yml"
-    model_path = r"nanodet_m.pth"
-    out_path = r'output.onnx'
+    args = parse_args()
+    cfg_path = args.cfg_path
+    model_path = args.model_path
+    out_path = args.out_path
+    input_shape = args.input_shape
     load_config(cfg, cfg_path)
-    main(cfg, model_path, out_path, input_shape=(320, 320))
+    if input_shape is None:
+        input_shape = cfg.data.train.input_size
+    else:
+        input_shape = tuple(map(int, input_shape.split(',')))
+        assert len(input_shape) == 2
+    if model_path is None:
+        model_path = os.path.join(cfg.save_dir, "model_best/model_best.pth")
+    main(cfg, model_path, out_path, input_shape)
+    print("Model saved to:", out_path)

@@ -27,7 +27,7 @@
 ****
 ## Benchmarks
 
-Model     |Resolution|COCO mAP|Latency(ARM 4xCore)|FLOPS|Params   | Model Size(ncnn bin)
+Model     |Resolution|COCO mAP|Latency(ARM 4xCore)|FLOPS|Params   | Model Size(ncnn fp16)
 :--------:|:--------:|:------:|:-----------------:|:---:|:-------:|:-------:
 NanoDet-m | 320*320 |  20.6 | 10.23ms              | 0.72B      | 0.95M | 1.8MB
 NanoDet-m | 416*416 |  21.7 | 16.44ms              | 1.2B       | 0.95M | 1.8MB
@@ -47,7 +47,7 @@ Note:
   It has much lower memory access cost than NanoDet-m.
 
 ****
-NanoDet is a FCOS-style one-stage anchor-free object detection model which using ATSS for target sampling and using Generalized Focal Loss for classification and box regression. Please refer to these papers for more detail.
+NanoDet is a FCOS-style one-stage anchor-free object detection model which using ATSS for target sampling and using Generalized Focal Loss for classification and box regression. Please refer to these papers for more details.
 
 [Fcos: Fully convolutional one-stage object detection](http://openaccess.thecvf.com/content_ICCV_2019/papers/Tian_FCOS_Fully_Convolutional_One-Stage_Object_Detection_ICCV_2019_paper.pdf)
 
@@ -143,6 +143,22 @@ git clone https://github.com/RangiLyu/nanodet.git
 cd nanodet
 python setup.py develop
 ```
+
+****
+
+## Model Zoo
+
+NanoDet supports variety of backbones. Go to the [***config*** folder](config/) to see the sample training config files.
+
+Model                 | Backbone           |Resolution|COCO mAP| FLOPS |Params | 
+:--------------------:|:------------------:|:--------:|:------:|:-----:|:-----:|
+NanoDet-m             | ShuffleNetV2 1.0x  | 320*320  |  20.6  | 0.72B | 0.95M |
+NanoDet-g             | Custom CSP Net     | 416*416  |  22.9  | 4.2B  | 3.81M |
+NanoDet-EfficientLite | EfficientNet-Lite0 | 320*320  |  24.7  | 1.72B | 3.11M |
+NanoDet-EfficientLite | EfficientNet-Lite1 | 416*416  |  30.3  | 4.06B | 4.01M |
+NanoDet-EfficientLite | EfficientNet-Lite2 | 512*512  |  32.6  | 7.12B | 4.71M |
+NanoDet-RepVGG        | RepVGG-A0          | 416*416  |  27.8  | 11.3B | 6.75M |
+
 
 ****
 

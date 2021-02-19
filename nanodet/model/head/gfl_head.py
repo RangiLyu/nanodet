@@ -203,7 +203,7 @@ class GFLHead(AnchorHead):
 
         if len(pos_inds) > 0:
             pos_bbox_targets = bbox_targets[pos_inds]
-            pos_bbox_pred = bbox_pred[pos_inds]  # (n, 4 * (reg_max + 1))  ！！！！！NAN？？？？？？
+            pos_bbox_pred = bbox_pred[pos_inds]  # (n, 4 * (reg_max + 1))
             pos_anchors = anchors[pos_inds]
             pos_anchor_centers = self.anchor_center(pos_anchors) / stride
 
@@ -387,7 +387,7 @@ class GFLHead(AnchorHead):
                           cls_scores,
                           bbox_preds,
                           mlvl_anchors,
-                          img_shape,  # input shape!!!!
+                          img_shape,
                           scale_factor,
                           rescale=False):
         assert len(cls_scores) == len(bbox_preds) == len(mlvl_anchors)
@@ -448,8 +448,8 @@ class GFLHead(AnchorHead):
         assert len(anchor_list) == len(valid_flag_list) == num_imgs
 
         # anchor number of multi levels
-        num_level_anchors = [anchors.size(0) for anchors in anchor_list[0]]
-        num_level_anchors_list = [num_level_anchors] * num_imgs
+        num_level_anchors = [anchors.size(0) for anchors in anchor_list[0]] # [1600,400,100]
+        num_level_anchors_list = [num_level_anchors] * num_imgs # [[1600,400,100],[1600,400,100]...]
 
         # concat all level anchors and flags to a single tensor
         for i in range(num_imgs):
@@ -506,10 +506,11 @@ class GFLHead(AnchorHead):
         if not valid_flags.any():
             return (None,) * 7
         # assign gt and sample anchors
-        anchors = flat_anchors[valid_flags, :]
+        anchors = flat_anchors[valid_flags, :] # all flat anchors
 
         num_level_anchors_inside = self.get_num_level_anchors_inside(
-            num_level_anchors, valid_flags)
+            num_level_anchors, valid_flags)  # all inside! replace with num_level_anchors
+
         assign_result = self.assigner.assign(anchors, num_level_anchors_inside,
                                              gt_bboxes, gt_bboxes_ignore,
                                              gt_labels)

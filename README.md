@@ -150,14 +150,14 @@ python setup.py develop
 
 NanoDet supports variety of backbones. Go to the [***config*** folder](config/) to see the sample training config files.
 
-Model                 | Backbone           |Resolution|COCO mAP| FLOPS |Params | 
-:--------------------:|:------------------:|:--------:|:------:|:-----:|:-----:|
-NanoDet-m             | ShuffleNetV2 1.0x  | 320*320  |  20.6  | 0.72B | 0.95M |
-NanoDet-g             | Custom CSP Net     | 416*416  |  22.9  | 4.2B  | 3.81M |
-NanoDet-EfficientLite | EfficientNet-Lite0 | 320*320  |  24.7  | 1.72B | 3.11M |
-NanoDet-EfficientLite | EfficientNet-Lite1 | 416*416  |  30.3  | 4.06B | 4.01M |
-NanoDet-EfficientLite | EfficientNet-Lite2 | 512*512  |  32.6  | 7.12B | 4.71M |
-NanoDet-RepVGG        | RepVGG-A0          | 416*416  |  27.8  | 11.3B | 6.75M |
+Model                 | Backbone           |Resolution|COCO mAP| FLOPS |Params | Pre-train weight |
+:--------------------:|:------------------:|:--------:|:------:|:-----:|:-----:|:-----:|
+NanoDet-m             | ShuffleNetV2 1.0x  | 320*320  |  20.6  | 0.72B | 0.95M | [Download](https://drive.google.com/file/d/10h-0qLMCgYvWQvKULqbkLvmirFR-w9NN/view?usp=sharing) |
+NanoDet-g             | Custom CSP Net     | 416*416  |  22.9  | 4.2B  | 3.81M | [Download](https://drive.google.com/file/d/10uW7oqZKw231l_tr4C1bJWkbCXgBf7av/view?usp=sharing)|
+NanoDet-EfficientLite | EfficientNet-Lite0 | 320*320  |  24.7  | 1.72B | 3.11M | [Download](https://drive.google.com/file/d/1u_t9L0jqjH858gCR-vpzWzu9FexQOSmJ/view?usp=sharing)|
+NanoDet-EfficientLite | EfficientNet-Lite1 | 416*416  |  30.3  | 4.06B | 4.01M | release soon |
+NanoDet-EfficientLite | EfficientNet-Lite2 | 512*512  |  32.6  | 7.12B | 4.71M | release soon |
+NanoDet-RepVGG        | RepVGG-A0          | 416*416  |  27.8  | 11.3B | 6.75M | release soon |
 
 
 ****

@@ -207,7 +207,7 @@ NanoDet-RepVGG        | RepVGG-A0          | 416*416  |  27.8  | 11.3B | 6.75M |
     To visualize tensorboard logs, run:
 
     ```shell script
-    cd SVAE_DIR
+    cd <YOUR_SAVE_DIR>
     tensorboard --logdir ./logs
     ```
 

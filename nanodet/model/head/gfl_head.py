@@ -107,7 +107,7 @@ class GFLHead(AnchorHead):
         self.conv_cfg = conv_cfg
         self.norm_cfg = norm_cfg
         self.reg_max = reg_max
-        use_sigmoid = True
+        use_sigmoid = self.loss_cfg.loss_qfl.use_sigmoid
         octave_scales = np.array(
             [2 ** (i / scales_per_octave) for i in range(scales_per_octave)])
         anchor_scales = octave_scales * octave_base_scale
@@ -115,9 +115,11 @@ class GFLHead(AnchorHead):
             num_classes, loss, use_sigmoid, input_channel, anchor_scales=anchor_scales, **kwargs)
         self.assigner = ATSSAssigner(topk=9)
         self.distribution_project = Integral(self.reg_max)
-        self.loss_qfl = QualityFocalLoss(use_sigmoid=True, beta=2.0, loss_weight=1.0)
-        self.loss_dfl = DistributionFocalLoss(loss_weight=0.25)
-        self.loss_bbox = GIoULoss(loss_weight=2.0)
+        self.loss_qfl = QualityFocalLoss(use_sigmoid=use_sigmoid,
+                                         beta=self.loss_cfg.loss_qfl.beta,
+                                         loss_weight=self.loss_cfg.loss_qfl.loss_weight)
+        self.loss_dfl = DistributionFocalLoss(loss_weight=self.loss_cfg.loss_dfl.loss_weight)
+        self.loss_bbox = GIoULoss(loss_weight=self.loss_cfg.loss_bbox.loss_weight)
         self.init_weights()
 
     def _init_layers(self):

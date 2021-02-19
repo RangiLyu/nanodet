@@ -24,6 +24,8 @@ class NanoDetHead(GFLHead):
                  reg_max=16,
                  share_cls_reg=False,
                  activation='LeakyReLU',
+                 feat_channels=256,
+                 strides=[8, 16, 32],
                  **kwargs):
         self.share_cls_reg = share_cls_reg
         self.activation = activation
@@ -31,9 +33,10 @@ class NanoDetHead(GFLHead):
         super(NanoDetHead, self).__init__(num_classes,
                                           loss,
                                           input_channel,
+                                          feat_channels,
                                           stacked_convs,
                                           octave_base_scale,
-                                          scales_per_octave,
+                                          strides,
                                           conv_cfg,
                                           norm_cfg,
                                           reg_max,
@@ -42,7 +45,7 @@ class NanoDetHead(GFLHead):
     def _init_layers(self):
         self.cls_convs = nn.ModuleList()
         self.reg_convs = nn.ModuleList()
-        for _ in self.anchor_strides:
+        for _ in self.strides:
             cls_convs, reg_convs = self._buid_not_shared_head()
             self.cls_convs.append(cls_convs)
             self.reg_convs.append(reg_convs)
@@ -51,12 +54,12 @@ class NanoDetHead(GFLHead):
                                                 self.cls_out_channels +
                                                 4 * (self.reg_max + 1) if self.share_cls_reg else self.cls_out_channels,
                                                 1,
-                                                padding=0) for _ in self.anchor_strides])
+                                                padding=0) for _ in self.strides])
         # TODO: if
         self.gfl_reg = nn.ModuleList([nn.Conv2d(self.feat_channels,
                                                 4 * (self.reg_max + 1),
                                                 1,
-                                                padding=0) for _ in self.anchor_strides])
+                                                padding=0) for _ in self.strides])
 
     def _buid_not_shared_head(self):
         cls_convs = nn.ModuleList()
@@ -93,7 +96,7 @@ class NanoDetHead(GFLHead):
             if isinstance(m, nn.Conv2d):
                 normal_init(m, std=0.01)
         bias_cls = -4.595  # 用0.01的置信度初始化
-        for i in range(len(self.anchor_strides)):
+        for i in range(len(self.strides)):
             normal_init(self.gfl_cls[i], std=0.01, bias=bias_cls)
             normal_init(self.gfl_reg[i], std=0.01)
         print('Finish initialize Lite GFL Head.')

@@ -17,7 +17,6 @@ class NanoDetHead(GFLHead):
                  input_channel,
                  stacked_convs=2,
                  octave_base_scale=5,
-                 scales_per_octave=1,
                  conv_type='DWConv',
                  conv_cfg=None,
                  norm_cfg=dict(type='BN'),

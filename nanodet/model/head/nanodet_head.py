@@ -1,10 +1,9 @@
 import torch
 import torch.nn as nn
-
+from nanodet.util import multi_apply
 from ..module.conv import ConvModule, DepthwiseConvModule
 from ..module.init_weights import normal_init
 from .gfl_head import GFLHead
-from .anchor.anchor_target import multi_apply
 
 
 class NanoDetHead(GFLHead):

@@ -5,17 +5,15 @@ import torch.nn.functional as F
 import torch.distributed as dist
 import numpy as np
 import cv2
-from nanodet.util import distance2bbox, bbox2distance, overlay_bbox_cv
+from nanodet.util import distance2bbox, bbox2distance, overlay_bbox_cv, multi_apply, images_to_levels, unmap
 from ..module.scale import Scale
 from ..module.conv import ConvModule
 from ..module.init_weights import normal_init
 from ..module.nms import multiclass_nms
 from ..loss.gfocal_loss import QualityFocalLoss, DistributionFocalLoss
 from ..loss.iou_loss import GIoULoss, bbox_overlaps
-from .anchor.anchor_target import multi_apply, images_to_levels, anchor_inside_flags, unmap
 from .anchor.base_anchor_head import AnchorHead
 from .assigner.atss_assigner import ATSSAssigner
-from .sampler.pseudo_sampler import PseudoSampler
 from ...data.transform.warp import warp_boxes
 
 
@@ -115,7 +113,7 @@ class GFLHead(AnchorHead):
         anchor_scales = octave_scales * octave_base_scale
         super(GFLHead, self).__init__(
             num_classes, loss, use_sigmoid, input_channel, anchor_scales=anchor_scales, **kwargs)
-
+        self.assigner = ATSSAssigner(topk=9)
         self.distribution_project = Integral(self.reg_max)
         self.loss_qfl = QualityFocalLoss(use_sigmoid=True, beta=2.0, loss_weight=1.0)
         self.loss_dfl = DistributionFocalLoss(loss_weight=0.25)
@@ -401,9 +399,8 @@ class GFLHead(AnchorHead):
             bbox_pred = bbox_pred.permute(1, 2, 0)
             bbox_pred = self.distribution_project(bbox_pred) * stride
 
-            # nms_pre = cfg.get('nms_pre', -1)
             nms_pre = 1000
-            if nms_pre > 0 and scores.shape[0] > nms_pre:
+            if scores.shape[0] > nms_pre:
                 max_scores, _ = scores.max(dim=1)
                 _, topk_inds = max_scores.topk(nms_pre)
                 anchors = anchors[topk_inds, :]
@@ -472,8 +469,6 @@ class GFLHead(AnchorHead):
             gt_bboxes_list,
             gt_bboxes_ignore_list,
             gt_labels_list,
-            img_shape_list,
-            label_channels=label_channels,
             unmap_outputs=unmap_outputs)
         # no valid anchors
         if any([labels is None for labels in all_labels]):
@@ -501,34 +496,24 @@ class GFLHead(AnchorHead):
                           gt_bboxes,
                           gt_bboxes_ignore,
                           gt_labels,
-                          img_shape,
-                          label_channels=1,
                           unmap_outputs=True):
         device = flat_anchors.device
         gt_bboxes = torch.from_numpy(gt_bboxes).to(device)
         gt_labels = torch.from_numpy(gt_labels).to(device)
-        # num_gts = gt_labels.size(0)
-        # if num_gts > 0:
-        #     gt_labels += 1
 
-        inside_flags = anchor_inside_flags(flat_anchors, valid_flags,
-                                           img_shape,
-                                           allowed_border=-1)
-        if not inside_flags.any():
+        if not valid_flags.any():
             return (None,) * 7
         # assign gt and sample anchors
-        anchors = flat_anchors[inside_flags, :]
+        anchors = flat_anchors[valid_flags, :]
 
         num_level_anchors_inside = self.get_num_level_anchors_inside(
-            num_level_anchors, inside_flags)
-        bbox_assigner = ATSSAssigner(topk=9)
-        assign_result = bbox_assigner.assign(anchors, num_level_anchors_inside,
+            num_level_anchors, valid_flags)
+        assign_result = self.assigner.assign(anchors, num_level_anchors_inside,
                                              gt_bboxes, gt_bboxes_ignore,
                                              gt_labels)
 
-        bbox_sampler = PseudoSampler()
-        sampling_result = bbox_sampler.sample(assign_result, anchors,
-                                              gt_bboxes)
+        pos_inds, neg_inds, pos_gt_bboxes, pos_assigned_gt_inds = \
+            self.sample(assign_result, gt_bboxes)
 
         num_valid_anchors = anchors.shape[0]
         bbox_targets = torch.zeros_like(anchors)
@@ -538,10 +523,8 @@ class GFLHead(AnchorHead):
                                   dtype=torch.long)
         label_weights = anchors.new_zeros(num_valid_anchors, dtype=torch.float)
 
-        pos_inds = sampling_result.pos_inds
-        neg_inds = sampling_result.neg_inds
         if len(pos_inds) > 0:
-            pos_bbox_targets = sampling_result.pos_gt_bboxes
+            pos_bbox_targets = pos_gt_bboxes
             bbox_targets[pos_inds, :] = pos_bbox_targets
             bbox_weights[pos_inds, :] = 1.0
             if gt_labels is None:
@@ -549,12 +532,8 @@ class GFLHead(AnchorHead):
                 # Foreground is the first class
                 labels[pos_inds] = 0
             else:
-                labels[pos_inds] = gt_labels[
-                    sampling_result.pos_assigned_gt_inds]
-            # if cfg.pos_weight <= 0:
-            #     label_weights[pos_inds] = 1.0
-            # else:
-            #     label_weights[pos_inds] = cfg.pos_weight
+                labels[pos_inds] = gt_labels[pos_assigned_gt_inds]
+
             label_weights[pos_inds] = 1.0
         if len(neg_inds) > 0:
             label_weights[neg_inds] = 1.0
@@ -562,13 +541,13 @@ class GFLHead(AnchorHead):
         # map up to original set of anchors
         if unmap_outputs:
             num_total_anchors = flat_anchors.size(0)
-            anchors = unmap(anchors, num_total_anchors, inside_flags)
+            anchors = unmap(anchors, num_total_anchors, valid_flags)
             labels = unmap(
-                labels, num_total_anchors, inside_flags, fill=self.num_classes)
+                labels, num_total_anchors, valid_flags, fill=self.num_classes)
             label_weights = unmap(label_weights, num_total_anchors,
-                                  inside_flags)
-            bbox_targets = unmap(bbox_targets, num_total_anchors, inside_flags)
-            bbox_weights = unmap(bbox_weights, num_total_anchors, inside_flags)
+                                  valid_flags)
+            bbox_targets = unmap(bbox_targets, num_total_anchors, valid_flags)
+            bbox_weights = unmap(bbox_weights, num_total_anchors, valid_flags)
 
         return (anchors, labels, label_weights, bbox_targets, bbox_weights,
                 pos_inds, neg_inds)
@@ -579,3 +558,20 @@ class GFLHead(AnchorHead):
             int(flags.sum()) for flags in split_inside_flags
         ]
         return num_level_anchors_inside
+
+    def sample(self, assign_result, gt_bboxes):
+        pos_inds = torch.nonzero(
+            assign_result.gt_inds > 0, as_tuple=False).squeeze(-1).unique()
+        neg_inds = torch.nonzero(
+            assign_result.gt_inds == 0, as_tuple=False).squeeze(-1).unique()
+        pos_assigned_gt_inds = assign_result.gt_inds[pos_inds] - 1
+
+        if gt_bboxes.numel() == 0:
+            # hack for index error case
+            assert pos_assigned_gt_inds.numel() == 0
+            pos_gt_bboxes = torch.empty_like(gt_bboxes).view(-1, 4)
+        else:
+            if len(gt_bboxes.shape) < 2:
+                gt_bboxes = gt_bboxes.view(-1, 4)
+            pos_gt_bboxes = gt_bboxes[pos_assigned_gt_inds, :]
+        return pos_inds, neg_inds, pos_gt_bboxes, pos_assigned_gt_inds

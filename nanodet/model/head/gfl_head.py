@@ -255,7 +255,7 @@ class GFLHead(nn.Module):
             pos_bbox_targets = bbox_targets[pos_inds]
             pos_bbox_pred = bbox_pred[pos_inds]  # (n, 4 * (reg_max + 1))
             pos_grid_cells = grid_cells[pos_inds]
-            pos_grid_cell_centers = self.grid_center(pos_grid_cells) / stride
+            pos_grid_cell_centers = self.grid_cells_to_center(pos_grid_cells) / stride
 
             weight_targets = cls_score.detach().sigmoid()
             weight_targets = weight_targets.max(dim=1)[0][pos_inds]
@@ -320,6 +320,7 @@ class GFLHead(nn.Module):
             self.get_grid_cells(featmap_sizes[i],
                                 self.grid_cell_scale,
                                 stride,
+                                dtype=torch.float32,
                                 device=device) for i, stride in enumerate(self.strides)
         ]
         mlvl_grid_cells_list = [multi_level_grid_cells for i in range(batch_size)]
@@ -557,7 +558,26 @@ class GFLHead(nn.Module):
             x = x.flatten()
         return y, x
 
-    def grid_center(self, grid_cells):
+    def get_grid_cells(self, featmap_size, scale, stride, dtype, device='cuda'):
+        """
+        Generate grid cells of a feature map for target assignment.
+        :param featmap_size: Size of a single level feature map.
+        :param scale: Grid cell scale.
+        :param stride: Down sample stride of the feature map.
+        :param dtype: Data type of the tensors.
+        :param device: Device of the tensors.
+        :return: Grid_cells xyxy position. Size should be [feat_w * feat_h, 4]
+        """
+        cell_size = stride * scale
+        y, x = self.get_single_level_center_point(
+            featmap_size, stride, dtype, device, flatten=True)
+        grid_cells = torch.stack(
+            [x - 0.5 * cell_size, y - 0.5 * cell_size,
+             x + 0.5 * cell_size, y + 0.5 * cell_size], dim=-1
+        )
+        return grid_cells
+
+    def grid_cells_to_center(self, grid_cells):
         """
         Get center location of each gird cell
         :param grid_cells: grid cells of a feature map
@@ -567,12 +587,3 @@ class GFLHead(nn.Module):
         cells_cy = (grid_cells[:, 3] + grid_cells[:, 1]) / 2
         return torch.stack([cells_cx, cells_cy], dim=-1)
 
-    def get_grid_cells(self, featmap_size, scale=8, stride=8, device='cuda'):
-        cell_size = stride * scale
-        y, x = self.get_single_level_center_point(
-            featmap_size, stride, dtype=torch.float32, device=device, flatten=True)
-        grid_cells = torch.stack(
-            [x - 0.5 * cell_size, y - 0.5 * cell_size,
-             x + 0.5 * cell_size, y + 0.5 * cell_size], dim=-1
-        )
-        return grid_cells

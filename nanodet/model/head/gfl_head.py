@@ -467,14 +467,6 @@ class GFLHead(nn.Module):
         num_levels = len(cls_scores)
         device = cls_scores[0].device
 
-        all_stage_grid_cells = [
-            self.get_grid_cells(
-                cls_scores[i].size()[-2:],
-                self.grid_cell_scale,
-                self.strides[i],
-                device=device) for i in range(num_levels)
-        ]  # TODO: directly get center point
-
         input_height, input_width = img_metas['img'].shape[2:]
         input_shape = [input_height, input_width]
 
@@ -488,8 +480,8 @@ class GFLHead(nn.Module):
             ]
             scale_factor = 1
             dets = self.get_bboxes_single(cls_score_list, bbox_pred_list,
-                                          all_stage_grid_cells, input_shape,
-                                          scale_factor, rescale)
+                                          input_shape, scale_factor,
+                                          device, rescale)
 
             result_list.append(dets)
         return result_list
@@ -497,16 +489,20 @@ class GFLHead(nn.Module):
     def get_bboxes_single(self,
                           cls_scores,
                           bbox_preds,
-                          all_stage_grid_cells,
                           img_shape,
                           scale_factor,
+                          device,
                           rescale=False):
-        assert len(cls_scores) == len(bbox_preds) == len(all_stage_grid_cells)
+        assert len(cls_scores) == len(bbox_preds)
         mlvl_bboxes = []
         mlvl_scores = []
-        for stride, cls_score, bbox_pred, grid_cell in zip(
-                self.strides, cls_scores, bbox_preds, all_stage_grid_cells):
+        for stride, cls_score, bbox_pred in zip(
+                self.strides, cls_scores, bbox_preds):
             assert cls_score.size()[-2:] == bbox_pred.size()[-2:]
+            featmap_size = cls_score.size()[-2:]
+            y, x = self.get_single_level_center_point(
+                featmap_size, stride, cls_score.dtype, device, flatten=True)
+            center_points = torch.stack([x, y], dim=-1)
             scores = cls_score.permute(1, 2, 0).reshape(
                 -1, self.cls_out_channels).sigmoid()
             bbox_pred = bbox_pred.permute(1, 2, 0)
@@ -516,11 +512,11 @@ class GFLHead(nn.Module):
             if scores.shape[0] > nms_pre:
                 max_scores, _ = scores.max(dim=1)
                 _, topk_inds = max_scores.topk(nms_pre)
-                grid_cell = grid_cell[topk_inds, :]
+                center_points = center_points[topk_inds, :]
                 bbox_pred = bbox_pred[topk_inds, :]
                 scores = scores[topk_inds, :]
 
-            bboxes = distance2bbox(self.grid_center(grid_cell), bbox_pred,
+            bboxes = distance2bbox(center_points, bbox_pred,
                                    max_shape=img_shape)
             mlvl_bboxes.append(bboxes)
             mlvl_scores.append(scores)
@@ -542,6 +538,16 @@ class GFLHead(nn.Module):
             max_num=100)
         return det_bboxes, det_labels
 
+    def get_single_level_center_point(self, featmap_size, stride, dtype, device='cuda', flatten=False):
+        h, w = featmap_size
+        x_range = (torch.arange(w, dtype=dtype, device=device) + 0.5) * stride
+        y_range = (torch.arange(h, dtype=dtype, device=device) + 0.5) * stride
+        y, x = torch.meshgrid(y_range, x_range)
+        if flatten:
+            y = y.flatten()
+            x = x.flatten()
+        return y, x
+
     def grid_center(self, grid_cells):
         """
         Get center location of each gird cell
@@ -553,31 +559,11 @@ class GFLHead(nn.Module):
         return torch.stack([cells_cx, cells_cy], dim=-1)
 
     def get_grid_cells(self, featmap_size, scale=8, stride=8, device='cuda'):
-        """
-        Generate grid cells of a feature map for target assignment.
-        :param featmap_size: Size of a single level feature map.
-        :param scale: Grid cell scale.
-        :param stride: Down sample stride of the feature map.
-        :param device: Device
-        :return: Grid_cells xyxy position. Size should be [feat_w * feat_h, 4]
-        """
         cell_size = stride * scale
-
-        base_cell = torch.Tensor(
-            [[0.5 * (stride - cell_size), 0.5 * (stride - cell_size),
-              0.5 * (stride + cell_size) - 1, 0.5 * (stride + cell_size) - 1]]
-        ).round().to(device)
-
-        feat_h, feat_w = featmap_size
-        shift_x = torch.arange(0, feat_w, device=device) * stride
-        shift_y = torch.arange(0, feat_h, device=device) * stride
-
-        shift_xx = shift_x.repeat(len(shift_y))
-        shift_yy = shift_y.view(-1, 1).repeat(1, len(shift_x)).view(-1)
-
-        shifts = torch.stack([shift_xx, shift_yy, shift_xx, shift_yy], dim=-1)
-        shifts = shifts.type_as(base_cell)
-
-        grid_cells = base_cell + shifts
-
+        y, x = self.get_single_level_center_point(
+            featmap_size, stride, dtype=torch.float32, device=device, flatten=True)
+        grid_cells = torch.stack(
+            [x - 0.5 * cell_size, y - 0.5 * cell_size,
+             x + 0.5 * cell_size, y + 0.5 * cell_size], dim=-1
+        )
         return grid_cells

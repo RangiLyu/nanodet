@@ -538,7 +538,16 @@ class GFLHead(nn.Module):
             max_num=100)
         return det_bboxes, det_labels
 
-    def get_single_level_center_point(self, featmap_size, stride, dtype, device='cuda', flatten=False):
+    def get_single_level_center_point(self, featmap_size, stride, dtype, device='cuda', flatten=True):
+        """
+        Generate pixel centers of a single stage feature map.
+        :param featmap_size: height and width of the feature map
+        :param stride: down sample stride of the feature map
+        :param dtype: data type of the tensors
+        :param device: device of the tensors
+        :param flatten: flatten the x and y tensors
+        :return: y and x of the center points
+        """
         h, w = featmap_size
         x_range = (torch.arange(w, dtype=dtype, device=device) + 0.5) * stride
         y_range = (torch.arange(h, dtype=dtype, device=device) + 0.5) * stride

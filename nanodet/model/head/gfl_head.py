@@ -494,6 +494,15 @@ class GFLHead(nn.Module):
                           scale_factor,
                           device,
                           rescale=False):
+        """
+        Decode output tensors to bboxes on one image.
+        :param cls_scores: classification prediction tensors of all stages
+        :param bbox_preds: regression prediction tensors of all stages
+        :param img_shape: shape of input image
+        :param scale_factor: scale factor of boxes
+        :param device: device of the tensor
+        :return: predict boxes and labels
+        """
         assert len(cls_scores) == len(bbox_preds)
         mlvl_bboxes = []
         mlvl_scores = []

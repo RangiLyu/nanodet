@@ -127,13 +127,11 @@ class AssignResult(util_mixins.NiceRepr):
             :obj:`AssignResult`: Randomly generated assign results.
 
         Example:
-            >>> from mmdet.core.bbox.assigners.assign_result import *  # NOQA
+            >>> from nanodet.model.head.assigner.assign_result import AssignResult
             >>> self = AssignResult.random()
             >>> print(self.info)
         """
-        from mmdet.core.bbox import demodata
-        rng = demodata.ensure_rng(kwargs.get('rng', None))
-
+        rng = kwargs.get('rng', None)
         num_gts = kwargs.get('num_gts', None)
         num_preds = kwargs.get('num_preds', None)
         p_ignore = kwargs.get('p_ignore', 0.3)
@@ -141,6 +139,13 @@ class AssignResult(util_mixins.NiceRepr):
         p_use_label = kwargs.get('p_use_label', 0.5)
         num_classes = kwargs.get('p_use_label', 3)
 
+        import numpy as np
+        if rng is None:
+            rng = np.random.mtrand._rand
+        elif isinstance(rng, int):
+            rng = np.random.RandomState(rng)
+        else:
+            rng = rng
         if num_gts is None:
             num_gts = rng.randint(0, 8)
         if num_preds is None:

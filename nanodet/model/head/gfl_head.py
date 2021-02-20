@@ -177,33 +177,18 @@ class GFLHead(nn.Module):
         bbox_pred = scale(self.gfl_reg(reg_feat)).float()
         return cls_score, bbox_pred
 
-    def loss(self,
-             preds,
-             gt_meta
-             ):
+    def loss(self, preds, gt_meta):
         cls_scores, bbox_preds = preds
         batch_size = cls_scores[0].shape[0]
+        device = cls_scores[0].device
         gt_bboxes = gt_meta['gt_bboxes']
         gt_labels = gt_meta['gt_labels']
-
         gt_bboxes_ignore = None
 
         featmap_sizes = [featmap.size()[-2:] for featmap in cls_scores]
 
-        device = cls_scores[0].device
-
-        multi_level_grid_cells = [
-            self.get_grid_cells(featmap_sizes[i],
-                                self.grid_cell_scale,
-                                stride,
-                                device=device) for i, stride in enumerate(self.strides)
-        ]
-        grid_cells_list = [multi_level_grid_cells for i in range(batch_size)]
-
-        cls_reg_targets = self.target_assign(grid_cells_list,
-                                             gt_bboxes,
-                                             gt_bboxes_ignore_list=gt_bboxes_ignore,
-                                             gt_labels_list=gt_labels)
+        cls_reg_targets = self.target_assign(batch_size, featmap_sizes, gt_bboxes,
+                                             gt_bboxes_ignore, gt_labels, device=device)
         if cls_reg_targets is None:
             return None
 
@@ -314,37 +299,49 @@ class GFLHead(nn.Module):
         return loss_qfl, loss_bbox, loss_dfl, weight_targets.sum()
 
     def target_assign(self,
-                      grid_cells_list,
+                      batch_size,
+                      featmap_sizes,
                       gt_bboxes_list,
-                      gt_bboxes_ignore_list=None,
-                      gt_labels_list=None):
+                      gt_bboxes_ignore_list,
+                      gt_labels_list,
+                      device):
         """
         Assign target for a batch of images.
-        :param grid_cells_list: A list of all grid cell boxes in all image
+        :param batch_size: num of images in one batch
+        :param featmap_sizes: A list of all grid cell boxes in all image
         :param gt_bboxes_list: A list of ground truth boxes in all image
         :param gt_bboxes_ignore_list: A list of all ignored boxes in all image
         :param gt_labels_list: A list of all ground truth label in all image
+        :param device: pytorch device
         :return: Assign results of all images.
         """
-        num_imgs = len(grid_cells_list)
+        # get grid cells of one image
+        multi_level_grid_cells = [
+            self.get_grid_cells(featmap_sizes[i],
+                                self.grid_cell_scale,
+                                stride,
+                                device=device) for i, stride in enumerate(self.strides)
+        ]
+        mlvl_grid_cells_list = [multi_level_grid_cells for i in range(batch_size)]
 
         # pixel cell number of multi-level feature maps
-        num_level_cells = [grid_cells.size(0) for grid_cells in grid_cells_list[0]]
-        num_level_cells_list = [num_level_cells] * num_imgs
-
+        num_level_cells = [grid_cells.size(0) for grid_cells in mlvl_grid_cells_list[0]]
+        num_level_cells_list = [num_level_cells] * batch_size
         # concat all level cells and to a single tensor
-        for i in range(num_imgs):
-            grid_cells_list[i] = torch.cat(grid_cells_list[i])
-
+        for i in range(batch_size):
+            mlvl_grid_cells_list[i] = torch.cat(mlvl_grid_cells_list[i])
         # compute targets for each image
         if gt_bboxes_ignore_list is None:
-            gt_bboxes_ignore_list = [None for _ in range(num_imgs)]
+            gt_bboxes_ignore_list = [None for _ in range(batch_size)]
         if gt_labels_list is None:
-            gt_labels_list = [None for _ in range(num_imgs)]
+            gt_labels_list = [None for _ in range(batch_size)]
+        # target assign on all images, get list of tensors
+        # list length = batch size
+        # tensor first dim = num of all grid cell
         (all_grid_cells, all_labels, all_label_weights, all_bbox_targets,
          all_bbox_weights, pos_inds_list, neg_inds_list) = multi_apply(
             self.target_assign_single_img,
-            grid_cells_list,
+            mlvl_grid_cells_list,
             num_level_cells_list,
             gt_bboxes_list,
             gt_bboxes_ignore_list,
@@ -355,14 +352,14 @@ class GFLHead(nn.Module):
         # sampled cells of all images
         num_total_pos = sum([max(inds.numel(), 1) for inds in pos_inds_list])
         num_total_neg = sum([max(inds.numel(), 1) for inds in neg_inds_list])
-        # split targets to a list w.r.t. multiple levels
-        grid_cells_list = images_to_levels(all_grid_cells, num_level_cells)
-        labels_list = images_to_levels(all_labels, num_level_cells)
-        label_weights_list = images_to_levels(all_label_weights, num_level_cells)
-        bbox_targets_list = images_to_levels(all_bbox_targets, num_level_cells)
-        bbox_weights_list = images_to_levels(all_bbox_weights, num_level_cells)
-        return (grid_cells_list, labels_list, label_weights_list,
-                bbox_targets_list, bbox_weights_list, num_total_pos,
+        # merge list of targets tensors into one batch then split to multi levels
+        mlvl_grid_cells = images_to_levels(all_grid_cells, num_level_cells)
+        mlvl_labels = images_to_levels(all_labels, num_level_cells)
+        mlvl_label_weights = images_to_levels(all_label_weights, num_level_cells)
+        mlvl_bbox_targets = images_to_levels(all_bbox_targets, num_level_cells)
+        mlvl_bbox_weights = images_to_levels(all_bbox_weights, num_level_cells)
+        return (mlvl_grid_cells, mlvl_labels, mlvl_label_weights,
+                mlvl_bbox_targets, mlvl_bbox_weights, num_total_pos,
                 num_total_neg)
 
     def target_assign_single_img(self,

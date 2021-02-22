@@ -157,7 +157,7 @@ NanoDet-g             | Custom CSP Net     | 416*416  |  22.9  | 4.2B  | 3.81M |
 NanoDet-EfficientLite | EfficientNet-Lite0 | 320*320  |  24.7  | 1.72B | 3.11M | [Download](https://drive.google.com/file/d/1u_t9L0jqjH858gCR-vpzWzu9FexQOSmJ/view?usp=sharing)|
 NanoDet-EfficientLite | EfficientNet-Lite1 | 416*416  |  30.3  | 4.06B | 4.01M | [Download](https://drive.google.com/file/d/1y9z7BToAZOQ1pKbOjNjf79YMuFuDTvfq/view?usp=sharing) |
 NanoDet-EfficientLite | EfficientNet-Lite2 | 512*512  |  32.6  | 7.12B | 4.71M | [Download](https://drive.google.com/file/d/1UMXJJxRkRzgTvN1iRKeDZqGpkLxK3X4K/view?usp=sharing) |
-NanoDet-RepVGG        | RepVGG-A0          | 416*416  |  27.8  | 11.3B | 6.75M | release soon |
+NanoDet-RepVGG        | RepVGG-A0          | 416*416  |  27.8  | 11.3B | 6.75M | [Download](https://drive.google.com/file/d/1bsT9Ksxws2O3g_IUuUwp0QwZcJlqJw3S/view?usp=sharing) |
 
 
 ****

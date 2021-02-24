@@ -126,6 +126,29 @@ class CocoDataset(BaseDataset):
 
         meta = self.pipeline(meta, self.input_size)
         meta['img'] = torch.from_numpy(meta['img'].transpose(2, 0, 1))
+
+        # Remove the bboxes and labels outside the image
+        if len(meta['gt_bboxes']) > 0 and len(meta['gt_labels']) > 0 :
+            gt_bboxes = []
+            gt_labels = []
+            for gt_bbox, gt_label in zip(meta['gt_bboxes'], meta['gt_labels']):
+                if (gt_bbox[0] == meta['img'].shape[2]) or (gt_bbox[1] == meta['img'].shape[1]) or (gt_bbox[2] == 0) or (gt_bbox[3] == 0):
+                    continue
+                gt_bboxes.append(gt_bbox)
+                gt_labels.append(gt_label)
+            if len(gt_bboxes):
+                meta['gt_bboxes'] = np.asarray(gt_bboxes)
+            else:
+                meta['gt_bboxes'] = np.zeros([0, 4], dtype=np.float32)
+            if len(gt_labels):
+                meta['gt_labels'] = np.asarray(gt_labels)
+            else:
+                meta['gt_labels'] = np.zeros([0,], dtype=np.int64)
+
+        # Remove image without label&bbox
+        if len(meta['gt_bboxes']) == 0:
+            return None
+
         return meta
 
     def get_val_data(self, idx):

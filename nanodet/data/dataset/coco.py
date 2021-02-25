@@ -146,7 +146,7 @@ class CocoDataset(BaseDataset):
                 meta['gt_labels'] = np.zeros([0,], dtype=np.int64)
 
         # Remove image without label&bbox
-        if len(meta['gt_bboxes']) == 0:
+        if self.mode == 'train' and len(meta['gt_bboxes']) == 0:
             return None
 
         return meta

@@ -1,7 +1,7 @@
 ![](docs/imgs/Title.jpg)
 
 # NanoDet
-
+[![GitHub license](https://img.shields.io/github/license/RangiLyu/nanodet?style=flat-square)](https://github.com/RangiLyu/nanodet/blob/main/LICENSE)
 
 ### Super fast and lightweight anchor-free object detection model. Real-time on mobile devices.
 

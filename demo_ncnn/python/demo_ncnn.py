@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 '''
-name:       demo_mnn.py
+name:       demo_ncnn.py
 date:       2020-12-16 11:21:07
 Env.:       Python 3.7.3, WIN 10
 '''
@@ -403,49 +403,16 @@ class NanoDetABC(metaclass=ABCMeta):
             cv2.imwrite(save_path, img_draw)
 
 
-class NanoDetMNN(NanoDetABC):
-    import MNN as MNNlib
-
-    def __init__(self, model_path, *args, **kwargs):
-        super(NanoDetMNN, self).__init__(*args, **kwargs)
-        print(f'Using MNN as inference backend')
-        print(f'Using weight: {model_path}')
-
-        # load model
-        self.model_path = model_path
-        self.interpreter = self.MNNlib.Interpreter(self.model_path)
-        self.session = self.interpreter.createSession()
-        self.input_tensor = self.interpreter.getSessionInput(self.session)
-
-    def infer_image(self, img_input):
-        tmp_input = self.MNNlib.Tensor(
-            (1, 3, self.input_size[1], self.input_size[0]),
-            self.MNNlib.Halide_Type_Float,
-            img_input,
-            self.MNNlib.Tensor_DimensionType_Caffe
-        )
-        self.input_tensor.copyFrom(tmp_input)
-        self.interpreter.runSession(self.session)
-        score_out_name = ["792", "814", "836"]
-        scores = [self.interpreter.getSessionOutput(self.session, x).getData() for x in score_out_name]
-        scores = [np.reshape(x, (-1, 80)) for x in scores]
-        boxes_out_name = ["795", "817", "839"]
-        raw_boxes = [self.interpreter.getSessionOutput(self.session, x).getData() for x in boxes_out_name]
-        raw_boxes = [np.reshape(x, (-1, 32)) for x in raw_boxes]
-        return scores, raw_boxes
-
-
 class NanoDetONNX(NanoDetABC):
-    import onnxruntime as ort
-
     def __init__(self, model_path, *args, **kwargs):
+        import onnxruntime as ort
         super(NanoDetONNX, self).__init__(*args, **kwargs)
         print(f'Using ONNX as inference backend')
         print(f'Using weight: {model_path}')
 
         # load model
         self.model_path = model_path
-        self.ort_session = self.ort.InferenceSession(self.model_path)
+        self.ort_session = ort.InferenceSession(self.model_path)
         self.input_name = self.ort_session.get_inputs()[0].name
 
     def infer_image(self, img_input):
@@ -456,9 +423,8 @@ class NanoDetONNX(NanoDetABC):
 
 
 class NanoDetTorch(NanoDetABC):
-    import torch
-
     def __init__(self, model_path, cfg_path, *args, **kwargs):
+        import torch
         from nanodet.model.arch import build_model
         from nanodet.util import Logger, cfg, load_config, load_model_weight
 
@@ -472,33 +438,68 @@ class NanoDetTorch(NanoDetABC):
         load_config(cfg, cfg_path)
         self.logger = Logger(-1, cfg.save_dir, False)
         self.model = build_model(cfg.model)
-        checkpoint = self.torch.load(model_path, map_location=lambda storage, loc: storage)
+        checkpoint = torch.load(model_path, map_location=lambda storage, loc: storage)
         load_model_weight(self.model, checkpoint, self.logger)
 
     def infer_image(self, img_input):
+        import torch
         self.model.train(False)
-        with self.torch.no_grad():
-            inference_results = self.model(self.torch.from_numpy(img_input))
+        with torch.no_grad():
+            inference_results = self.model(torch.from_numpy(img_input))
         scores = [x.permute(0, 2, 3, 1).reshape((-1, 80)).sigmoid().detach().numpy() for x in inference_results[0]]
         raw_boxes = [x.permute(0, 2, 3, 1).reshape((-1, 32)).detach().numpy() for x in inference_results[1]]
         return scores, raw_boxes
 
 
+class NanoDetNCNN(NanoDetABC):
+    def __init__(self, model_param, model_bin, *args, **kwargs):
+        import ncnn
+        super(NanoDetNCNN, self).__init__(*args, **kwargs)
+        print(f'Using ncnn as inference backend')
+        print(f'Using param: {model_param}, bin: {model_bin}')
+
+        # load model
+        self.model_param = model_param
+        self.model_bin = model_bin
+
+        self.net = ncnn.Net()
+        self.net.load_param(model_param)
+        self.net.load_model(model_bin)
+        self.input_name = "input.1"
+
+    def infer_image(self, img_input):
+        import ncnn
+        mat_in = ncnn.Mat(img_input.squeeze())
+        ex = self.net.create_extractor()
+        ex.input(self.input_name, mat_in)
+
+        score_out_name = ["792", "814", "836"]
+        scores = [np.array(ex.extract(x)[1]) for x in score_out_name]
+        scores = [np.reshape(x, (-1, 80)) for x in scores]
+
+        boxes_out_name = ["795", "817", "839"]
+        raw_boxes = [np.array(ex.extract(x)[1]) for x in boxes_out_name]
+        raw_boxes = [np.reshape(x, (-1, 32)) for x in raw_boxes]
+
+        return scores, raw_boxes
+
+
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model_path', dest='model_path', type=str, default='../model/nanodet-320.mnn')
+    parser.add_argument('--model_path', dest='model_path', type=str, default='../model/nanodet_m.param')
+    parser.add_argument('--model_bin', dest='model_bin', type=str, default='../model/nanodet_m.bin')
     parser.add_argument('--cfg_path', dest='cfg_path', type=str, default='config/nanodet-m.yml')
     parser.add_argument('--img_fold', dest='img_fold', type=str, default='../imgs')
     parser.add_argument('--result_fold', dest='result_fold', type=str, default='../results')
     parser.add_argument('--input_shape', dest='input_shape', nargs=2, type=int, default=[320, 320])
-    parser.add_argument('--backend', choices=['MNN', 'ONNX', 'torch'], default='MNN')
+    parser.add_argument('--backend', choices=['ncnn', 'ONNX', 'torch'], default='ncnn')
     args = parser.parse_args()
 
     print(f'Detecting {args.img_fold}')
 
     # load detector
-    if args.backend == 'MNN':
-        detector = NanoDetMNN(args.model_path, input_shape=args.input_shape)
+    if args.backend == 'ncnn':
+        detector = NanoDetNCNN(args.model_path, args.model_bin, input_shape=args.input_shape)
     elif args.backend == 'ONNX':
         detector = NanoDetONNX(args.model_path, input_shape=args.input_shape)
     elif args.backend == 'torch':
@@ -511,7 +512,7 @@ def main():
 
 
 def test_one():
-    detector = NanoDetMNN('./weight/nanodet-320.mnn')
+    detector = NanoDetNCNN('./weight/nanodet_m.param', './weight/nanodet_m.bin')
     img = cv2.imread('./data/2.jpg')
     bbox, label, score = detector.detect(img)
     img_draw = detector.draw_box(img, bbox, label, score)

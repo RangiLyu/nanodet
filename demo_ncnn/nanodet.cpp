@@ -40,14 +40,16 @@ int activation_function_softmax(const _Tp* src, _Tp* dst, int length)
     return 0;
 }
 
-bool NanoDet::hasGPU = true;
+bool NanoDet::hasGPU = false;
 NanoDet* NanoDet::detector = nullptr;
 
 NanoDet::NanoDet(const char* param, const char* bin, bool useGPU)
 {
     this->Net = new ncnn::Net();
     // opt 
+#if NCNN_VULKAN
     this->hasGPU = ncnn::get_gpu_count() > 0;
+#endif
     this->Net->opt.use_vulkan_compute = this->hasGPU && useGPU;
     this->Net->opt.use_fp16_arithmetic = true;
     this->Net->load_param(param);
@@ -82,8 +84,7 @@ std::vector<BoxInfo> NanoDet::detect(cv::Mat image, float score_threshold, float
     auto ex = this->Net->create_extractor();
     ex.set_light_mode(false);
     ex.set_num_threads(4);
-    //this->hasGPU = ncnn::get_gpu_count() > 0;
-    //ex.set_vulkan_compute(this->hasGPU);
+    ex.set_vulkan_compute(this->hasGPU);
     ex.input("input.1", input);
 
     std::vector<std::vector<BoxInfo>> results;

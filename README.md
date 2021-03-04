@@ -12,7 +12,9 @@
 
 ****
 ## NEWS!!!
-* [2021.02.03] Support [EfficientNet-Lite](https://github.com/RangiLyu/EfficientNet-Lite) and [Rep-VGG](https://github.com/DingXiaoH/RepVGG) backbone. Please check the [config folder](config/).
+* [2021.03.03] Update **Nanodet-m-416** COCO pretrained model. **COCO mAP(0.5:0.95)=23.5**. Download in [Model Zoo](#model-zoo).
+
+* [2021.02.03] Support [EfficientNet-Lite](https://github.com/RangiLyu/EfficientNet-Lite) and [Rep-VGG](https://github.com/DingXiaoH/RepVGG) backbone. Please check the [config folder](config/). Download models in [Model Zoo](#model-zoo)
 
 * [2021.01.10] **NanoDet-g** with lower memory access cost, which designed for edge NPU or GPU, is now available!
   Check [config/nanodet-g.yml](config/nanodet-g.yml) and download:
@@ -30,7 +32,7 @@
 Model     |Resolution|COCO mAP|Latency(ARM 4xCore)|FLOPS|Params   | Model Size(ncnn fp16)
 :--------:|:--------:|:------:|:-----------------:|:---:|:-------:|:-------:
 NanoDet-m | 320*320 |  20.6 | 10.23ms              | 0.72B      | 0.95M | 1.8MB
-NanoDet-m | 416*416 |  21.7 | 16.44ms              | 1.2B       | 0.95M | 1.8MB
+NanoDet-m | 416*416 |  23.5 | 16.44ms              | 1.2B       | 0.95M | 1.8MB
 NanoDet-g | 416*416 |  22.9 | Not Designed For ARM | 4.2B       | 3.81M | 7.7MB
 YoloV3-Tiny| 416*416 | 16.6 | 37.6ms               | 5.62B      | 8.86M | 33.7MB
 YoloV4-Tiny| 416*416 | 21.7 | 32.81ms              | 6.96B      | 6.06M | 23.0MB
@@ -153,6 +155,7 @@ NanoDet supports variety of backbones. Go to the [***config*** folder](config/) 
 Model                 | Backbone           |Resolution|COCO mAP| FLOPS |Params | Pre-train weight |
 :--------------------:|:------------------:|:--------:|:------:|:-----:|:-----:|:-----:|
 NanoDet-m             | ShuffleNetV2 1.0x  | 320*320  |  20.6  | 0.72B | 0.95M | [Download](https://drive.google.com/file/d/10h-0qLMCgYvWQvKULqbkLvmirFR-w9NN/view?usp=sharing) |
+NanoDet-m-416         | ShuffleNetV2 1.0x  | 416*416  |  23.5  | 1.2B  | 0.95M | [Download](https://drive.google.com/file/d/1h6TBy1tx4faIBKHnYeg0QwzFF6wlFBEd/view?usp=sharing)|
 NanoDet-g             | Custom CSP Net     | 416*416  |  22.9  | 4.2B  | 3.81M | [Download](https://drive.google.com/file/d/10uW7oqZKw231l_tr4C1bJWkbCXgBf7av/view?usp=sharing)|
 NanoDet-EfficientLite | EfficientNet-Lite0 | 320*320  |  24.7  | 1.72B | 3.11M | [Download](https://drive.google.com/file/d/1u_t9L0jqjH858gCR-vpzWzu9FexQOSmJ/view?usp=sharing)|
 NanoDet-EfficientLite | EfficientNet-Lite1 | 416*416  |  30.3  | 4.06B | 4.01M | [Download](https://drive.google.com/file/d/1y9z7BToAZOQ1pKbOjNjf79YMuFuDTvfq/view?usp=sharing) |

@@ -1,9 +1,10 @@
 ![](docs/imgs/Title.jpg)
 
 # NanoDet
-[![GitHub license](https://img.shields.io/github/license/RangiLyu/nanodet?style=flat-square)](https://github.com/RangiLyu/nanodet/blob/main/LICENSE)
 
 ### Super fast and lightweight anchor-free object detection model. Real-time on mobile devices.
+
+[![GitHub license](https://img.shields.io/github/license/RangiLyu/nanodet?style=flat-square)](https://github.com/RangiLyu/nanodet/blob/main/LICENSE)
 
 * ⚡Super lightweight: Model file is only 1.8 MB.
 * ⚡Super fast: 97fps(10.23ms) on mobile ARM CPU.

@@ -68,7 +68,7 @@ data:
     name: coco
     img_path: coco/val2017
     ann_path: coco/annotations/instances_val2017.json
-    input_size: [320,320] #[w,h]
+    input_size: [416,416] #[w,h]
     keep_ratio: True
     pipeline:
       normalize: [[103.53, 116.28, 123.675], [57.375, 57.12, 58.395]]

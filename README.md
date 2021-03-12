@@ -80,6 +80,8 @@ NanoDet is a FCOS-style one-stage anchor-free object detection model which using
 
 Android demo project is in ***demo_android_ncnn*** folder. Please refer to [Android demo guide](demo_android_ncnn/README.md).
 
+Here is a better implementation 👉 [ncnn-android-nanodet](https://github.com/nihui/ncnn-android-nanodet)
+
 ### NCNN C++ demo
 
 C++ demo based on [ncnn](https://github.com/Tencent/ncnn) is in ***demo_ncnn*** folder. Please refer to [Cpp demo guide](demo_ncnn/README.md).

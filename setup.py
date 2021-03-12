@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 from setuptools import find_packages, setup
 
-__version__ = "0.0.1"
+__version__ = "0.1.1"
 
 if __name__ == '__main__':
     setup(
         name='nanodet',
         version=__version__,
         description='Deep Learning Object Detection Toolbox',
-        url='https://github.com/RangiLyu/nanodet_develop',
+        url='https://github.com/RangiLyu/nanodet',
         author='RangiLyu',
         author_email='lyuchqi@gmail.com',
         keywords='deep learning',

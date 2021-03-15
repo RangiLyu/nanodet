@@ -95,7 +95,7 @@ class TransformerBlock(nn.Module):
                  num_encoders=1,
                  mlp_ratio=1,
                  dropout_ratio=0.,
-                 kv_bias=True,
+                 kv_bias=False,
                  activation='GELU'
                  ):
         super(TransformerBlock, self).__init__()

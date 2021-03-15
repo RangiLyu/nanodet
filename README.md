@@ -166,7 +166,7 @@ Model                 | Backbone           |Resolution|COCO mAP| FLOPS |Params |
 :--------------------:|:------------------:|:--------:|:------:|:-----:|:-----:|:-----:|
 NanoDet-m             | ShuffleNetV2 1.0x  | 320*320  |  20.6  | 0.72B | 0.95M | [Download](https://drive.google.com/file/d/10h-0qLMCgYvWQvKULqbkLvmirFR-w9NN/view?usp=sharing) |
 NanoDet-m-416         | ShuffleNetV2 1.0x  | 416*416  |  23.5  | 1.2B  | 0.95M | [Download](https://drive.google.com/file/d/1h6TBy1tx4faIBKHnYeg0QwzFF6wlFBEd/view?usp=sharing)|
-NanoDet-t (***NEW***) | ShuffleNetV2 1.0x  | 320*320  |  21.7  | 0.96B | 1.36M | [Download](https://drive.google.com/file/d/1x-LVdLxXYLinisxMSlVR6ZEXLC2iKIjl/view?usp=sharing) |
+NanoDet-t (***NEW***) | ShuffleNetV2 1.0x  | 320*320  |  21.7  | 0.96B | 1.36M | [Download](https://drive.google.com/file/d/1O2iz-aaDiQHJNfocInpFrY8ZFMrT3M1r/view?usp=sharing) |
 NanoDet-g             | Custom CSP Net     | 416*416  |  22.9  | 4.2B  | 3.81M | [Download](https://drive.google.com/file/d/10uW7oqZKw231l_tr4C1bJWkbCXgBf7av/view?usp=sharing)|
 NanoDet-EfficientLite | EfficientNet-Lite0 | 320*320  |  24.7  | 1.72B | 3.11M | [Download](https://drive.google.com/file/d/1u_t9L0jqjH858gCR-vpzWzu9FexQOSmJ/view?usp=sharing)|
 NanoDet-EfficientLite | EfficientNet-Lite1 | 416*416  |  30.3  | 4.06B | 4.01M | [Download](https://drive.google.com/file/d/1y9z7BToAZOQ1pKbOjNjf79YMuFuDTvfq/view?usp=sharing) |

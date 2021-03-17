@@ -115,6 +115,8 @@ python demo/demo.py video --config CONFIG_PATH --model MODEL_PATH --path VIDEO_P
 python demo/demo.py webcam --config CONFIG_PATH --model MODEL_PATH --camid YOUR_CAMERA_ID
 ```
 
+Besides, We provide a notebook [here](./demo/demo-inference-with-pytorch.ipynb) to demonstrate how to make it work with PyTorch.
+
 ****
 
 ## Install

@@ -208,7 +208,7 @@ class CfgNode(dict):
 
     def merge_from_file(self, cfg_filename):
         """Load a yaml config file and merge it this CfgNode."""
-        with open(cfg_filename, "r") as f:
+        with open(cfg_filename, "r", encoding='utf-8') as f:
             cfg = self.load_cfg(f)
         self.merge_from_other_cfg(cfg)
 

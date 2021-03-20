@@ -96,7 +96,6 @@ def main():
         files.sort()
         for image_name in files:
             meta, res = predictor.inference(image_name)
-            predictor.visualize(res, meta, cfg.class_names, 0.35)
             result_image = predictor.visualize(res, meta, cfg.class_names, 0.35)
             if args.save_result:
                 save_folder = os.path.join(cfg.save_dir, time.strftime("%Y_%m_%d_%H_%M_%S", current_time))

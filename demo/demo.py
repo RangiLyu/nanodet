@@ -19,6 +19,7 @@ def parse_args():
     parser.add_argument('--model', help='model file path')
     parser.add_argument('--path', default='./demo', help='path to images or video')
     parser.add_argument('--camid', type=int, default=0, help='webcam demo camera id')
+    parser.add_argument('--save_result', action='store_true', help='whether to save the inference result of image/video')
     args = parser.parse_args()
     return args
 
@@ -30,6 +31,12 @@ class Predictor(object):
         model = build_model(cfg.model)
         ckpt = torch.load(model_path, map_location=lambda storage, loc: storage)
         load_model_weight(model, ckpt, logger)
+        if cfg.model.arch.backbone.name == 'RepVGG':
+            deploy_config = cfg.model
+            deploy_config.arch.backbone.update({'deploy': True})
+            deploy_model = build_model(deploy_config)
+            from nanodet.model.backbone.repvgg import repvgg_det_model_convert
+            model = repvgg_det_model_convert(model, deploy_model)
         self.model = model.to(device).eval()
         self.pipeline = Pipeline(cfg.data.val.pipeline, cfg.data.val.keep_ratio)
 
@@ -55,8 +62,9 @@ class Predictor(object):
 
     def visualize(self, dets, meta, class_names, score_thres, wait=0):
         time1 = time.time()
-        self.model.head.show_result(meta['raw_img'], dets, class_names, score_thres=score_thres, show=True)
+        result_img = self.model.head.show_result(meta['raw_img'], dets, class_names, score_thres=score_thres, show=True)
         print('viz time: {:.3f}s'.format(time.time()-time1))
+        return result_img
 
 
 def get_image_list(path):
@@ -79,6 +87,7 @@ def main():
     logger = Logger(-1, use_tensorboard=False)
     predictor = Predictor(cfg, args.model, logger, device='cuda:0')
     logger.log('Press "Esc", "q" or "Q" to exit.')
+    current_time = time.localtime()
     if args.demo == 'image':
         if os.path.isdir(args.path):
             files = get_image_list(args.path)
@@ -87,18 +96,38 @@ def main():
         files.sort()
         for image_name in files:
             meta, res = predictor.inference(image_name)
-            predictor.visualize(res, meta, cfg.class_names, 0.35)
+            result_image = predictor.visualize(res, meta, cfg.class_names, 0.35)
+            if args.save_result:
+                save_folder = os.path.join(cfg.save_dir, time.strftime("%Y_%m_%d_%H_%M_%S", current_time))
+                if not os.path.exists(save_folder):
+                    os.mkdir(save_folder)
+                save_file_name = os.path.join(save_folder, os.path.basename(image_name))
+                cv2.imwrite(save_file_name, result_image)
             ch = cv2.waitKey(0)
             if ch == 27 or ch == ord('q') or ch == ord('Q'):
                 break
     elif args.demo == 'video' or args.demo == 'webcam':
         cap = cv2.VideoCapture(args.path if args.demo == 'video' else args.camid)
+        width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)  # float
+        height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)  # float
+        fps = cap.get(cv2.CAP_PROP_FPS)
+        save_folder = os.path.join(cfg.save_dir, time.strftime("%Y_%m_%d_%H_%M_%S", current_time))
+        if not os.path.exists(save_folder):
+            os.mkdir(save_folder)
+        save_path = os.path.join(save_folder, args.path.split('/')[-1]) if args.demo == 'video' else os.path.join(save_folder, 'camera.mp4')
+        print(f'save_path is {save_path}')
+        vid_writer = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (int(width), int(height)))
         while True:
             ret_val, frame = cap.read()
-            meta, res = predictor.inference(frame)
-            predictor.visualize(res, meta, cfg.class_names, 0.35)
-            ch = cv2.waitKey(1)
-            if ch == 27 or ch == ord('q') or ch == ord('Q'):
+            if ret_val:
+                meta, res = predictor.inference(frame)
+                result_frame = predictor.visualize(res, meta, cfg.class_names, 0.35)
+                if args.save_result:
+                    vid_writer.write(result_frame)
+                ch = cv2.waitKey(1)
+                if ch == 27 or ch == ord('q') or ch == ord('Q'):
+                    break
+            else:
                 break
 
 

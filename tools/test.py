@@ -14,8 +14,9 @@ from nanodet.evaluator import build_evaluator
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('config', help='model config file path')
-    parser.add_argument('--task', default='val', help='task to run, test or val')
+    parser.add_argument('--task', type=str, default='val', help='task to run, test or val')
+    parser.add_argument('--config', type=str, help='model config file(.yml) path')
+    parser.add_argument('--model', type=str, help='model weight file(.pth) path')
     parser.add_argument('--save_result', action='store_true', default=True, help='save val results to txt')
     args = parser.parse_args()
     return args
@@ -41,8 +42,8 @@ def main(args):
     val_dataloader = torch.utils.data.DataLoader(val_dataset, batch_size=1, shuffle=False, num_workers=1,
                                                  pin_memory=True, collate_fn=collate_function, drop_last=True)
     trainer = build_trainer(local_rank, cfg, model, logger)
-    if 'load_model' in cfg.schedule:
-        trainer.load_model(cfg)
+    cfg.schedule.update({'load_model': args.model})
+    trainer.load_model(cfg)
     evaluator = build_evaluator(cfg, val_dataset)
     logger.log('Starting testing...')
     with torch.no_grad():

@@ -1,3 +1,18 @@
+# Modification 2020 RangiLyu
+# Copyright 2018-2019 Open-MMLab.
+
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+
+#     http://www.apache.org/licenses/LICENSE-2.0
+
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import torch
 from functools import partial
 
@@ -21,22 +36,6 @@ def images_to_levels(target, num_level_anchors):
         level_targets.append(target[:, start:end].squeeze(0))
         start = end
     return level_targets
-
-
-def anchor_inside_flags(flat_anchors,
-                        valid_flags,
-                        img_shape,
-                        allowed_border=0):
-    img_h, img_w = img_shape
-    if allowed_border >= 0:
-        inside_flags = valid_flags & \
-            (flat_anchors[:, 0] >= -allowed_border) & \
-            (flat_anchors[:, 1] >= -allowed_border) & \
-            (flat_anchors[:, 2] < img_w + allowed_border) & \
-            (flat_anchors[:, 3] < img_h + allowed_border)
-    else:
-        inside_flags = valid_flags
-    return inside_flags
 
 
 def unmap(data, count, inds, fill=0):

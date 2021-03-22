@@ -1,11 +1,7 @@
-//
-// Create by RangiLyu
-// 2020 / 10 / 2
-//
+#include <torch/script.h>
+#include <iostream>
+#include "nanodet_libtorch.h"
 
-#include "nanodet.h"
-#include <benchmark.h>
-// #include <iostream>
 
 inline float fast_exp(float x) 
 {
@@ -28,79 +24,61 @@ int activation_function_softmax(const _Tp* src, _Tp* dst, int length)
     const _Tp alpha = *std::max_element(src, src + length);
     _Tp denominator{ 0 };
 
-    for (int i = 0; i < length; ++i) {
+    for (int i = 0; i < length; ++i) 
+    {
         dst[i] = fast_exp(src[i] - alpha);
         denominator += dst[i];
     }
 
-    for (int i = 0; i < length; ++i) {
+    for (int i = 0; i < length; ++i) 
+    {
         dst[i] /= denominator;
     }
 
     return 0;
 }
 
-bool NanoDet::hasGPU = false;
-NanoDet* NanoDet::detector = nullptr;
 
-NanoDet::NanoDet(const char* param, const char* bin, bool useGPU)
+NanoDet::NanoDet(const char* model_path)
 {
-    this->Net = new ncnn::Net();
-    // opt 
-#if NCNN_VULKAN
-    this->hasGPU = ncnn::get_gpu_count() > 0;
-#endif
-    this->Net->opt.use_vulkan_compute = this->hasGPU && useGPU;
-    this->Net->opt.use_fp16_arithmetic = true;
-    this->Net->load_param(param);
-    this->Net->load_model(bin);
+    std::cout<<"load model start"<<std::endl;
+    this->Net = torch::jit::load(model_path);
+    this->Net.eval();
+    std::cout<<"load model finished"<<std::endl;
+    // this->Net->to(at::kCUDA);
 }
 
 NanoDet::~NanoDet()
 {
-    delete this->Net;
 }
 
-void NanoDet::preprocess(cv::Mat& image, ncnn::Mat& in)
+torch::Tensor NanoDet::preprocess(cv::Mat& image)
 {
     int img_w = image.cols;
     int img_h = image.rows;
-
-    in = ncnn::Mat::from_pixels(image.data, ncnn::Mat::PIXEL_BGR, img_w, img_h);
-    //in = ncnn::Mat::from_pixels_resize(image.data, ncnn::Mat::PIXEL_BGR, img_w, img_h, this->input_width, this->input_height);
-
-    const float mean_vals[3] = { 103.53f, 116.28f, 123.675f };
-    const float norm_vals[3] = { 0.017429f, 0.017507f, 0.017125f };
-    in.substract_mean_normalize(mean_vals, norm_vals);
+    torch::Tensor tensor_image = torch::from_blob(image.data, {1,img_h, img_w,3}, torch::kByte);
+    tensor_image = tensor_image.permute({0,3,1,2});
+    tensor_image = tensor_image.toType(torch::kFloat);
+    // TODO: mean std per channel
+    tensor_image = tensor_image.add(-116.28f);
+    tensor_image = tensor_image.mul(0.017429f);
+    return tensor_image;
 }
 
 std::vector<BoxInfo> NanoDet::detect(cv::Mat image, float score_threshold, float nms_threshold)
 {
-    ncnn::Mat input;
-    preprocess(image, input);
+    auto input = preprocess(image);
+    auto outputs = this->Net.forward({input}).toTuple();
 
-    //double start = ncnn::get_current_time();
-
-    auto ex = this->Net->create_extractor();
-    ex.set_light_mode(false);
-    ex.set_num_threads(4);
-#if NCNN_VULKAN
-    ex.set_vulkan_compute(this->hasGPU);
-#endif
-    ex.input("input.1", input);
+    auto cls_preds = outputs->elements()[0].toTensorVector();
+    auto box_preds = outputs->elements()[1].toTensorVector();
 
     std::vector<std::vector<BoxInfo>> results;
-    results.resize(this->num_class);
+    results.resize(this->num_class_);
 
-    for (const auto& head_info : this->heads_info)
+    for (int i = 0; i < (int)strides_.size(); i++)
     {
-        ncnn::Mat dis_pred;
-        ncnn::Mat cls_pred;
-        ex.extract(head_info.dis_layer.c_str(), dis_pred);
-        ex.extract(head_info.cls_layer.c_str(), cls_pred); 
-        // std::cout << "c:" << cls_pred.c << " h:" << cls_pred.h <<" w:" <<cls_pred.w <<std::endl;
-
-        this->decode_infer(cls_pred, dis_pred, head_info.stride, score_threshold, results);
+        this->decode_infer(cls_preds[i], box_preds[i], i, score_threshold, results);
     }
 
     std::vector<BoxInfo> dets;
@@ -113,45 +91,41 @@ std::vector<BoxInfo> NanoDet::detect(cv::Mat image, float score_threshold, float
             dets.push_back(box);
         }
     }
-
-    //double end = ncnn::get_current_time();
-    //double time = end - start;
-    //printf("Detect Time:%7.2f \n", time);
-
     return dets;
 }
 
-void NanoDet::decode_infer(ncnn::Mat& cls_pred, ncnn::Mat& dis_pred, int stride, float threshold, std::vector<std::vector<BoxInfo>>& results)
+void NanoDet::decode_infer(torch::Tensor& cls_pred, torch::Tensor& dis_pred, int stage_idx, float threshold, std::vector<std::vector<BoxInfo>>& results)
 {
-    int feature_h = this->input_size / stride;
-    int feature_w = this->input_size / stride;
-
-    //cv::Mat debug_heatmap = cv::Mat(feature_h, feature_w, CV_8UC3);
+    int stride = this->strides_[stage_idx];
+    int feature_h = this->input_size_ / stride;
+    int feature_w = this->input_size_ / stride;
+    // cv::Mat debug_heatmap = cv::Mat::zeros(feature_h, feature_w, CV_8UC3);
     for (int idx = 0; idx < feature_h * feature_w; idx++)
     {
-        const float* scores = cls_pred.row(idx);
         int row = idx / feature_w;
         int col = idx % feature_w;
-        float score = 0;
+        float score = -0.0f;
         int cur_label = 0;
-        for (int label = 0; label < this->num_class; label++)
+        for (int label = 0; label < this->num_class_; label++)
         {
-            if (scores[label] > score)
+            float cur_score = cls_pred[0][idx][label].item<float>();
+            if ( cur_score > score)
             {
-                score = scores[label];
+                score = cur_score;
                 cur_label = label;
             }
         }
         if (score > threshold)
         {
             //std::cout << "label:" << cur_label << " score:" << score << std::endl;
-            const float* bbox_pred = dis_pred.row(idx);
+            auto cur_dis = dis_pred[0][idx].contiguous();
+            const float* bbox_pred = cur_dis.data<float>();
             results[cur_label].push_back(this->disPred2Bbox(bbox_pred, cur_label, score, col, row, stride));
-            //debug_heatmap.at<cv::Vec3b>(row, col)[0] = 255;
-            //cv::imshow("debug", debug_heatmap);
+            // debug_heatmap.at<cv::Vec3b>(row, col)[0] = 255;
+            // cv::imshow("debug", debug_heatmap);
         }
-
     }
+    // cv::waitKey(0);
 }
 
 BoxInfo NanoDet::disPred2Bbox(const float*& dfl_det, int label, float score, int x, int y, int stride)
@@ -163,9 +137,9 @@ BoxInfo NanoDet::disPred2Bbox(const float*& dfl_det, int label, float score, int
     for (int i = 0; i < 4; i++)
     {
         float dis = 0;
-        float* dis_after_sm = new float[this->reg_max + 1];
-        activation_function_softmax(dfl_det + i * (this->reg_max + 1), dis_after_sm, this->reg_max + 1);
-        for (int j = 0; j < this->reg_max + 1; j++)
+        float* dis_after_sm = new float[this->reg_max_ + 1];
+        activation_function_softmax(dfl_det + i * (this->reg_max_ + 1), dis_after_sm, this->reg_max_ + 1);
+        for (int j = 0; j < this->reg_max_ + 1; j++)
         {
             dis += j * dis_after_sm[j];
         }
@@ -176,8 +150,8 @@ BoxInfo NanoDet::disPred2Bbox(const float*& dfl_det, int label, float score, int
     }
     float xmin = (std::max)(ct_x - dis_pred[0], .0f);
     float ymin = (std::max)(ct_y - dis_pred[1], .0f);
-    float xmax = (std::min)(ct_x + dis_pred[2], (float)this->input_size);
-    float ymax = (std::min)(ct_y + dis_pred[3], (float)this->input_size);
+    float xmax = (std::min)(ct_x + dis_pred[2], (float)this->input_size_);
+    float ymax = (std::min)(ct_y + dis_pred[3], (float)this->input_size_);
 
     //std::cout << xmin << "," << ymin << "," << xmax << "," << xmax << "," << std::endl;
     return BoxInfo { xmin, ymin, xmax, ymax, score, label };
@@ -187,12 +161,15 @@ void NanoDet::nms(std::vector<BoxInfo>& input_boxes, float NMS_THRESH)
 {
     std::sort(input_boxes.begin(), input_boxes.end(), [](BoxInfo a, BoxInfo b) { return a.score > b.score; });
     std::vector<float> vArea(input_boxes.size());
-    for (int i = 0; i < int(input_boxes.size()); ++i) {
+    for (int i = 0; i < int(input_boxes.size()); ++i) 
+    {
         vArea[i] = (input_boxes.at(i).x2 - input_boxes.at(i).x1 + 1)
             * (input_boxes.at(i).y2 - input_boxes.at(i).y1 + 1);
     }
-    for (int i = 0; i < int(input_boxes.size()); ++i) {
-        for (int j = i + 1; j < int(input_boxes.size());) {
+    for (int i = 0; i < int(input_boxes.size()); ++i) 
+    {
+        for (int j = i + 1; j < int(input_boxes.size());) 
+        {
             float xx1 = (std::max)(input_boxes[i].x1, input_boxes[j].x1);
             float yy1 = (std::max)(input_boxes[i].y1, input_boxes[j].y1);
             float xx2 = (std::min)(input_boxes[i].x2, input_boxes[j].x2);
@@ -201,11 +178,13 @@ void NanoDet::nms(std::vector<BoxInfo>& input_boxes, float NMS_THRESH)
             float h = (std::max)(float(0), yy2 - yy1 + 1);
             float inter = w * h;
             float ovr = inter / (vArea[i] + vArea[j] - inter);
-            if (ovr >= NMS_THRESH) {
+            if (ovr >= NMS_THRESH) 
+            {
                 input_boxes.erase(input_boxes.begin() + j);
                 vArea.erase(vArea.begin() + j);
             }
-            else {
+            else 
+            {
                 j++;
             }
         }

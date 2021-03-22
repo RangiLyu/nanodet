@@ -15,6 +15,12 @@ class Predictor(object):
         model = build_model(cfg.model)
         ckpt = torch.load(model_path, map_location=lambda storage, loc: storage)
         load_model_weight(model, ckpt, logger)
+        if cfg.model.arch.backbone.name == 'RepVGG':
+            deploy_config = cfg.model
+            deploy_config.arch.backbone.update({'deploy': True})
+            deploy_model = build_model(deploy_config)
+            from nanodet.model.backbone.repvgg import repvgg_det_model_convert
+            model = repvgg_det_model_convert(model, deploy_model)
         self.model = model.to(device).eval()
         self.pipeline = Pipeline(cfg.data.val.pipeline, cfg.data.val.keep_ratio)
 

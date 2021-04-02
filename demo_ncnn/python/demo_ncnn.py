@@ -374,6 +374,8 @@ class NanoDetABC(metaclass=ABCMeta):
         raw_shape = img.shape
         img_input, ResizeM = self.preprocess(img)
         scores, raw_boxes = self.infer_image(img_input)
+        if scores[0].ndim == 1: # handling num_classes=1 case
+            scores = [x[:,None] for x in scores]
         bbox, label, score = self.postprocess(scores, raw_boxes, ResizeM, raw_shape)
         return bbox, label, score
 

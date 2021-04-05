@@ -64,6 +64,9 @@ class TrainingTask(LightningModule):
             self.log('Train/'+k, v, on_step=True, on_epoch=True, prog_bar=True, sync_dist=True)
         return loss
 
+    def training_epoch_end(self, outputs: List[Any]) -> None:
+        self.lr_scheduler.step()
+
     def validation_step(self, batch, batch_idx):
         preds, loss, loss_states = self.model.forward_train(batch)
         for k, v in loss_states.items():
@@ -110,10 +113,13 @@ class TrainingTask(LightningModule):
         schedule_cfg = copy.deepcopy(self.cfg.schedule.lr_schedule)
         name = schedule_cfg.pop('name')
         build_scheduler = getattr(torch.optim.lr_scheduler, name)
-        lr_scheduler = {'scheduler': build_scheduler(optimizer=optimizer, **schedule_cfg),
-                        'interval': 'epoch'}
+        self.lr_scheduler = build_scheduler(optimizer=optimizer, **schedule_cfg)
+        # lr_scheduler = {'scheduler': self.lr_scheduler,
+        #                 'interval': 'epoch',
+        #                 'frequency': 1}
+        # return [optimizer], [lr_scheduler]
 
-        return [optimizer], [lr_scheduler]
+        return optimizer
 
     def optimizer_step(self,
                        epoch=None,
@@ -125,7 +131,7 @@ class TrainingTask(LightningModule):
                        using_native_amp=None,
                        using_lbfgs=None):
         # warm up lr
-        if self.trainer.global_step < self.cfg.schedule.warmup.steps:
+        if self.trainer.global_step <= self.cfg.schedule.warmup.steps:
             if self.cfg.schedule.warmup.name == 'constant':
                 warmup_lr = self.cfg.schedule.optimizer.lr * self.cfg.schedule.warmup.ratio
             elif self.cfg.schedule.warmup.name == 'linear':

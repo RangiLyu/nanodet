@@ -6,12 +6,12 @@ from ..fpn import build_fpn
 from ..head import build_head
 
 
-class OneStage(nn.Module):
+class OneStageDetector(nn.Module):
     def __init__(self,
                  backbone_cfg,
                  fpn_cfg=None,
                  head_cfg=None,):
-        super(OneStage, self).__init__()
+        super(OneStageDetector, self).__init__()
         self.backbone = build_backbone(backbone_cfg)
         if fpn_cfg is not None:
             self.fpn = build_fpn(fpn_cfg)
@@ -20,13 +20,10 @@ class OneStage(nn.Module):
 
     def forward(self, x):
         x = self.backbone(x)
-        if hasattr(self, 'fpn') and self.fpn is not None:
+        if hasattr(self, 'fpn'):
             x = self.fpn(x)
         if hasattr(self, 'head'):
-            out = []
-            for xx in x:
-                out.append(self.head(xx))
-            x = tuple(out)
+            x = self.head(x)
         return x
 
     def inference(self, meta):

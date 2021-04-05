@@ -126,7 +126,7 @@ Besides, We provide a notebook [here](./demo/demo-inference-with-pytorch.ipynb) 
 * Linux or MacOS
 * CUDA >= 10.0
 * Python >= 3.6
-* Pytorch >= 1.3
+* Pytorch >= 1.6
 * experimental support Windows (Notice: Windows not support distributed training before pytorch1.7)
 
 ### Step
@@ -215,6 +215,14 @@ NanoDet-RepVGG        | RepVGG-A0          | 416*416  |  27.8  | 11.3B | 6.75M |
     ```shell script
     python -m torch.distributed.launch --nproc_per_node=GPU_NUM --master_port 29501 tools/train.py CONFIG_PATH
     ```
+   
+   **Experimental**:
+   
+   Training with [pytorch lightning](https://github.com/PyTorchLightning/pytorch-lightning), no matter single or multi GPU just run:
+   
+   ```shell script
+   python tools/train_pl.py CONFIG_PATH
+   ```
 
 4. **Visualize Logs**
 

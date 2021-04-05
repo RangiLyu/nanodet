@@ -8,7 +8,7 @@
 save_dir: workspace/efficientlite2_512
 model:
   arch:
-    name: GFL
+    name: OneStageDetector
     backbone:
       name: EfficientNetLite
       model_name: efficientnet_lite2

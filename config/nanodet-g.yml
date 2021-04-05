@@ -6,7 +6,7 @@
 save_dir: workspace/nanodet_g
 model:
   arch:
-    name: GFL
+    name: OneStageDetector
     backbone:
       name: CustomCspNet
       net_cfg: [[ 'Conv', 3, 32, 3, 2],  # 1/2

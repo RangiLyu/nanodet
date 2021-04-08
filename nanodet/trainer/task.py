@@ -16,6 +16,7 @@ import copy
 import os
 import warnings
 import torch
+import logging
 from pytorch_lightning import LightningModule
 from typing import Any, List, Dict, Tuple, Optional
 
@@ -42,8 +43,11 @@ class TrainingTask(LightningModule):
         self.evaluator = evaluator
         self._logger = logger
         self.save_flag = -10
-        # TODO: better logger
+        self.log_style = 'NanoDet'  # Log style. Choose between 'NanoDet' or 'Lightning'
+        # TODO: use callback to log
+        # TODO: remove _logger
         # TODO: batch eval
+        # TODO: support old checkpoint
 
     def forward(self, x):
         x = self.model(x)
@@ -57,21 +61,43 @@ class TrainingTask(LightningModule):
 
     def training_step(self, batch, batch_idx):
         preds, loss, loss_states = self.model.forward_train(batch)
-        self.log('lr', self.optimizers().param_groups[0]['lr'], on_step=True, on_epoch=False, prog_bar=True)
-        for k, v in loss_states.items():
-            self.log('Train/'+k, v, on_step=True, on_epoch=True, prog_bar=True, sync_dist=True)
+
+        # log train losses
+        if self.log_style == 'Lightning':
+            self.log('lr', self.optimizers().param_groups[0]['lr'], on_step=True, on_epoch=False, prog_bar=True)
+            for k, v in loss_states.items():
+                self.log('Train/'+k, v, on_step=True, on_epoch=True, prog_bar=True, sync_dist=True)
+        elif self.log_style == 'NanoDet' and self.global_step % self.cfg.log.interval == 0:
+            lr = self.optimizers().param_groups[0]['lr']
+            log_msg = 'Train|Epoch{}/{}|Iter{}({})| lr:{:.2e}| '.format(self.current_epoch+1,
+                self.cfg.schedule.total_epochs, self.global_step, batch_idx, lr)
+            self.scalar_summary('Train_loss/lr', 'Train', lr, self.global_step)
+            for l in loss_states:
+                log_msg += '{}:{:.4f}| '.format(l, loss_states[l].mean().item())
+                self.scalar_summary('Train_loss/' + l, 'Train', loss_states[l].mean().item(), self.global_step)
+            self.info(log_msg)
+
         return loss
 
     def training_epoch_end(self, outputs: List[Any]) -> None:
-        self.print('Epoch ', self.current_epoch, ' finished.')
         self.trainer.save_checkpoint(os.path.join(self.cfg.save_dir, 'model_last.ckpt'))
         self.lr_scheduler.step()
 
     def validation_step(self, batch, batch_idx):
         preds, loss, loss_states = self.model.forward_train(batch)
-        self.log('Val/loss', loss, on_step=True, on_epoch=False, prog_bar=True, logger=False)
-        for k, v in loss_states.items():
-            self.log('Val/' + k, v, on_step=False, on_epoch=True, prog_bar=False, sync_dist=True)
+
+        if self.log_style == 'Lightning':
+            self.log('Val/loss', loss, on_step=True, on_epoch=False, prog_bar=True, logger=False)
+            for k, v in loss_states.items():
+                self.log('Val/' + k, v, on_step=False, on_epoch=True, prog_bar=False, sync_dist=True)
+        elif self.log_style == 'NanoDet' and batch_idx % self.cfg.log.interval == 0:
+            lr = self.optimizers().param_groups[0]['lr']
+            log_msg = 'Val|Epoch{}/{}|Iter{}({})| lr:{:.2e}| '.format(self.current_epoch+1,
+                self.cfg.schedule.total_epochs, self.global_step, batch_idx, lr)
+            for l in loss_states:
+                log_msg += '{}:{:.4f}| '.format(l, loss_states[l].mean().item())
+            self.info(log_msg)
+
         dets = self.model.head.post_process(preds, batch)
         res = {batch['img_info']['id'].cpu().numpy()[0]: dets}
         return res
@@ -80,7 +106,7 @@ class TrainingTask(LightningModule):
         results = {}
         for res in validation_step_outputs:
             results.update(res)
-        eval_results = self.evaluator.evaluate(results, self.cfg.save_dir, self.current_epoch,
+        eval_results = self.evaluator.evaluate(results, self.cfg.save_dir, self.current_epoch+1,
                                                self._logger, rank=self.local_rank)
         metric = eval_results[self.cfg.evaluator.save_key]
         # save best model
@@ -97,8 +123,9 @@ class TrainingTask(LightningModule):
                         f.write("{}: {}\n".format(k, v))
         else:
             warnings.warn('Warning! Save_key is not in eval results! Only save model last!')
-        for k, v in eval_results.items():
-            self.log('Val/' + k, v, on_step=False, on_epoch=True, prog_bar=False, sync_dist=True)
+        if self.log_style == 'Lightning':
+            for k, v in eval_results.items():
+                self.log('Val/' + k, v, on_step=False, on_epoch=True, prog_bar=False, sync_dist=True)
 
     def configure_optimizers(self):
         optimizer_cfg = copy.deepcopy(self.cfg.schedule.optimizer)
@@ -140,8 +167,6 @@ class TrainingTask(LightningModule):
                 raise Exception('Unsupported warm up type!')
             for pg in optimizer.param_groups:
                 pg['lr'] = warmup_lr
-        # TODO: log lr to tensorboard
-        # self.log('lr', optimizer.param_groups[0]['lr'], on_step=True, on_epoch=True, prog_bar=True)
 
         # update params
         optimizer.step(closure=optimizer_closure)
@@ -151,7 +176,17 @@ class TrainingTask(LightningModule):
         # don't show the version number
         items = super().get_progress_bar_dict()
         items.pop("v_num", None)
+        items.pop("loss", None)
         return items
+
+    def scalar_summary(self, tag, phase, value, step):
+        if self.local_rank < 1:
+            self.logger.experiment.add_scalars(tag, {phase: value}, step)
+
+    def info(self, string):
+        if self.local_rank < 1:
+            logging.info(string)
+
 
 
 

@@ -17,6 +17,7 @@ import torch
 import argparse
 import numpy as np
 import pytorch_lightning as pl
+from pytorch_lightning.callbacks import ProgressBar
 
 from nanodet.util import mkdir, Logger, cfg, load_config
 from nanodet.data.collate import collate_function
@@ -91,7 +92,8 @@ def main(args):
                          accelerator='ddp',
                          log_every_n_steps=cfg.log.interval,
                          num_sanity_val_steps=0,
-                         resume_from_checkpoint=model_resume_path
+                         resume_from_checkpoint=model_resume_path,
+                         callbacks=[ProgressBar(refresh_rate=0)]  # disable tqdm bar
                          )
 
     trainer.fit(task, train_dataloader, val_dataloader)

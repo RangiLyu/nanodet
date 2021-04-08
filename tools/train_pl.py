@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import torch
 import argparse
 import numpy as np
@@ -26,7 +27,8 @@ from nanodet.evaluator import build_evaluator
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('config', help='train config file path')
+    parser.add_argument('--config', help='train config file path',
+                        default=r'/home/rangilyu/projects/nanodet/workspace/pl_test/train.yml')
     parser.add_argument('--local_rank', default=-1, type=int,
                         help='node rank for distributed training')
     parser.add_argument('--seed', type=int, default=None,
@@ -67,9 +69,6 @@ def main(args):
 
     evaluator = build_evaluator(cfg, val_dataset)
 
-    logger.log('Creating model...')
-    task = TrainingTask(cfg, evaluator, logger)
-
     train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=cfg.device.batchsize_per_gpu,
                                                    shuffle=True, num_workers=cfg.device.workers_per_gpu,
                                                    pin_memory=True, collate_fn=collate_function, drop_last=True)
@@ -77,13 +76,23 @@ def main(args):
     val_dataloader = torch.utils.data.DataLoader(val_dataset, batch_size=1, shuffle=False, num_workers=1,
                                                  pin_memory=True, collate_fn=collate_function, drop_last=True)
 
+    logger.log('Creating model...')
+    task = TrainingTask(cfg, evaluator, logger)
+
+    if 'load_model' in cfg.schedule:
+        ckpt = torch.load(cfg.schedule.load_model)
+        task.load_state_dict(ckpt['state_dict'])
+
+    model_resume_path = os.path.join(cfg.save_dir, 'model_last.ckpt') if 'resume' in cfg.schedule else None
+
     trainer = pl.Trainer(default_root_dir=cfg.save_dir,
                          max_epochs=cfg.schedule.total_epochs,
                          gpus=cfg.device.gpu_ids,
                          check_val_every_n_epoch=cfg.schedule.val_intervals,
                          accelerator='ddp',
                          log_every_n_steps=cfg.log.interval,
-                         num_sanity_val_steps=0
+                         num_sanity_val_steps=0,
+                         resume_from_checkpoint=model_resume_path
                          )
 
     trainer.fit(task, train_dataloader, val_dataloader)

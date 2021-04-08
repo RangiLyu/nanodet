@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import time
 import copy
 import os
 import warnings
@@ -21,7 +20,7 @@ from pytorch_lightning import LightningModule
 from typing import Any, List, Dict, Tuple, Optional
 
 from ..model.arch import build_model
-from nanodet.util import mkdir, load_model_weight, save_model, MovingAverage, AverageMeter
+from nanodet.util import mkdir
 
 
 class TrainingTask(LightningModule):
@@ -43,8 +42,6 @@ class TrainingTask(LightningModule):
         self.evaluator = evaluator
         self._logger = logger
         self.save_flag = -10
-        # TODO: load model
-        # TODO: resume training
         # TODO: better logger
         # TODO: batch eval
 
@@ -60,17 +57,21 @@ class TrainingTask(LightningModule):
 
     def training_step(self, batch, batch_idx):
         preds, loss, loss_states = self.model.forward_train(batch)
+        self.log('lr', self.optimizers().param_groups[0]['lr'], on_step=True, on_epoch=False, prog_bar=True)
         for k, v in loss_states.items():
             self.log('Train/'+k, v, on_step=True, on_epoch=True, prog_bar=True, sync_dist=True)
         return loss
 
     def training_epoch_end(self, outputs: List[Any]) -> None:
+        self.print('Epoch ', self.current_epoch, ' finished.')
+        self.trainer.save_checkpoint(os.path.join(self.cfg.save_dir, 'model_last.ckpt'))
         self.lr_scheduler.step()
 
     def validation_step(self, batch, batch_idx):
         preds, loss, loss_states = self.model.forward_train(batch)
+        self.log('Val/loss', loss, on_step=True, on_epoch=False, prog_bar=True, logger=False)
         for k, v in loss_states.items():
-            self.log('Val/' + k, v, on_step=True, on_epoch=True, prog_bar=True, sync_dist=True)
+            self.log('Val/' + k, v, on_step=False, on_epoch=True, prog_bar=False, sync_dist=True)
         dets = self.model.head.post_process(preds, batch)
         res = {batch['img_info']['id'].cpu().numpy()[0]: dets}
         return res
@@ -79,19 +80,15 @@ class TrainingTask(LightningModule):
         results = {}
         for res in validation_step_outputs:
             results.update(res)
-
         eval_results = self.evaluator.evaluate(results, self.cfg.save_dir, self.current_epoch,
                                                self._logger, rank=self.local_rank)
         metric = eval_results[self.cfg.evaluator.save_key]
-
-        # ------save best model--------
+        # save best model
         if metric > self.save_flag:
             self.save_flag = metric
             best_save_path = os.path.join(self.cfg.save_dir, 'model_best')
             mkdir(self.local_rank, best_save_path)
-            # TODO: replace with saving checkpoint
-            save_model(self.local_rank, self.model, os.path.join(best_save_path, 'model_best.pth'),
-                       self.current_epoch+1, self.global_step)
+            self.trainer.save_checkpoint(os.path.join(best_save_path, "model_best.ckpt"))
             txt_path = os.path.join(best_save_path, "eval_results.txt")
             if self.local_rank < 1:
                 with open(txt_path, "a") as f:
@@ -100,9 +97,8 @@ class TrainingTask(LightningModule):
                         f.write("{}: {}\n".format(k, v))
         else:
             warnings.warn('Warning! Save_key is not in eval results! Only save model last!')
-        # TODO: log val metrics
-        # for k, v in eval_results.items():
-        #     self.log('Val/' + k, v, on_step=False, on_epoch=True, prog_bar=True, sync_dist=True)
+        for k, v in eval_results.items():
+            self.log('Val/' + k, v, on_step=False, on_epoch=True, prog_bar=False, sync_dist=True)
 
     def configure_optimizers(self):
         optimizer_cfg = copy.deepcopy(self.cfg.schedule.optimizer)
@@ -152,7 +148,6 @@ class TrainingTask(LightningModule):
         optimizer.zero_grad()
 
     def get_progress_bar_dict(self):
-
         # don't show the version number
         items = super().get_progress_bar_dict()
         items.pop("v_num", None)

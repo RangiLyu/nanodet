@@ -77,7 +77,7 @@ def main(args):
                                                  pin_memory=True, collate_fn=collate_function, drop_last=True)
 
     logger.log('Creating model...')
-    task = TrainingTask(cfg, evaluator, logger)
+    task = TrainingTask(cfg, evaluator)
 
     if 'load_model' in cfg.schedule:
         ckpt = torch.load(cfg.schedule.load_model)

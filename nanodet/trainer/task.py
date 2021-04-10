@@ -29,23 +29,20 @@ class TrainingTask(LightningModule):
     Pytorch Lightning module of a general training task.
     """
 
-    def __init__(self, cfg, evaluator=None, logger=None):
+    def __init__(self, cfg, evaluator=None):
         """
 
         Args:
             cfg: Training configurations
             evaluator:
-            logger:
         """
         super(TrainingTask, self).__init__()
         self.cfg = cfg
         self.model = build_model(cfg.model)
         self.evaluator = evaluator
-        self._logger = logger
         self.save_flag = -10
         self.log_style = 'NanoDet'  # Log style. Choose between 'NanoDet' or 'Lightning'
         # TODO: use callback to log
-        # TODO: remove _logger
         # TODO: batch eval
         # TODO: support old checkpoint
 

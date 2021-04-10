@@ -53,7 +53,7 @@ def main(args):
         json_path = os.path.join(cfg.save_dir, 'results{}.json'.format(timestr))
         json.dump(res_json, open(json_path, 'w'))
     elif args.task == 'val':
-        eval_results = evaluator.evaluate(results, cfg.save_dir, 0, logger, rank=local_rank)
+        eval_results = evaluator.evaluate(results, cfg.save_dir, rank=local_rank)
         if args.save_result:
             txt_path = os.path.join(cfg.save_dir, "eval_results{}.txt".format(timestr))
             with open(txt_path, "a") as f:

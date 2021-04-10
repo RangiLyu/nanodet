@@ -16,10 +16,11 @@ import os
 import torch
 import argparse
 import numpy as np
+import warnings
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ProgressBar
 
-from nanodet.util import mkdir, Logger, cfg, load_config
+from nanodet.util import mkdir, Logger, cfg, load_config, convert_old_model
 from nanodet.data.collate import collate_function
 from nanodet.data.dataset import build_dataset
 from nanodet.trainer.task import TrainingTask
@@ -73,7 +74,8 @@ def main(args):
                                                    shuffle=True, num_workers=cfg.device.workers_per_gpu,
                                                    pin_memory=True, collate_fn=collate_function, drop_last=True)
     # TODO: batch eval
-    val_dataloader = torch.utils.data.DataLoader(val_dataset, batch_size=1, shuffle=False, num_workers=1,
+    val_dataloader = torch.utils.data.DataLoader(val_dataset, batch_size=1, shuffle=False,
+                                                 num_workers=cfg.device.workers_per_gpu,
                                                  pin_memory=True, collate_fn=collate_function, drop_last=True)
 
     logger.log('Creating model...')
@@ -81,6 +83,10 @@ def main(args):
 
     if 'load_model' in cfg.schedule:
         ckpt = torch.load(cfg.schedule.load_model)
+        if 'pytorch-lightning_version' not in ckpt:
+            warnings.warn('Warning! Old .pth checkpoint is deprecated. '
+                          'Convert the checkpoint with tools/convert_old_checkpoint.py ')
+            ckpt = convert_old_model(ckpt)
         task.load_state_dict(ckpt['state_dict'])
 
     model_resume_path = os.path.join(cfg.save_dir, 'model_last.ckpt') if 'resume' in cfg.schedule else None

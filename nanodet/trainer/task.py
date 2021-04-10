@@ -106,8 +106,7 @@ class TrainingTask(LightningModule):
         results = {}
         for res in validation_step_outputs:
             results.update(res)
-        eval_results = self.evaluator.evaluate(results, self.cfg.save_dir, self.current_epoch+1,
-                                               self._logger, rank=self.local_rank)
+        eval_results = self.evaluator.evaluate(results, self.cfg.save_dir, rank=self.local_rank)
         metric = eval_results[self.cfg.evaluator.save_key]
         # save best model
         if metric > self.save_flag:
@@ -125,7 +124,10 @@ class TrainingTask(LightningModule):
             warnings.warn('Warning! Save_key is not in eval results! Only save model last!')
         if self.log_style == 'Lightning':
             for k, v in eval_results.items():
-                self.log('Val/' + k, v, on_step=False, on_epoch=True, prog_bar=False, sync_dist=True)
+                self.log('Val_metrics/' + k, v, on_step=False, on_epoch=True, prog_bar=False, sync_dist=True)
+        elif self.log_style == 'NanoDet':
+            for k, v in eval_results.items():
+                self.scalar_summary('Val_metrics/' + k, 'Val', v, self.current_epoch+1)
 
     def configure_optimizers(self):
         optimizer_cfg = copy.deepcopy(self.cfg.schedule.optimizer)

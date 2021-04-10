@@ -145,7 +145,9 @@ class Trainer:
                     results, val_loss_dict = self.run_epoch(self.epoch, val_loader, mode='val')
                 for k, v in val_loss_dict.items():
                     self.logger.scalar_summary('Epoch_loss/' + k, 'val', v, epoch)
-                eval_results = evaluator.evaluate(results, self.cfg.save_dir, epoch, self.logger, rank=self.rank)
+                eval_results = evaluator.evaluate(results, self.cfg.save_dir, rank=self.rank)
+                for k, v in eval_results.items():
+                    self.logger.scalar_summary('Val_metrics/' + k, 'val', v, epoch)
                 if self.cfg.evaluator.save_key in eval_results:
                     metric = eval_results[self.cfg.evaluator.save_key]
                     if metric > save_flag:

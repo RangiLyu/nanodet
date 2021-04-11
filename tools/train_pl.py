@@ -38,20 +38,6 @@ def parse_args():
     return args
 
 
-def init_seeds(seed=0):
-    """
-    manually set a random seed for numpy, torch and cuda
-    :param seed: random seed
-    """
-    torch.manual_seed(seed)
-    np.random.seed(seed)
-    torch.cuda.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
-    if seed == 0:
-        torch.backends.cudnn.deterministic = True
-        torch.backends.cudnn.benchmark = False
-
-
 def main(args):
     load_config(cfg, args.config)
     local_rank = int(args.local_rank)
@@ -59,10 +45,10 @@ def main(args):
     torch.backends.cudnn.benchmark = True
     mkdir(local_rank, cfg.save_dir)
     logger = Logger(local_rank, cfg.save_dir)
-    # TODO: replace with lightning random seed
+
     if args.seed is not None:
         logger.log('Set random seed to {}'.format(args.seed))
-        init_seeds(args.seed)
+        pl.seed_everything(args.seed)
 
     logger.log('Setting up data...')
     train_dataset = build_dataset(cfg.data.train, 'train')

@@ -20,8 +20,7 @@
 * [2021.02.03] Support [EfficientNet-Lite](https://github.com/RangiLyu/EfficientNet-Lite) and [Rep-VGG](https://github.com/DingXiaoH/RepVGG) backbone. Please check the [config folder](config/). Download models in [Model Zoo](#model-zoo)
 
 * [2021.01.10] **NanoDet-g** with lower memory access cost, which designed for edge NPU or GPU, is now available!
-  Check [config/nanodet-g.yml](config/nanodet-g.yml) and download:
-  [COCO pre-trained model(Google Drive)](https://drive.google.com/file/d/10uW7oqZKw231l_tr4C1bJWkbCXgBf7av/view?usp=sharing) | [(BaiduDisk百度网盘)](https://pan.baidu.com/s/1IJLdtLBvmQVOmzzNY_Ci5A) code:otcd
+  Check [config/nanodet-g.yml](config/nanodet-g.yml) and download in [Model Zoo](#model-zoo).
 
 <details>
 <summary>More...</summary>
@@ -93,9 +92,8 @@ Inference using [Alibaba's MNN framework](https://github.com/alibaba/MNN) is in 
 ### Pytorch demo
 
 First, install requirements and setup NanoDet following installation guide. Then download COCO pretrain weight from here
-👉[COCO pretrain weight for torch>=1.6(Google Drive)](https://drive.google.com/file/d/1EhMqGozKfqEfw8y9ftbi1jhYu86XoW62/view?usp=sharing) | [(百度网盘)](https://pan.baidu.com/s/1LCnmj2Pqhv0tsDX__1j2gg) code:6au1
 
-👉[COCO pretrain weight for torch<=1.5(Google Drive)](https://drive.google.com/file/d/10h-0qLMCgYvWQvKULqbkLvmirFR-w9NN/view?usp=sharing) | [(百度云盘)](https://pan.baidu.com/s/1OTcPiajCcqKLg3Q0vwho3A) code:topw
+👉[COCO pretrain weight (Google Drive)](https://drive.google.com/file/d/1ZkYucuLusJrCb_i63Lid0kYyyLvEiGN3/view?usp=sharing)
 
 * Inference images
 
@@ -166,14 +164,14 @@ NanoDet supports variety of backbones. Go to the [***config*** folder](config/) 
 
 Model                 | Backbone           |Resolution|COCO mAP| FLOPS |Params | Pre-train weight |
 :--------------------:|:------------------:|:--------:|:------:|:-----:|:-----:|:-----:|
-NanoDet-m             | ShuffleNetV2 1.0x  | 320*320  |  20.6  | 0.72B | 0.95M | [Download](https://drive.google.com/file/d/10h-0qLMCgYvWQvKULqbkLvmirFR-w9NN/view?usp=sharing) |
-NanoDet-m-416         | ShuffleNetV2 1.0x  | 416*416  |  23.5  | 1.2B  | 0.95M | [Download](https://drive.google.com/file/d/1h6TBy1tx4faIBKHnYeg0QwzFF6wlFBEd/view?usp=sharing)|
-NanoDet-t (***NEW***) | ShuffleNetV2 1.0x  | 320*320  |  21.7  | 0.96B | 1.36M | [Download](https://drive.google.com/file/d/1O2iz-aaDiQHJNfocInpFrY8ZFMrT3M1r/view?usp=sharing) |
-NanoDet-g             | Custom CSP Net     | 416*416  |  22.9  | 4.2B  | 3.81M | [Download](https://drive.google.com/file/d/10uW7oqZKw231l_tr4C1bJWkbCXgBf7av/view?usp=sharing)|
-NanoDet-EfficientLite | EfficientNet-Lite0 | 320*320  |  24.7  | 1.72B | 3.11M | [Download](https://drive.google.com/file/d/1u_t9L0jqjH858gCR-vpzWzu9FexQOSmJ/view?usp=sharing)|
-NanoDet-EfficientLite | EfficientNet-Lite1 | 416*416  |  30.3  | 4.06B | 4.01M | [Download](https://drive.google.com/file/d/1y9z7BToAZOQ1pKbOjNjf79YMuFuDTvfq/view?usp=sharing) |
-NanoDet-EfficientLite | EfficientNet-Lite2 | 512*512  |  32.6  | 7.12B | 4.71M | [Download](https://drive.google.com/file/d/1UMXJJxRkRzgTvN1iRKeDZqGpkLxK3X4K/view?usp=sharing) |
-NanoDet-RepVGG        | RepVGG-A0          | 416*416  |  27.8  | 11.3B | 6.75M | [Download](https://drive.google.com/file/d/1bsT9Ksxws2O3g_IUuUwp0QwZcJlqJw3S/view?usp=sharing) |
+NanoDet-m             | ShuffleNetV2 1.0x  | 320*320  |  20.6  | 0.72B | 0.95M | [Download](https://drive.google.com/file/d/1ZkYucuLusJrCb_i63Lid0kYyyLvEiGN3/view?usp=sharing) |
+NanoDet-m-416         | ShuffleNetV2 1.0x  | 416*416  |  23.5  | 1.2B  | 0.95M | [Download](https://drive.google.com/file/d/1jY-Um2VDDEhuVhluP9lE70rG83eXQYhV/view?usp=sharing)|
+NanoDet-t (***NEW***) | ShuffleNetV2 1.0x  | 320*320  |  21.7  | 0.96B | 1.36M | [Download](https://drive.google.com/file/d/1TqRGZeOKVCb98ehTaE0gJEuND6jxwaqN/view?usp=sharing) |
+NanoDet-g             | Custom CSP Net     | 416*416  |  22.9  | 4.2B  | 3.81M | [Download](https://drive.google.com/file/d/1f2lH7Ae1AY04g20zTZY7JS_dKKP37hvE/view?usp=sharing)|
+NanoDet-EfficientLite | EfficientNet-Lite0 | 320*320  |  24.7  | 1.72B | 3.11M | [Download](https://drive.google.com/file/d/1Dj1nBFc78GHDI9Wn8b3X4MTiIV2el8qP/view?usp=sharing)|
+NanoDet-EfficientLite | EfficientNet-Lite1 | 416*416  |  30.3  | 4.06B | 4.01M | [Download](https://drive.google.com/file/d/1ernkb_XhnKMPdCBBtUEdwxIIBF6UVnXq/view?usp=sharing) |
+NanoDet-EfficientLite | EfficientNet-Lite2 | 512*512  |  32.6  | 7.12B | 4.71M | [Download](https://drive.google.com/file/d/11V20AxXe6bTHyw3aMkgsZVzLOB31seoc/view?usp=sharing) |
+NanoDet-RepVGG        | RepVGG-A0          | 416*416  |  27.8  | 11.3B | 6.75M | [Download](https://drive.google.com/file/d/1nWZZ1qXb1HuIXwPSYpEyFHHqX05GaFer/view?usp=sharing) |
 
 
 ****

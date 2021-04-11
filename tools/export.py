@@ -31,7 +31,7 @@ def parse_args():
     parser.add_argument('--model_path',
                         type=str,
                         default=None,
-                        help='Path to .pth model.')
+                        help='Path to .ckpt model.')
     parser.add_argument('--out_path',
                         type=str,
                         default='nanodet.onnx',
@@ -56,6 +56,6 @@ if __name__ == '__main__':
         input_shape = tuple(map(int, input_shape.split(',')))
         assert len(input_shape) == 2
     if model_path is None:
-        model_path = os.path.join(cfg.save_dir, "model_best/model_best.pth")
+        model_path = os.path.join(cfg.save_dir, "model_best/model_best.ckpt")
     main(cfg, model_path, out_path, input_shape)
     print("Model saved to:", out_path)

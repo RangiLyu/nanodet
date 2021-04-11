@@ -1,6 +1,7 @@
 import os
 import torch
 import logging
+import warnings
 import argparse
 import numpy as np
 import torch.distributed as dist
@@ -39,6 +40,8 @@ def init_seeds(seed=0):
 
 
 def main(args):
+    warnings.warn('Warning! Old training code is deprecated and will be deleted '
+                  'in next version. Please use tools/train.py')
     load_config(cfg, args.config)
     local_rank = int(args.local_rank)
     torch.backends.cudnn.enabled = True

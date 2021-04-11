@@ -3,6 +3,7 @@ import torch
 import json
 import datetime
 import argparse
+import warnings
 
 from nanodet.util import mkdir, Logger, cfg, load_config
 from nanodet.trainer import build_trainer
@@ -23,6 +24,8 @@ def parse_args():
 
 
 def main(args):
+    warnings.warn('Warning! Old testing code is deprecated and will be deleted '
+                  'in next version. Please use tools/test.py')
     load_config(cfg, args.config)
     local_rank = -1
     torch.backends.cudnn.enabled = True

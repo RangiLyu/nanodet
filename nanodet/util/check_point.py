@@ -9,6 +9,8 @@ def load_model_weight(model, checkpoint, logger):
     # strip prefix of state_dict
     if list(state_dict.keys())[0].startswith('module.'):
         state_dict = {k[7:]: v for k, v in checkpoint['state_dict'].items()}
+    if list(state_dict.keys())[0].startswith('model.'):
+        state_dict = {k[6:]: v for k, v in checkpoint['state_dict'].items()}
 
     model_state_dict = model.module.state_dict() if hasattr(model, 'module') else model.state_dict()
 

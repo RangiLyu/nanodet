@@ -196,7 +196,7 @@ NanoDet-RepVGG        | RepVGG-A0          | 416*416  |  27.8  | 11.3B | 6.75M |
 
     Change image path and annotation path in both ***data->train*** and ***data->val***.
 
-    Set gpu, workers and batch size in ***device*** to fit your device.
+    Set gpu ids, num workers and batch size in ***device*** to fit your device.
 
     Set ***total_epochs***, ***lr*** and ***lr_schedule*** according to your dataset and batchsize.
 
@@ -204,25 +204,33 @@ NanoDet-RepVGG        | RepVGG-A0          | 416*416  |  27.8  | 11.3B | 6.75M |
 
 3. **Start training**
 
-    For single GPU, run
+   NanoDet is now using [pytorch lightning](https://github.com/PyTorchLightning/pytorch-lightning) for training.
+   
+   For both single-GPU or multiple-GPUs, run:
+   
+   ```shell script
+   python tools/train.py CONFIG_FILE_PATH
+   ```
+   
+   Old training script is deprecated and will be deleted in next version. If you still want to use,
+   
+   <details>
+   <summary>follow this...</summary>
+
+   For single GPU, run
 
     ```shell script
-    python tools/train.py CONFIG_PATH
+    python tools/deprecated/train.py CONFIG_FILE_PATH
     ```
 
     For multi-GPU, NanoDet using distributed training. (Notice: Windows not support distributed training before pytorch1.7) Please run
 
     ```shell script
-    python -m torch.distributed.launch --nproc_per_node=GPU_NUM --master_port 29501 tools/train.py CONFIG_PATH
+    python -m torch.distributed.launch --nproc_per_node=GPU_NUM --master_port 29501 tools/deprecated/train.py CONFIG_FILE_PATH
     ```
    
-   **Experimental**:
-   
-   Training with [pytorch lightning](https://github.com/PyTorchLightning/pytorch-lightning), no matter single or multi GPU just run:
-   
-   ```shell script
-   python tools/train_pl.py CONFIG_PATH
-   ```
+   </details>
+
 
 4. **Visualize Logs**
 

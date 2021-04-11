@@ -141,13 +141,13 @@ Besides, We provide a notebook [here](./demo/demo-inference-with-pytorch.ipynb) 
 2. Install pytorch
 
 ```shell script
-conda install pytorch torchvision cudatoolkit=11.0 -c pytorch
+conda install pytorch torchvision cudatoolkit=11.1 -c pytorch
 ```
 
 3. Install requirements
 
 ```shell script
-pip install Cython termcolor numpy tensorboard pycocotools matplotlib pyaml opencv-python tqdm
+pip install Cython termcolor numpy tensorboard pycocotools matplotlib pyaml opencv-python tqdm pytorch-lightning torchmetrics
 ```
 
 4. Setup NanoDet
@@ -194,7 +194,7 @@ NanoDet-RepVGG        | RepVGG-A0          | 416*416  |  27.8  | 11.3B | 6.75M |
 
     Change ***num_classes*** in ***model->arch->head***.
 
-    Change image path and annotation path in both ***data->train   data->val***.
+    Change image path and annotation path in both ***data->train*** and ***data->val***.
 
     Set gpu, workers and batch size in ***device*** to fit your device.
 
@@ -232,7 +232,7 @@ NanoDet-RepVGG        | RepVGG-A0          | 416*416  |  27.8  | 11.3B | 6.75M |
 
     ```shell script
     cd <YOUR_SAVE_DIR>
-    tensorboard --logdir ./logs
+    tensorboard --logdir ./
     ```
 
 ****

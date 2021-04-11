@@ -48,7 +48,7 @@ class CocoDetectionEvaluator:
                     json_results.append(detection)
         return json_results
 
-    def evaluate(self, results, save_dir, epoch, logger, rank=-1):
+    def evaluate(self, results, save_dir, rank=-1):
         results_json = self.results2json(results)
         json_path = os.path.join(save_dir, 'results{}.json'.format(rank))
         json.dump(results_json, open(json_path, 'w'))
@@ -61,5 +61,4 @@ class CocoDetectionEvaluator:
         eval_results = {}
         for k, v in zip(self.metric_names, aps):
             eval_results[k] = v
-            logger.scalar_summary('Val_coco_bbox/' + k, 'val', v, epoch)
         return eval_results

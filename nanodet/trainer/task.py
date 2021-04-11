@@ -15,6 +15,7 @@
 import copy
 import os
 import warnings
+import json
 import torch
 import logging
 from pytorch_lightning import LightningModule
@@ -27,25 +28,20 @@ from nanodet.util import mkdir
 class TrainingTask(LightningModule):
     """
     Pytorch Lightning module of a general training task.
+    Including training, evaluating and testing.
+    Args:
+        cfg: Training configurations
+        evaluator: Evaluator for evaluating the model performance.
     """
 
-    def __init__(self, cfg, evaluator=None, logger=None):
-        """
-
-        Args:
-            cfg: Training configurations
-            evaluator:
-            logger:
-        """
+    def __init__(self, cfg, evaluator=None):
         super(TrainingTask, self).__init__()
         self.cfg = cfg
         self.model = build_model(cfg.model)
         self.evaluator = evaluator
-        self._logger = logger
         self.save_flag = -10
         self.log_style = 'NanoDet'  # Log style. Choose between 'NanoDet' or 'Lightning'
         # TODO: use callback to log
-        # TODO: remove _logger
         # TODO: batch eval
         # TODO: support old checkpoint
 
@@ -54,7 +50,7 @@ class TrainingTask(LightningModule):
         return x
 
     @torch.no_grad()
-    def predict(self, batch, batch_idx, dataloader_idx):
+    def predict(self, batch, batch_idx=None, dataloader_idx=None):
         preds = self.forward(batch['img'])
         results = self.model.head.post_process(preds, batch)
         return results
@@ -103,11 +99,17 @@ class TrainingTask(LightningModule):
         return res
 
     def validation_epoch_end(self, validation_step_outputs):
+        """
+        Called at the end of the validation epoch with the outputs of all validation steps.
+        Evaluating results and save best model.
+        Args:
+            validation_step_outputs: A list of val outputs
+
+        """
         results = {}
         for res in validation_step_outputs:
             results.update(res)
-        eval_results = self.evaluator.evaluate(results, self.cfg.save_dir, self.current_epoch+1,
-                                               self._logger, rank=self.local_rank)
+        eval_results = self.evaluator.evaluate(results, self.cfg.save_dir, rank=self.local_rank)
         metric = eval_results[self.cfg.evaluator.save_key]
         # save best model
         if metric > self.save_flag:
@@ -125,9 +127,39 @@ class TrainingTask(LightningModule):
             warnings.warn('Warning! Save_key is not in eval results! Only save model last!')
         if self.log_style == 'Lightning':
             for k, v in eval_results.items():
-                self.log('Val/' + k, v, on_step=False, on_epoch=True, prog_bar=False, sync_dist=True)
+                self.log('Val_metrics/' + k, v, on_step=False, on_epoch=True, prog_bar=False, sync_dist=True)
+        elif self.log_style == 'NanoDet':
+            for k, v in eval_results.items():
+                self.scalar_summary('Val_metrics/' + k, 'Val', v, self.current_epoch+1)
+
+    def test_step(self, batch, batch_idx):
+        dets = self.predict(batch, batch_idx)
+        res = {batch['img_info']['id'].cpu().numpy()[0]: dets}
+        return res
+
+    def test_epoch_end(self, test_step_outputs):
+        results = {}
+        for res in test_step_outputs:
+            results.update(res)
+        res_json = self.evaluator.results2json(results)
+        json_path = os.path.join(self.cfg.save_dir, 'results.json')
+        json.dump(res_json, open(json_path, 'w'))
+
+        if self.cfg.test_mode == 'val':
+            eval_results = self.evaluator.evaluate(results, self.cfg.save_dir, rank=self.local_rank)
+            txt_path = os.path.join(self.cfg.save_dir, "eval_results.txt")
+            with open(txt_path, "a") as f:
+                for k, v in eval_results.items():
+                    f.write("{}: {}\n".format(k, v))
 
     def configure_optimizers(self):
+        """
+        Prepare optimizer and learning-rate scheduler
+        to use in optimization.
+
+        Returns:
+            optimizer
+        """
         optimizer_cfg = copy.deepcopy(self.cfg.schedule.optimizer)
         name = optimizer_cfg.pop('name')
         build_optimizer = getattr(torch.optim, name)
@@ -153,6 +185,18 @@ class TrainingTask(LightningModule):
                        on_tpu=None,
                        using_native_amp=None,
                        using_lbfgs=None):
+        """
+        Performs a single optimization step (parameter update).
+        Args:
+            epoch: Current epoch
+            batch_idx: Index of current batch
+            optimizer: A PyTorch optimizer
+            optimizer_idx: If you used multiple optimizers this indexes into that list.
+            optimizer_closure: closure for all optimizers
+            on_tpu: true if TPU backward is required
+            using_native_amp: True if using native amp
+            using_lbfgs: True if the matching optimizer is lbfgs
+        """
         # warm up lr
         if self.trainer.global_step <= self.cfg.schedule.warmup.steps:
             if self.cfg.schedule.warmup.name == 'constant':
@@ -180,6 +224,15 @@ class TrainingTask(LightningModule):
         return items
 
     def scalar_summary(self, tag, phase, value, step):
+        """
+        Write Tensorboard scalar summary log.
+        Args:
+            tag: Name for the tag
+            phase: 'Train' or 'Val'
+            value: Value to record
+            step: Step value to record
+
+        """
         if self.local_rank < 1:
             self.logger.experiment.add_scalars(tag, {phase: value}, step)
 

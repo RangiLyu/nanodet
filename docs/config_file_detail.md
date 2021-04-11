@@ -15,7 +15,7 @@ Change save_dir to where you want to save logs and models. If path not exist, Na
 ```yaml
 model:
     arch:
-        name: xxx
+        name: OneStageDetector
         backbone: xxx
         fpn: xxx
         head: xxx

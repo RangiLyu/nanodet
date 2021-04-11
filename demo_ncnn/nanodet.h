@@ -60,7 +60,7 @@ private:
     void decode_infer(ncnn::Mat& cls_pred, ncnn::Mat& dis_pred, int stride, float threshold, std::vector<std::vector<BoxInfo>>& results);
     BoxInfo disPred2Bbox(const float*& dfl_det, int label, float score, int x, int y, int stride);
     static void nms(std::vector<BoxInfo>& result, float nms_threshold);
-    int input_size = 320;
+    int input_size[2] = {320, 320};
     int num_class = 80;
     int reg_max = 7;
 

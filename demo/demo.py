@@ -100,8 +100,9 @@ def main():
             if args.save_result:
                 save_folder = os.path.join(cfg.save_dir, time.strftime("%Y_%m_%d_%H_%M_%S", current_time))
                 if not os.path.exists(save_folder):
-                    os.mkdir(save_folder)
+                    os.makedirs(save_folder)
                 save_file_name = os.path.join(save_folder, os.path.basename(image_name))
+                print(f'Images have been saved to {save_file_name}')
                 cv2.imwrite(save_file_name, result_image)
             ch = cv2.waitKey(0)
             if ch == 27 or ch == ord('q') or ch == ord('Q'):
@@ -113,9 +114,9 @@ def main():
         fps = cap.get(cv2.CAP_PROP_FPS)
         save_folder = os.path.join(cfg.save_dir, time.strftime("%Y_%m_%d_%H_%M_%S", current_time))
         if not os.path.exists(save_folder):
-            os.mkdir(save_folder)
+            os.makedirs(save_folder)
         save_path = os.path.join(save_folder, args.path.split('/')[-1]) if args.demo == 'video' else os.path.join(save_folder, 'camera.mp4')
-        print(f'save_path is {save_path}')
+        print(f'Video has been saved to {save_path}')
         vid_writer = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (int(width), int(height)))
         while True:
             ret_val, frame = cap.read()

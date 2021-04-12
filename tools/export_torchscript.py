@@ -33,7 +33,7 @@ def main(config, model_path: str, output_path: str, input_shape=(320, 320)):
 def parse_args():
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-        description='Convert .pth model weights to TorchMcript.')
+        description='Convert .pth model weights to TorchScript.')
     parser.add_argument('--cfg_path',
                         type=str,
                         help='Path to .yml config file.')

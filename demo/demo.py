@@ -7,6 +7,7 @@ from nanodet.util import cfg, load_config, Logger
 from nanodet.model.arch import build_model
 from nanodet.util import load_model_weight
 from nanodet.data.transform import Pipeline
+from nanodet.util.path import mkdir
 
 image_ext = ['.jpg', '.jpeg', '.webp', '.bmp', '.png']
 video_ext = ['mp4', 'mov', 'avi', 'mkv']
@@ -99,8 +100,7 @@ def main():
             result_image = predictor.visualize(res, meta, cfg.class_names, 0.35)
             if args.save_result:
                 save_folder = os.path.join(cfg.save_dir, time.strftime("%Y_%m_%d_%H_%M_%S", current_time))
-                if not os.path.exists(save_folder):
-                    os.mkdir(save_folder)
+                mkdir(save_folder)
                 save_file_name = os.path.join(save_folder, os.path.basename(image_name))
                 cv2.imwrite(save_file_name, result_image)
             ch = cv2.waitKey(0)
@@ -112,8 +112,7 @@ def main():
         height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)  # float
         fps = cap.get(cv2.CAP_PROP_FPS)
         save_folder = os.path.join(cfg.save_dir, time.strftime("%Y_%m_%d_%H_%M_%S", current_time))
-        if not os.path.exists(save_folder):
-            os.mkdir(save_folder)
+        mkdir(save_folder)
         save_path = os.path.join(save_folder, args.path.split('/')[-1]) if args.demo == 'video' else os.path.join(save_folder, 'camera.mp4')
         print(f'save_path is {save_path}')
         vid_writer = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (int(width), int(height)))

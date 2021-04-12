@@ -12,7 +12,6 @@ from nanodet.util.path import mkdir
 image_ext = ['.jpg', '.jpeg', '.webp', '.bmp', '.png']
 video_ext = ['mp4', 'mov', 'avi', 'mkv']
 
-
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('demo', default='image', help='demo type, eg. image, video and webcam')
@@ -20,10 +19,11 @@ def parse_args():
     parser.add_argument('--model', help='model file path')
     parser.add_argument('--path', default='./demo', help='path to images or video')
     parser.add_argument('--camid', type=int, default=0, help='webcam demo camera id')
-    parser.add_argument('--save_result', action='store_true', help='whether to save the inference result of image/video')
+    parser.add_argument('--save_result', default=False,action='store_true',
+                        help='whether to save the inference result of image/video')
+    parser.add_argument('--save_path', type=str,help='path to save the inference result of image/video')
     args = parser.parse_args()
     return args
-
 
 class Predictor(object):
     def __init__(self, cfg, model_path, logger, device='cuda:0'):
@@ -64,10 +64,9 @@ class Predictor(object):
     def visualize(self, dets, meta, class_names, score_thres, wait=0):
         time1 = time.time()
         result_img = self.model.head.show_result(meta['raw_img'], dets, class_names, score_thres=score_thres, show=True)
-        print('viz time: {:.3f}s'.format(time.time()-time1))
+        print('viz time: {:.3f}s'.format(time.time() - time1))
         return result_img
-
-
+      
 def get_image_list(path):
     image_names = []
     for maindir, subdir, file_name_list in os.walk(path):
@@ -78,29 +77,35 @@ def get_image_list(path):
                 image_names.append(apath)
     return image_names
 
-
 def main():
     args = parse_args()
     torch.backends.cudnn.enabled = True
     torch.backends.cudnn.benchmark = True
-
     load_config(cfg, args.config)
     logger = Logger(-1, use_tensorboard=False)
     predictor = Predictor(cfg, args.model, logger, device='cuda:0')
     logger.log('Press "Esc", "q" or "Q" to exit.')
     current_time = time.localtime()
+    
     if args.demo == 'image':
         if os.path.isdir(args.path):
             files = get_image_list(args.path)
         else:
             files = [args.path]
         files.sort()
+        if args.save_result:
+            save_folder = args.save_path if args.save_path else os.path.join(cfg.save_dir,
+                                                                             time.strftime("%Y_%m_%d_%H_%M_%S",
+                                                                                           current_time))
+            if not os.path.exists(save_folder):
+                mkdir(save_folder)
+            logger.log(fr"make the save folder: {save_folder}")
+
         for image_name in files:
             meta, res = predictor.inference(image_name)
             result_image = predictor.visualize(res, meta, cfg.class_names, 0.35)
+
             if args.save_result:
-                save_folder = os.path.join(cfg.save_dir, time.strftime("%Y_%m_%d_%H_%M_%S", current_time))
-                mkdir(save_folder)
                 save_file_name = os.path.join(save_folder, os.path.basename(image_name))
                 cv2.imwrite(save_file_name, result_image)
             ch = cv2.waitKey(0)
@@ -111,11 +116,16 @@ def main():
         width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)  # float
         height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)  # float
         fps = cap.get(cv2.CAP_PROP_FPS)
-        save_folder = os.path.join(cfg.save_dir, time.strftime("%Y_%m_%d_%H_%M_%S", current_time))
-        mkdir(save_folder)
-        save_path = os.path.join(save_folder, args.path.split('/')[-1]) if args.demo == 'video' else os.path.join(save_folder, 'camera.mp4')
-        print(f'save_path is {save_path}')
-        vid_writer = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (int(width), int(height)))
+        
+        if args.save_result:
+            save_folder = args.save_path if args.save_path else os.path.join(cfg.save_dir,
+                                                                           time.strftime("%Y_%m_%d_%H_%M_%S", current_time))
+            if not os.path.exists(save_folder):
+                mkdir(save_folder)
+            save_path = os.path.join(save_folder, args.path.split('/')[-1]) if args.demo == 'video' else os.path.join(
+                save_folder, 'camera.mp4')
+            vid_writer = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (int(width), int(height)))
+            logger.log(fr"make the save file: {save_path}")                      
         while True:
             ret_val, frame = cap.read()
             if ret_val:
@@ -128,7 +138,6 @@ def main():
                     break
             else:
                 break
-
 
 if __name__ == '__main__':
     main()

@@ -23,7 +23,7 @@ Please follow the [official document](https://www.yuque.com/mnn/en/build_linux) 
 1. Export ONNX model
 
    ```shell
-   python ./tools/export.py
+   python ./tools/export_onnx.py
    ```
 
 2. Use *onnx-simplifier* to simplify it
@@ -39,7 +39,7 @@ Please follow the [official document](https://www.yuque.com/mnn/en/build_linux) 
    ```
 
 It should be note that the input size does not have to be 320, it can be any integer multiple of strides,
-since NanoDet is anchor free. We can adapt the shape of `dummy_input` in *./tools/export.py* to get ONNX and MNN models
+since NanoDet is anchor free. We can adapt the shape of `dummy_input` in *./tools/export_onnx.py* to get ONNX and MNN models
 with different input sizes.
 
 Here are converted model [Baidu Disk](https://pan.baidu.com/s/1DE4_yo0xez6Wd95xv7NnDQ)(extra code: *5mfa*),

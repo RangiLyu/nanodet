@@ -99,7 +99,7 @@ def main():
                                                                                            current_time))
             if not os.path.exists(save_folder):
                 mkdir(save_folder)
-            logger.log(fr"make the save folder: {save_folder}")
+            logger.info(fr"make the image save folder: {save_folder}")
 
         for image_name in files:
             meta, res = predictor.inference(image_name)
@@ -125,7 +125,7 @@ def main():
             save_path = os.path.join(save_folder, args.path.split('/')[-1]) if args.demo == 'video' else os.path.join(
                 save_folder, 'camera.mp4')
             vid_writer = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (int(width), int(height)))
-            logger.log(fr"make the save file: {save_path}")                      
+            logger.info(fr"make the video save file: {save_path}")                      
         while True:
             ret_val, frame = cap.read()
             if ret_val:

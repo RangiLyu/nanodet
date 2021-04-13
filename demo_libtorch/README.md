@@ -28,5 +28,5 @@ python ./tools/export_torchscript.py --cfg_path ${CONFIG_PATH} --model_path ${PY
 mkdir build
 cd build
 cmake -DCMAKE_PREFIX_PATH=/absolute/path/to/libtorch ..
-make --build . --config Release
+make
 ```

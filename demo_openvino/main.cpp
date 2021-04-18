@@ -320,7 +320,7 @@ int main(int argc, char** argv)
         return -1;
     }
     std::cout<<"start init model"<<std::endl;
-    auto detector = NanoDet("../model/nanodet_m.xml");
+    auto detector = NanoDet("nanodet.xml");
     std::cout<<"success"<<std::endl;
 
     int mode = atoi(argv[1]);

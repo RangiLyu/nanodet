@@ -139,7 +139,7 @@ Besides, We provide a notebook [here](./demo/demo-inference-with-pytorch.ipynb) 
 2. Install pytorch
 
 ```shell script
-conda install pytorch torchvision cudatoolkit=11.1 -c pytorch
+conda install pytorch torchvision cudatoolkit=11.1 -c pytorch -c conda-forge
 ```
 
 3. Install requirements

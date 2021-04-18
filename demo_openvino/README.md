@@ -111,6 +111,8 @@ make
 
 ## Run demo
 
+First, move nanodet openvino model files to the demo's folder. Then run these commands:
+
 ### Webcam
 
 ```shell

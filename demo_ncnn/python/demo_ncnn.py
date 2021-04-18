@@ -475,11 +475,11 @@ class NanoDetNCNN(NanoDetABC):
         ex = self.net.create_extractor()
         ex.input(self.input_name, mat_in)
 
-        score_out_name = ["792", "814", "836"]
+        score_out_name = ["cls_pred_stride_8", "cls_pred_stride_16", "cls_pred_stride_32"]
         scores = [np.array(ex.extract(x)[1]) for x in score_out_name]
         scores = [np.reshape(x, (-1, 80)) for x in scores]
 
-        boxes_out_name = ["795", "817", "839"]
+        boxes_out_name = ["dis_pred_stride_8", "dis_pred_stride_16", "dis_pred_stride_32"]
         raw_boxes = [np.array(ex.extract(x)[1]) for x in boxes_out_name]
         raw_boxes = [np.reshape(x, (-1, 32)) for x in raw_boxes]
 

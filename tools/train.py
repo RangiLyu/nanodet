@@ -40,6 +40,9 @@ def parse_args():
 
 def main(args):
     load_config(cfg, args.config)
+    if cfg.model.arch.head.num_classes != len(cfg.class_names):
+        print('cfg.model.arch.head.num_classes must equal len(cfg.class_names)')
+        return
     local_rank = int(args.local_rank)
     torch.backends.cudnn.enabled = True
     torch.backends.cudnn.benchmark = True

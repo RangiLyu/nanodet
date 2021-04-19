@@ -39,9 +39,9 @@ public:
 
     std::vector<HeadInfo> heads_info{
         // cls_pred|dis_pred|stride
-            {"792", "795",    8},
-            {"814", "817",   16},
-            {"836", "839",   32},
+        {"cls_pred_stride_8", "dis_pred_stride_8", 8},
+        {"cls_pred_stride_16", "dis_pred_stride_16", 16},
+        {"cls_pred_stride_32", "dis_pred_stride_32", 32},
     };
 
     std::vector<BoxInfo> detect(cv::Mat image, float score_threshold, float nms_threshold);
@@ -60,7 +60,7 @@ private:
     void decode_infer(ncnn::Mat& cls_pred, ncnn::Mat& dis_pred, int stride, float threshold, std::vector<std::vector<BoxInfo>>& results);
     BoxInfo disPred2Bbox(const float*& dfl_det, int label, float score, int x, int y, int stride);
     static void nms(std::vector<BoxInfo>& result, float nms_threshold);
-    int input_size = 320;
+    int input_size[2] = {320, 320};
     int num_class = 80;
     int reg_max = 7;
 

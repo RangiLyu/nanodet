@@ -374,6 +374,8 @@ class NanoDetABC(metaclass=ABCMeta):
         raw_shape = img.shape
         img_input, ResizeM = self.preprocess(img)
         scores, raw_boxes = self.infer_image(img_input)
+        if scores[0].ndim == 1: # handling num_classes=1 case
+            scores = [x[:,None] for x in scores]
         bbox, label, score = self.postprocess(scores, raw_boxes, ResizeM, raw_shape)
         return bbox, label, score
 
@@ -426,10 +428,10 @@ class NanoDetMNN(NanoDetABC):
         )
         self.input_tensor.copyFrom(tmp_input)
         self.interpreter.runSession(self.session)
-        score_out_name = ["792", "814", "836"]
+        score_out_name = ["cls_pred_stride_8", "cls_pred_stride_16", "cls_pred_stride_32"]
         scores = [self.interpreter.getSessionOutput(self.session, x).getData() for x in score_out_name]
         scores = [np.reshape(x, (-1, 80)) for x in scores]
-        boxes_out_name = ["795", "817", "839"]
+        boxes_out_name = ["dis_pred_stride_8", "dis_pred_stride_16", "dis_pred_stride_32"]
         raw_boxes = [self.interpreter.getSessionOutput(self.session, x).getData() for x in boxes_out_name]
         raw_boxes = [np.reshape(x, (-1, 32)) for x in raw_boxes]
         return scores, raw_boxes

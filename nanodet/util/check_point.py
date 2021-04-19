@@ -1,11 +1,16 @@
 import torch
+import pytorch_lightning as pl
+from collections import OrderedDict
 from .rank_filter import rank_filter
+
 
 def load_model_weight(model, checkpoint, logger):
     state_dict = checkpoint['state_dict']
     # strip prefix of state_dict
     if list(state_dict.keys())[0].startswith('module.'):
         state_dict = {k[7:]: v for k, v in checkpoint['state_dict'].items()}
+    if list(state_dict.keys())[0].startswith('model.'):
+        state_dict = {k[6:]: v for k, v in checkpoint['state_dict'].items()}
 
     model_state_dict = model.module.state_dict() if hasattr(model, 'module') else model.state_dict()
 
@@ -35,3 +40,27 @@ def save_model(model, path, epoch, iter, optimizer=None):
         data['optimizer'] = optimizer.state_dict()
 
     torch.save(data, path)
+
+
+def convert_old_model(old_model_dict):
+    if 'pytorch-lightning_version' in old_model_dict:
+        raise ValueError('This model is not old format. No need to convert!')
+    version = pl.__version__
+    epoch = old_model_dict['epoch']
+    global_step = old_model_dict['iter']
+    state_dict = old_model_dict['state_dict']
+    new_state_dict = OrderedDict()
+    for name, value in state_dict.items():
+        new_state_dict['model.' + name] = value
+
+    new_checkpoint = {'epoch': epoch,
+                      'global_step': global_step,
+                      'pytorch-lightning_version': version,
+                      'state_dict': new_state_dict,
+                      'lr_schedulers': []}
+
+    if 'optimizer' in old_model_dict:
+        optimizer_states = [old_model_dict['optimizer']]
+        new_checkpoint['optimizer_states'] = optimizer_states
+
+    return new_checkpoint

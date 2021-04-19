@@ -2,7 +2,7 @@
 save_dir: workspace/RepVGG-A0-416
 model:
   arch:
-    name: GFL
+    name: OneStageDetector
     backbone:
       name: RepVGG
       arch: A0

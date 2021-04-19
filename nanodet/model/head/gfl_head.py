@@ -196,7 +196,7 @@ class GFLHead(nn.Module):
          bbox_weights_list, num_total_pos, num_total_neg) = cls_reg_targets
 
         num_total_samples = reduce_mean(
-            torch.tensor(num_total_pos).cuda()).item()
+            torch.tensor(num_total_pos).to(device)).item()
         num_total_samples = max(num_total_samples, 1.0)
 
         losses_qfl, losses_bbox, losses_dfl, \
@@ -214,9 +214,9 @@ class GFLHead(nn.Module):
         avg_factor = sum(avg_factor)
         avg_factor = reduce_mean(avg_factor).item()
         if avg_factor <= 0:
-            loss_qfl = torch.tensor(0, dtype=torch.float32, requires_grad=True).cuda()
-            loss_bbox = torch.tensor(0, dtype=torch.float32, requires_grad=True).cuda()
-            loss_dfl = torch.tensor(0, dtype=torch.float32, requires_grad=True).cuda()
+            loss_qfl = torch.tensor(0, dtype=torch.float32, requires_grad=True).to(device)
+            loss_bbox = torch.tensor(0, dtype=torch.float32, requires_grad=True).to(device)
+            loss_dfl = torch.tensor(0, dtype=torch.float32, requires_grad=True).to(device)
         else:
             losses_bbox = list(map(lambda x: x / avg_factor, losses_bbox))
             losses_dfl = list(map(lambda x: x / avg_factor, losses_dfl))
@@ -288,7 +288,7 @@ class GFLHead(nn.Module):
         else:
             loss_bbox = bbox_pred.sum() * 0
             loss_dfl = bbox_pred.sum() * 0
-            weight_targets = torch.tensor(0).cuda()
+            weight_targets = torch.tensor(0).to(cls_score.device)
 
         # qfl loss
         loss_qfl = self.loss_qfl(
@@ -549,7 +549,7 @@ class GFLHead(nn.Module):
             max_num=100)
         return det_bboxes, det_labels
 
-    def get_single_level_center_point(self, featmap_size, stride, dtype, device='cuda', flatten=True):
+    def get_single_level_center_point(self, featmap_size, stride, dtype, device, flatten=True):
         """
         Generate pixel centers of a single stage feature map.
         :param featmap_size: height and width of the feature map
@@ -568,7 +568,7 @@ class GFLHead(nn.Module):
             x = x.flatten()
         return y, x
 
-    def get_grid_cells(self, featmap_size, scale, stride, dtype, device='cuda'):
+    def get_grid_cells(self, featmap_size, scale, stride, dtype, device):
         """
         Generate grid cells of a feature map for target assignment.
         :param featmap_size: Size of a single level feature map.

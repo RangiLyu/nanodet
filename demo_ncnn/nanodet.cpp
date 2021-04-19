@@ -123,8 +123,8 @@ std::vector<BoxInfo> NanoDet::detect(cv::Mat image, float score_threshold, float
 
 void NanoDet::decode_infer(ncnn::Mat& cls_pred, ncnn::Mat& dis_pred, int stride, float threshold, std::vector<std::vector<BoxInfo>>& results)
 {
-    int feature_h = this->input_size / stride;
-    int feature_w = this->input_size / stride;
+    int feature_h = this->input_size[1] / stride;
+    int feature_w = this->input_size[0] / stride;
 
     //cv::Mat debug_heatmap = cv::Mat(feature_h, feature_w, CV_8UC3);
     for (int idx = 0; idx < feature_h * feature_w; idx++)
@@ -176,8 +176,8 @@ BoxInfo NanoDet::disPred2Bbox(const float*& dfl_det, int label, float score, int
     }
     float xmin = (std::max)(ct_x - dis_pred[0], .0f);
     float ymin = (std::max)(ct_y - dis_pred[1], .0f);
-    float xmax = (std::min)(ct_x + dis_pred[2], (float)this->input_size);
-    float ymax = (std::min)(ct_y + dis_pred[3], (float)this->input_size);
+    float xmax = (std::min)(ct_x + dis_pred[2], (float)this->input_size[0]);
+    float ymax = (std::min)(ct_y + dis_pred[3], (float)this->input_size[1]);
 
     //std::cout << xmin << "," << ymin << "," << xmax << "," << xmax << "," << std::endl;
     return BoxInfo { xmin, ymin, xmax, ymax, score, label };

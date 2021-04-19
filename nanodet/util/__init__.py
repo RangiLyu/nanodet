@@ -3,7 +3,7 @@ from .path import mkdir
 from .logger import Logger, MovingAverage, AverageMeter
 from .data_parallel import DataParallel
 from .distributed_data_parallel import DDP
-from .check_point import load_model_weight, save_model
+from .check_point import load_model_weight, save_model, convert_old_model
 from .config import cfg, load_config
 from .box_transform import *
 from .util_mixins import NiceRepr

@@ -61,7 +61,7 @@ source /opt/intel/openvino_2021/bin/setupvars.sh
 1. Export ONNX model
 
    ```shell
-   python ./tools/export.py --cfg_path ${CONFIG_PATH} --model_path ${PYTORCH_MODEL_PATH}
+   python ./tools/export_onnx.py --cfg_path ${CONFIG_PATH} --model_path ${PYTORCH_MODEL_PATH}
    ```
 
 2. Use *onnx-simplifier* to simplify it
@@ -110,6 +110,8 @@ make
 
 
 ## Run demo
+
+First, move nanodet openvino model files to the demo's folder. Then run these commands:
 
 ### Webcam
 

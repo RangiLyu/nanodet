@@ -9,7 +9,7 @@
 save_dir: workspace/nanodet_t
 model:
   arch:
-    name: GFL
+    name: OneStageDetector
     backbone:
       name: ShuffleNetV2
       model_size: 1.0x

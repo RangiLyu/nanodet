@@ -210,7 +210,7 @@ NanoDet-RepVGG        | RepVGG-A0          | 416*416  |  27.8  | 11.3B | 6.75M |
    python tools/train.py CONFIG_FILE_PATH
    ```
    
-   Old training script is deprecated and will be deleted in next version. If you still want to use,
+   For **Windows users**, if you have problems with the new lightning trainer, try to use tools/deprecated/train.py
    
    <details>
    <summary>follow this...</summary>

@@ -16,7 +16,7 @@ Unzip ncnn-android-vulkan.zip into demo_android_ncnn/app/src/main/cpp or change 
 ## Step3.
 Copy the NanoDet ncnn model file (nanodet_m.param and nanodet_m.bin) from models folder into demo_android_ncnn/app/src/main/assets
 
-* [NanoDet ncnn model download link](https://github.com/RangiLyu/nanodet/releases/download/v0.0.1/nanodet_ncnn_model.zip)
+* [NanoDet ncnn model download link](https://github.com/RangiLyu/nanodet/releases/download/v0.3.0/nanodet_m_ncnn_model.zip)
 
 If you want to run yolov4-tiny and yolov5s, download them and also put in demo_android_ncnn/app/src/main/assets.
 

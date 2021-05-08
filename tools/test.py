@@ -25,7 +25,8 @@ from nanodet.data.collate import collate_function
 from nanodet.data.dataset import build_dataset
 from nanodet.trainer.task import TrainingTask
 from nanodet.evaluator import build_evaluator
-
+import platform
+is_windows = platform.system().lower() == 'windows'
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -53,7 +54,7 @@ def main(args):
     logger.log('Setting up data...')
     val_dataset = build_dataset(cfg.data.val, args.task)
     val_dataloader = torch.utils.data.DataLoader(val_dataset, batch_size=1, shuffle=False,
-                                                 num_workers=cfg.device.workers_per_gpu,
+                                                 num_workers=0 if is_windows else cfg.device.workers_per_gpu,
                                                  pin_memory=True, collate_fn=collate_function, drop_last=True)
     evaluator = build_evaluator(cfg, val_dataset)
 
@@ -69,7 +70,7 @@ def main(args):
 
     trainer = pl.Trainer(default_root_dir=cfg.save_dir,
                          gpus=cfg.device.gpu_ids,
-                         accelerator='ddp',
+                         accelerator='dp' if is_windows else 'ddp',
                          log_every_n_steps=cfg.log.interval,
                          num_sanity_val_steps=0,
                          )

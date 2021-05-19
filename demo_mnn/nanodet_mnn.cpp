@@ -71,7 +71,7 @@ int NanoDet::detect(cv::Mat &raw_image, std::vector<BoxInfo> &result_list)
         MNN::Tensor tensor_boxes_host(tensor_boxes, tensor_boxes->getDimensionType());
         tensor_boxes->copyToHostTensor(&tensor_boxes_host);
 
-        decode_infer(tensor_scores, tensor_boxes, head_info.stride, score_threshold, results);
+        decode_infer(&tensor_scores_host, &tensor_boxes_host, head_info.stride, score_threshold, results);
     }
 
     auto end = chrono::steady_clock::now();

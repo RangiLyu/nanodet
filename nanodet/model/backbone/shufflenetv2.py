@@ -128,12 +128,12 @@ class ShuffleNetV2(nn.Module):
             input_channels = output_channels
         output_channels = self._stage_out_channels[-1]
         if self.with_last_conv:
-            self.conv5 = nn.Sequential(
+            conv5 = nn.Sequential(
                 nn.Conv2d(input_channels, output_channels, 1, 1, 0, bias=False),
                 nn.BatchNorm2d(output_channels),
                 act_layers(activation),
             )
-            self.stage4.add_module('conv5', self.conv5)
+            self.stage4.add_module('conv5', conv5)
         self._initialize_weights(pretrain)
 
     def forward(self, x):

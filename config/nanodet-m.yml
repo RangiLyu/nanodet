@@ -55,8 +55,8 @@ data:
       translate: 0.2
       flip: 0.5
       brightness: 0.2
-      contrast: [0.8, 1.2]
-      saturation: [0.8, 1.2]
+      contrast: [0.6, 1.4]
+      saturation: [0.5, 1.2]
       normalize: [[103.53, 116.28, 123.675], [57.375, 57.12, 58.395]]
   val:
     name: coco
@@ -68,8 +68,8 @@ data:
       normalize: [[103.53, 116.28, 123.675], [57.375, 57.12, 58.395]]
 device:
   gpu_ids: [0]
-  workers_per_gpu: 12
-  batchsize_per_gpu: 160
+  workers_per_gpu: 8
+  batchsize_per_gpu: 192
 schedule:
 #  resume:
 #  load_model: YOUR_MODEL_PATH
@@ -82,10 +82,10 @@ schedule:
     name: linear
     steps: 300
     ratio: 0.1
-  total_epochs: 190
+  total_epochs: 280
   lr_schedule:
     name: MultiStepLR
-    milestones: [130,160,175,185]
+    milestones: [240,260,275]
     gamma: 0.1
   val_intervals: 10
 evaluator:

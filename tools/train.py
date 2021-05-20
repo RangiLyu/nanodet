@@ -25,7 +25,8 @@ from nanodet.data.collate import collate_function
 from nanodet.data.dataset import build_dataset
 from nanodet.trainer.task import TrainingTask
 from nanodet.evaluator import build_evaluator
-
+import platform
+is_windows = platform.system().lower() == 'windows'
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -59,11 +60,11 @@ def main(args):
     evaluator = build_evaluator(cfg, val_dataset)
 
     train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=cfg.device.batchsize_per_gpu,
-                                                   shuffle=True, num_workers=cfg.device.workers_per_gpu,
+                                                   shuffle=True, num_workers=0 if is_windows else cfg.device.workers_per_gpu,
                                                    pin_memory=True, collate_fn=collate_function, drop_last=True)
     # TODO: batch eval
     val_dataloader = torch.utils.data.DataLoader(val_dataset, batch_size=1, shuffle=False,
-                                                 num_workers=cfg.device.workers_per_gpu,
+                                                 num_workers=0 if is_windows else cfg.device.workers_per_gpu,
                                                  pin_memory=True, collate_fn=collate_function, drop_last=True)
 
     logger.log('Creating model...')
@@ -83,7 +84,7 @@ def main(args):
                          max_epochs=cfg.schedule.total_epochs,
                          gpus=cfg.device.gpu_ids,
                          check_val_every_n_epoch=cfg.schedule.val_intervals,
-                         accelerator='ddp',
+                         accelerator='dp' if is_windows else 'ddp',
                          log_every_n_steps=cfg.log.interval,
                          num_sanity_val_steps=0,
                          resume_from_checkpoint=model_resume_path,

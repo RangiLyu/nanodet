@@ -75,7 +75,7 @@ def main(args):
             warnings.warn('Warning! Old .pth checkpoint is deprecated. '
                           'Convert the checkpoint with tools/convert_old_checkpoint.py ')
             ckpt = convert_old_model(ckpt)
-        task.load_state_dict(ckpt['state_dict'])
+        task.load_state_dict(ckpt['state_dict'], strict=False)
 
     model_resume_path = os.path.join(cfg.save_dir, 'model_last.ckpt') if 'resume' in cfg.schedule else None
 

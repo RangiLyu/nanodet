@@ -36,13 +36,14 @@
 ****
 ## Benchmarks
 
-Model     |Resolution|COCO mAP|Latency(ARM 4xCore)|FLOPS|Params   | Model Size(ncnn fp16)
-:--------:|:--------:|:------:|:-----------------:|:---:|:-------:|:-------:
-NanoDet-m | 320*320 |  20.6 | 10.23ms              | 0.72B      | 0.95M | 1.8MB
-NanoDet-m | 416*416 |  23.5 | 16.44ms              | 1.2B       | 0.95M | 1.8MB
-NanoDet-g | 416*416 |  22.9 | Not Designed For ARM | 4.2B       | 3.81M | 7.7MB
-YoloV3-Tiny| 416*416 | 16.6 | 37.6ms               | 5.62B      | 8.86M | 33.7MB
-YoloV4-Tiny| 416*416 | 21.7 | 32.81ms              | 6.96B      | 6.06M | 23.0MB
+Model     |Resolution|COCO mAP|Latency(ARM 4xCore)   | FLOPS      |Params | Model Size(ncnn fp16)
+:--------:|:--------:|:------:|:--------------------:|:----------:|:-----:|:-------:
+NanoDet-m | 320*320 |  20.6   | **10.23ms**          | **0.72B**  | **0.95M** | **1.8MB**
+NanoDet-m | 416*416 |  **23.5** | 16.44ms            | 1.2B       | **0.95M** | **1.8MB**
+NanoDet-g | 416*416 |  22.9   | Not Designed For ARM | 4.2B       | 3.81M     | 7.7MB
+YoloV3-Tiny| 416*416 | 16.6   | 37.6ms               | 5.62B      | 8.86M     | 33.7MB
+YoloV4-Tiny| 416*416 | 21.7   | 32.81ms              | 6.96B      | 6.06M     | 23.0MB
+Find      | more | models | in [Model Zoo](#model-zoo)|   -       |   -       |    -
 
 Note:
 

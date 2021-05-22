@@ -55,6 +55,9 @@ class TrainingTask(LightningModule):
         results = self.model.head.post_process(preds, batch)
         return results
 
+    def on_train_start(self) -> None:
+        self.lr_scheduler.last_epoch = self.current_epoch-1
+
     def training_step(self, batch, batch_idx):
         preds, loss, loss_states = self.model.forward_train(batch)
 

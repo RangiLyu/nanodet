@@ -435,23 +435,29 @@ class GFLHead(nn.Module):
     def post_process(self, preds, meta):
         cls_scores, bbox_preds = preds
         result_list = self.get_bboxes(cls_scores, bbox_preds, meta)
-        preds = {}
-        warp_matrix = meta['warp_matrix'][0] if isinstance(meta['warp_matrix'], list) else meta['warp_matrix']
-        img_height = meta['img_info']['height'].cpu().numpy() \
-            if isinstance(meta['img_info']['height'], torch.Tensor) else meta['img_info']['height']
-        img_width = meta['img_info']['width'].cpu().numpy() \
-            if isinstance(meta['img_info']['width'], torch.Tensor) else meta['img_info']['width']
-        for result in result_list:
+        det_results = {}
+        warp_matrixes = meta['warp_matrix'] if isinstance(meta['warp_matrix'], list) else [meta['warp_matrix']]
+        img_heights = meta['img_info']['height'].cpu().numpy() \
+            if isinstance(meta['img_info']['height'], torch.Tensor) else [meta['img_info']['height']]
+        img_widths = meta['img_info']['width'].cpu().numpy() \
+            if isinstance(meta['img_info']['width'], torch.Tensor) else [meta['img_info']['width']]
+        img_ids = meta['img_info']['id'].cpu().numpy() \
+            if isinstance(meta['img_info']['id'], torch.Tensor) else [meta['img_info']['id']]
+
+        for result, img_width, img_height, img_id, warp_matrix in \
+                zip(result_list, img_widths, img_heights, img_ids, warp_matrixes):
+            det_result = {}
             det_bboxes, det_labels = result
             det_bboxes = det_bboxes.cpu().numpy()
             det_bboxes[:, :4] = warp_boxes(det_bboxes[:, :4], np.linalg.inv(warp_matrix), img_width, img_height)
             classes = det_labels.cpu().numpy()
             for i in range(self.num_classes):
                 inds = (classes == i)
-                preds[i] = np.concatenate([
+                det_result[i] = np.concatenate([
                     det_bboxes[inds, :4].astype(np.float32),
                     det_bboxes[inds, 4:5].astype(np.float32)], axis=1).tolist()
-        return preds
+            det_results[img_id] = det_result
+        return det_results
 
     def show_result(self, img, dets, class_names, score_thres=0.3, show=True, save_path=None):
         result = overlay_bbox_cv(img, dets, class_names, score_thresh=score_thres)

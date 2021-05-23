@@ -52,8 +52,8 @@ def main(args):
 
     logger.log('Setting up data...')
     val_dataset = build_dataset(cfg.data.val, args.task)
-    val_dataloader = torch.utils.data.DataLoader(val_dataset, batch_size=1, shuffle=False,
-                                                 num_workers=cfg.device.workers_per_gpu,
+    val_dataloader = torch.utils.data.DataLoader(val_dataset, batch_size=cfg.device.batchsize_per_gpu,
+                                                 shuffle=False, num_workers=cfg.device.workers_per_gpu,
                                                  pin_memory=True, collate_fn=collate_function, drop_last=True)
     evaluator = build_evaluator(cfg, val_dataset)
 

@@ -85,8 +85,8 @@ class Trainer:
             meta['img'] = meta['img'].to(device=torch.device('cuda'), non_blocking=True)
             output, loss, loss_stats = self.run_step(model, meta, mode)
             if mode == 'val' or mode == 'test':
-                dets = model.module.head.post_process(output, meta)
-                results[meta['img_info']['id'].cpu().numpy()[0]] = dets
+                batch_dets = model.module.head.post_process(output, meta)
+                results.update(batch_dets)
             for k in loss_stats:
                 if k not in epoch_losses:
                     epoch_losses[k] = AverageMeter(loss_stats[k].mean().item())

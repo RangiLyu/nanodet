@@ -42,7 +42,7 @@ class Predictor(object):
         self.pipeline = Pipeline(cfg.data.val.pipeline, cfg.data.val.keep_ratio)
 
     def inference(self, img):
-        img_info = {}
+        img_info = {'id': 0}
         if isinstance(img, str):
             img_info['file_name'] = os.path.basename(img)
             img = cv2.imread(img)
@@ -98,7 +98,7 @@ def main():
         files.sort()
         for image_name in files:
             meta, res = predictor.inference(image_name)
-            result_image = predictor.visualize(res, meta, cfg.class_names, 0.35)
+            result_image = predictor.visualize(res[0], meta, cfg.class_names, 0.35)
             if args.save_result:
                 save_folder = os.path.join(cfg.save_dir, time.strftime("%Y_%m_%d_%H_%M_%S", current_time))
                 mkdir(local_rank, save_folder)
@@ -121,7 +121,7 @@ def main():
             ret_val, frame = cap.read()
             if ret_val:
                 meta, res = predictor.inference(frame)
-                result_frame = predictor.visualize(res, meta, cfg.class_names, 0.35)
+                result_frame = predictor.visualize(res[0], meta, cfg.class_names, 0.35)
                 if args.save_result:
                     vid_writer.write(result_frame)
                 ch = cv2.waitKey(1)

@@ -98,8 +98,7 @@ class TrainingTask(LightningModule):
             self.info(log_msg)
 
         dets = self.model.head.post_process(preds, batch)
-        res = {batch['img_info']['id'].cpu().numpy()[0]: dets}
-        return res
+        return dets
 
     def validation_epoch_end(self, validation_step_outputs):
         """
@@ -137,8 +136,7 @@ class TrainingTask(LightningModule):
 
     def test_step(self, batch, batch_idx):
         dets = self.predict(batch, batch_idx)
-        res = {batch['img_info']['id'].cpu().numpy()[0]: dets}
-        return res
+        return dets
 
     def test_epoch_end(self, test_step_outputs):
         results = {}

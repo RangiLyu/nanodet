@@ -42,8 +42,6 @@ class TrainingTask(LightningModule):
         self.save_flag = -10
         self.log_style = 'NanoDet'  # Log style. Choose between 'NanoDet' or 'Lightning'
         # TODO: use callback to log
-        # TODO: batch eval
-        # TODO: support old checkpoint
 
     def forward(self, x):
         x = self.model(x)

@@ -41,7 +41,8 @@ def parse_args():
 def main(args):
     load_config(cfg, args.config)
     if cfg.model.arch.head.num_classes != len(cfg.class_names):
-        raise ValueError('cfg.model.arch.head.num_classes must equal len(cfg.class_names),but got {} and {}'.format(cfg.model.arch.head.num_classes,len(cfg.class_names)))
+        raise ValueError('cfg.model.arch.head.num_classes must equal len(cfg.class_names), '
+                         'but got {} and {}'.format(cfg.model.arch.head.num_classes, len(cfg.class_names)))
     local_rank = int(args.local_rank)
     torch.backends.cudnn.enabled = True
     torch.backends.cudnn.benchmark = True
@@ -61,9 +62,8 @@ def main(args):
     train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=cfg.device.batchsize_per_gpu,
                                                    shuffle=True, num_workers=cfg.device.workers_per_gpu,
                                                    pin_memory=True, collate_fn=collate_function, drop_last=True)
-    # TODO: batch eval
-    val_dataloader = torch.utils.data.DataLoader(val_dataset, batch_size=1, shuffle=False,
-                                                 num_workers=cfg.device.workers_per_gpu,
+    val_dataloader = torch.utils.data.DataLoader(val_dataset, batch_size=cfg.device.batchsize_per_gpu,
+                                                 shuffle=False, num_workers=cfg.device.workers_per_gpu,
                                                  pin_memory=True, collate_fn=collate_function, drop_last=True)
 
     logger.log('Creating model...')
@@ -76,6 +76,7 @@ def main(args):
                           'Convert the checkpoint with tools/convert_old_checkpoint.py ')
             ckpt = convert_old_model(ckpt)
         task.load_state_dict(ckpt['state_dict'], strict=False)
+        logger.log('Loaded model weight from {}'.format(cfg.schedule.load_model))
 
     model_resume_path = os.path.join(cfg.save_dir, 'model_last.ckpt') if 'resume' in cfg.schedule else None
 

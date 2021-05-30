@@ -5,13 +5,15 @@
 
 ### Super fast and lightweight anchor-free object detection model. Real-time on mobile devices.
 
-* ⚡Super lightweight: Model file is only 1.8 MB.
+* ⚡Super lightweight: Model file is only 980KB(INT8) or 1.8MB(FP16).
 * ⚡Super fast: 97fps(10.23ms) on mobile ARM CPU.
 * 😎Training friendly:  Much lower GPU memory cost than other models. Batch-size=80 is available on GTX1060 6G.
-* 😎Easy to deploy: Provide **C++ implementation** and **Android demo** based on ncnn inference framework.
+* 😎Easy to deploy: Provide **C++ implementation** with various backends and **Android demo** based on ncnn inference framework.
 
 ****
 ## NEWS!!!
+
+* [2021.05.30] Release ncnn int8 models, and new pre-trained models with ShuffleNetV2-1.5x backbone. Much higher mAP but still realtime(**26.8mAP 21.53ms**).
 
 * [2021.03.12] Apply the **Transformer** encoder to NanoDet! Introducing **NanoDet-t**, which replaces the PAN in NanoDet-m with a **TAN(Transformer Attention Net)**,  gets 21.7 mAP(+1.1) on COCO val 2017. Check [nanodet-t.yml](config/Transformer/nanodet-t.yml) for more details.
 
@@ -36,14 +38,17 @@
 ****
 ## Benchmarks
 
-Model     |Resolution|COCO mAP|Latency(ARM 4xCore)   | FLOPS      |Params | Model Size(ncnn fp16)
-:--------:|:--------:|:------:|:--------------------:|:----------:|:-----:|:-------:
-NanoDet-m | 320*320 |  20.6   | **10.23ms**          | **0.72B**  | **0.95M** | **1.8MB**
-NanoDet-m | 416*416 |  **23.5** | 16.44ms            | 1.2B       | **0.95M** | **1.8MB**
-NanoDet-g | 416*416 |  22.9   | Not Designed For ARM | 4.2B       | 3.81M     | 7.7MB
-YoloV3-Tiny| 416*416 | 16.6   | 37.6ms               | 5.62B      | 8.86M     | 33.7MB
-YoloV4-Tiny| 416*416 | 21.7   | 32.81ms              | 6.96B      | 6.06M     | 23.0MB
-Find      | more | models | in [Model Zoo](#model-zoo)|   -       |   -       |    -
+Model          |Resolution|COCO mAP |Latency(ARM 4 Threads) | FLOPS      |   Params  | Model Size
+:-------------:|:--------:|:-------:|:--------------------:|:----------:|:---------:|:-------:
+NanoDet-m      | 320*320 |   20.6   | **10.23ms**          | **0.72G**  | **0.95M** | **1.8MB(FP16)** &#124; **980KB(INT8)**
+NanoDet-m      | 416*416 |   23.5   | 16.44ms              | 1.2G       | **0.95M** | **1.8MB(FP16)** &#124; **980KB(INT8)**
+NanoDet-m-1.5x | 320*320 |   23.5   | 13.53ms              | 1.44G      | 2.08M     |   3.9MB(FP16) &#124; 2MB(INT8) 
+NanoDet-m-1.5x | 416*416 | **26.8** | 21.53ms              | 2.42G      | 2.08M     |   3.9MB(FP16) &#124; 2MB(INT8) 
+NanoDet-g      | 416*416 |   22.9   | Not Designed For ARM | 4.2G       | 3.81M     |   7.7MB(FP16) &#124; 3.6MB(INT8)
+YoloV3-Tiny    | 416*416 |   16.6   | 37.6ms               | 5.62G      | 8.86M     |   33.7MB
+YoloV4-Tiny    | 416*416 |   21.7   | 32.81ms              | 6.96G      | 6.06M     |   23.0MB
+
+***Find more models in [Model Zoo](#model-zoo)***
 
 Note:
 
@@ -89,6 +94,14 @@ C++ demo based on [ncnn](https://github.com/Tencent/ncnn) is in ***demo_ncnn*** 
 ### MNN demo
 
 Inference using [Alibaba's MNN framework](https://github.com/alibaba/MNN) is in ***demo_mnn*** folder. Including python and cpp inference code. Please refer to [MNN demo guide](demo_mnn/README.md).
+
+### OpenVINO demo
+
+Inference using [OpenVINO](https://01.org/openvinotoolkit) is in ***demo_openvino*** folder. Please refer to [OpenVINO demo guide](demo_openvino/README.md).
+
+### Web browser demo
+
+https://nihui.github.io/ncnn-webassembly-nanodet/
 
 ### Pytorch demo
 
@@ -293,7 +306,3 @@ https://github.com/implus/GFocal
 https://github.com/cmdbug/YOLOv5_NCNN
 
 https://github.com/rbgirshick/yacs
-
-
-
-

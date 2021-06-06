@@ -88,7 +88,8 @@ def main(args):
                          log_every_n_steps=cfg.log.interval,
                          num_sanity_val_steps=0,
                          resume_from_checkpoint=model_resume_path,
-                         callbacks=[ProgressBar(refresh_rate=0)]  # disable tqdm bar
+                         callbacks=[ProgressBar(refresh_rate=0)],  # disable tqdm bar
+                         benchmark=True,
                          )
 
     trainer.fit(task, train_dataloader, val_dataloader)

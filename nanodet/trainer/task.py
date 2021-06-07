@@ -112,7 +112,7 @@ class TrainingTask(LightningModule):
             results.update(res)
         all_results = gather_results(results)
         if all_results:
-            eval_results = self.evaluator.evaluate(results, self.cfg.save_dir, rank=self.local_rank)
+            eval_results = self.evaluator.evaluate(all_results, self.cfg.save_dir, rank=self.local_rank)
             metric = eval_results[self.cfg.evaluator.save_key]
             # save best model
             if metric > self.save_flag:
@@ -147,7 +147,7 @@ class TrainingTask(LightningModule):
             results.update(res)
         all_results = gather_results(results)
         if all_results:
-            res_json = self.evaluator.results2json(results)
+            res_json = self.evaluator.results2json(all_results)
             json_path = os.path.join(self.cfg.save_dir, 'results.json')
             json.dump(res_json, open(json_path, 'w'))
 

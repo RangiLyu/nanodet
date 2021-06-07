@@ -18,11 +18,12 @@ import warnings
 import json
 import torch
 import logging
+
 from pytorch_lightning import LightningModule
-from typing import Any, List, Dict, Tuple, Optional
+from typing import Any, List
+from nanodet.util import mkdir, gather_results
 
 from ..model.arch import build_model
-from nanodet.util import mkdir
 
 
 class TrainingTask(LightningModule):
@@ -140,16 +141,20 @@ class TrainingTask(LightningModule):
         results = {}
         for res in test_step_outputs:
             results.update(res)
-        res_json = self.evaluator.results2json(results)
-        json_path = os.path.join(self.cfg.save_dir, 'results.json')
-        json.dump(res_json, open(json_path, 'w'))
+        all_results = gather_results(results)
+        if all_results:
+            res_json = self.evaluator.results2json(results)
+            json_path = os.path.join(self.cfg.save_dir, 'results.json')
+            json.dump(res_json, open(json_path, 'w'))
 
-        if self.cfg.test_mode == 'val':
-            eval_results = self.evaluator.evaluate(results, self.cfg.save_dir, rank=self.local_rank)
-            txt_path = os.path.join(self.cfg.save_dir, "eval_results.txt")
-            with open(txt_path, "a") as f:
-                for k, v in eval_results.items():
-                    f.write("{}: {}\n".format(k, v))
+            if self.cfg.test_mode == 'val':
+                eval_results = self.evaluator.evaluate(results, self.cfg.save_dir, rank=self.local_rank)
+                txt_path = os.path.join(self.cfg.save_dir, "eval_results.txt")
+                with open(txt_path, "a") as f:
+                    for k, v in eval_results.items():
+                        f.write("{}: {}\n".format(k, v))
+        else:
+            self.info('Skip eval on rank {}'.format(self.local_rank))
 
     def configure_optimizers(self):
         """

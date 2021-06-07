@@ -152,7 +152,7 @@ class TrainingTask(LightningModule):
             json.dump(res_json, open(json_path, 'w'))
 
             if self.cfg.test_mode == 'val':
-                eval_results = self.evaluator.evaluate(results, self.cfg.save_dir, rank=self.local_rank)
+                eval_results = self.evaluator.evaluate(all_results, self.cfg.save_dir, rank=self.local_rank)
                 txt_path = os.path.join(self.cfg.save_dir, "eval_results.txt")
                 with open(txt_path, "a") as f:
                     for k, v in eval_results.items():

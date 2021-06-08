@@ -1,5 +1,8 @@
+import pickle
+
 import torch
 from torch.autograd import Variable
+import torch.distributed as dist
 from torch.nn.parallel._functions import Scatter
 
 
@@ -9,6 +12,7 @@ def list_scatter(input, target_gpus, chunk_sizes):
         ret.append(input[:size])
         del input[:size]
     return tuple(ret)
+
 
 def scatter(inputs, target_gpus, dim=0, chunk_sizes=None):
     """
@@ -43,3 +47,38 @@ def scatter_kwargs(inputs, kwargs, target_gpus, dim=0, chunk_sizes=None):
     inputs = tuple(inputs)
     kwargs = tuple(kwargs)
     return inputs, kwargs
+
+
+def gather_results(result_part):
+    rank = -1
+    world_size = 1
+    if dist.is_available() and dist.is_initialized():
+        rank = dist.get_rank()
+        world_size = dist.get_world_size()
+
+    # dump result part to tensor with pickle
+    part_tensor = torch.tensor(
+        bytearray(pickle.dumps(result_part)), dtype=torch.uint8, device='cuda')
+
+    # gather all result part tensor shape
+    shape_tensor = torch.tensor(part_tensor.shape, device='cuda')
+    shape_list = [shape_tensor.clone() for _ in range(world_size)]
+    dist.all_gather(shape_list, shape_tensor)
+
+    # padding result part tensor to max length
+    shape_max = torch.tensor(shape_list).max()
+    part_send = torch.zeros(shape_max, dtype=torch.uint8, device='cuda')
+    part_send[:shape_tensor[0]] = part_tensor
+    part_recv_list = [
+        part_tensor.new_zeros(shape_max) for _ in range(world_size)
+    ]
+
+    # gather all result dict
+    dist.all_gather(part_recv_list, part_send)
+
+    if rank < 1:
+        all_res = {}
+        for recv, shape in zip(part_recv_list, shape_list):
+            all_res.update(
+                pickle.loads(recv[:shape[0]].cpu().numpy().tobytes()))
+        return all_res

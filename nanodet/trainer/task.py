@@ -18,11 +18,12 @@ import warnings
 import json
 import torch
 import logging
+
 from pytorch_lightning import LightningModule
-from typing import Any, List, Dict, Tuple, Optional
+from typing import Any, List
+from nanodet.util import mkdir, gather_results
 
 from ..model.arch import build_model
-from nanodet.util import mkdir
 
 
 class TrainingTask(LightningModule):
@@ -109,28 +110,32 @@ class TrainingTask(LightningModule):
         results = {}
         for res in validation_step_outputs:
             results.update(res)
-        eval_results = self.evaluator.evaluate(results, self.cfg.save_dir, rank=self.local_rank)
-        metric = eval_results[self.cfg.evaluator.save_key]
-        # save best model
-        if metric > self.save_flag:
-            self.save_flag = metric
-            best_save_path = os.path.join(self.cfg.save_dir, 'model_best')
-            mkdir(self.local_rank, best_save_path)
-            self.trainer.save_checkpoint(os.path.join(best_save_path, "model_best.ckpt"))
-            txt_path = os.path.join(best_save_path, "eval_results.txt")
-            if self.local_rank < 1:
-                with open(txt_path, "a") as f:
-                    f.write("Epoch:{}\n".format(self.current_epoch+1))
-                    for k, v in eval_results.items():
-                        f.write("{}: {}\n".format(k, v))
+        all_results = gather_results(results)
+        if all_results:
+            eval_results = self.evaluator.evaluate(all_results, self.cfg.save_dir, rank=self.local_rank)
+            metric = eval_results[self.cfg.evaluator.save_key]
+            # save best model
+            if metric > self.save_flag:
+                self.save_flag = metric
+                best_save_path = os.path.join(self.cfg.save_dir, 'model_best')
+                mkdir(self.local_rank, best_save_path)
+                self.trainer.save_checkpoint(os.path.join(best_save_path, "model_best.ckpt"))
+                txt_path = os.path.join(best_save_path, "eval_results.txt")
+                if self.local_rank < 1:
+                    with open(txt_path, "a") as f:
+                        f.write("Epoch:{}\n".format(self.current_epoch+1))
+                        for k, v in eval_results.items():
+                            f.write("{}: {}\n".format(k, v))
+            else:
+                warnings.warn('Warning! Save_key is not in eval results! Only save model last!')
+            if self.log_style == 'Lightning':
+                for k, v in eval_results.items():
+                    self.log('Val_metrics/' + k, v, on_step=False, on_epoch=True, prog_bar=False, sync_dist=True)
+            elif self.log_style == 'NanoDet':
+                for k, v in eval_results.items():
+                    self.scalar_summary('Val_metrics/' + k, 'Val', v, self.current_epoch+1)
         else:
-            warnings.warn('Warning! Save_key is not in eval results! Only save model last!')
-        if self.log_style == 'Lightning':
-            for k, v in eval_results.items():
-                self.log('Val_metrics/' + k, v, on_step=False, on_epoch=True, prog_bar=False, sync_dist=True)
-        elif self.log_style == 'NanoDet':
-            for k, v in eval_results.items():
-                self.scalar_summary('Val_metrics/' + k, 'Val', v, self.current_epoch+1)
+            self.info('Skip val on rank {}'.format(self.local_rank))
 
     def test_step(self, batch, batch_idx):
         dets = self.predict(batch, batch_idx)
@@ -140,16 +145,20 @@ class TrainingTask(LightningModule):
         results = {}
         for res in test_step_outputs:
             results.update(res)
-        res_json = self.evaluator.results2json(results)
-        json_path = os.path.join(self.cfg.save_dir, 'results.json')
-        json.dump(res_json, open(json_path, 'w'))
+        all_results = gather_results(results)
+        if all_results:
+            res_json = self.evaluator.results2json(all_results)
+            json_path = os.path.join(self.cfg.save_dir, 'results.json')
+            json.dump(res_json, open(json_path, 'w'))
 
-        if self.cfg.test_mode == 'val':
-            eval_results = self.evaluator.evaluate(results, self.cfg.save_dir, rank=self.local_rank)
-            txt_path = os.path.join(self.cfg.save_dir, "eval_results.txt")
-            with open(txt_path, "a") as f:
-                for k, v in eval_results.items():
-                    f.write("{}: {}\n".format(k, v))
+            if self.cfg.test_mode == 'val':
+                eval_results = self.evaluator.evaluate(all_results, self.cfg.save_dir, rank=self.local_rank)
+                txt_path = os.path.join(self.cfg.save_dir, "eval_results.txt")
+                with open(txt_path, "a") as f:
+                    for k, v in eval_results.items():
+                        f.write("{}: {}\n".format(k, v))
+        else:
+            self.info('Skip test on rank {}'.format(self.local_rank))
 
     def configure_optimizers(self):
         """

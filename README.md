@@ -1,7 +1,9 @@
 ![](docs/imgs/Title.jpg)
 
 # NanoDet
-[![GitHub license](https://img.shields.io/github/license/RangiLyu/nanodet?style=flat-square)](https://github.com/RangiLyu/nanodet/blob/main/LICENSE)  ![GitHub release (latest by date)](https://img.shields.io/github/v/release/RangiLyu/nanodet?style=flat-square)
+[![GitHub license](https://img.shields.io/github/license/RangiLyu/nanodet?style=flat-square)](https://github.com/RangiLyu/nanodet/blob/main/LICENSE)
+[![Github downloads](https://img.shields.io/github/downloads/RangiLyu/nanodet/total?color=yellow&label=downloads&logo=github&logoColor=lightgrey&style=flat-square)](https://img.shields.io/github/downloads/RangiLyu/nanodet/total?color=yellow&label=Downloads&logo=github&logoColor=lightgrey&style=flat-square)
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/RangiLyu/nanodet?style=flat-square)](https://img.shields.io/github/v/release/RangiLyu/nanodet?style=flat-square)
 
 ### Super fast and lightweight anchor-free object detection model. Real-time on mobile devices.
 

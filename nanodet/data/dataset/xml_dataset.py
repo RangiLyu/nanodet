@@ -23,7 +23,7 @@ from pycocotools.coco import COCO
 from .coco import CocoDataset
 
 
-def get_file_list(path, type='.xml'):
+def get_file_list(path, type=".xml"):
     file_names = []
     for maindir, subdir, file_name_list in os.walk(path):
         for filename in file_name_list:
@@ -35,18 +35,21 @@ def get_file_list(path, type='.xml'):
 
 
 class CocoXML(COCO):
-
     def __init__(self, annotation):
         """
-        Constructor of Microsoft COCO helper class for reading and visualizing annotations.
+        Constructor of Microsoft COCO helper class for
+        reading and visualizing annotations.
         :param annotation: annotation dict
         :return:
         """
         # load dataset
-        self.dataset, self.anns, self.cats, self.imgs = dict(), dict(), dict(), dict()
+        self.dataset, self.anns, self.cats, self.imgs = dict(), dict(), dict(
+        ), dict()
         self.imgToAnns, self.catToImgs = defaultdict(list), defaultdict(list)
         dataset = annotation
-        assert type(dataset) == dict, 'annotation file format {} not supported'.format(type(dataset))
+        assert type(
+            dataset) == dict, "annotation file format {} not supported".format(
+                type(dataset))
         self.dataset = dataset
         self.createIndex()
 
@@ -62,63 +65,80 @@ class XMLDataset(CocoDataset):
         :param ann_path:
         :return:
         """
-        logging.info('loading annotations into memory...')
+        logging.info("loading annotations into memory...")
         tic = time.time()
-        ann_file_names = get_file_list(ann_path, type='.xml')
+        ann_file_names = get_file_list(ann_path, type=".xml")
         logging.info("Found {} annotation files.".format(len(ann_file_names)))
         image_info = []
         categories = []
         annotations = []
         for idx, supercat in enumerate(self.class_names):
-            categories.append({'supercategory': supercat,
-                               'id': idx + 1,
-                               'name': supercat})
+            categories.append({
+                "supercategory": supercat,
+                "id": idx + 1,
+                "name": supercat
+            })
         ann_id = 1
         for idx, xml_name in enumerate(ann_file_names):
             tree = ET.parse(os.path.join(ann_path, xml_name))
             root = tree.getroot()
-            file_name = root.find('filename').text
-            width = int(root.find('size').find('width').text)
-            height = int(root.find('size').find('height').text)
-            info = {'file_name': file_name,
-                    'height': height,
-                    'width': width,
-                    'id': idx + 1}
+            file_name = root.find("filename").text
+            width = int(root.find("size").find("width").text)
+            height = int(root.find("size").find("height").text)
+            info = {
+                "file_name": file_name,
+                "height": height,
+                "width": width,
+                "id": idx + 1,
+            }
             image_info.append(info)
-            for _object in root.findall('object'):
-                category = _object.find('name').text
+            for _object in root.findall("object"):
+                category = _object.find("name").text
                 if category not in self.class_names:
-                    logging.warning("WARNING! {} is not in class_names! Pass this box annotation.".format(category))
+                    logging.warning(
+                        "WARNING! {} is not in class_names! "
+                        "Pass this box annotation.".format(category))
                     continue
                 for cat in categories:
-                    if category == cat['name']:
-                        cat_id = cat['id']
-                xmin = int(_object.find('bndbox').find('xmin').text)
-                ymin = int(_object.find('bndbox').find('ymin').text)
-                xmax = int(_object.find('bndbox').find('xmax').text)
-                ymax = int(_object.find('bndbox').find('ymax').text)
+                    if category == cat["name"]:
+                        cat_id = cat["id"]
+                xmin = int(_object.find("bndbox").find("xmin").text)
+                ymin = int(_object.find("bndbox").find("ymin").text)
+                xmax = int(_object.find("bndbox").find("xmax").text)
+                ymax = int(_object.find("bndbox").find("ymax").text)
                 w = xmax - xmin
                 h = ymax - ymin
                 if w < 0 or h < 0:
-                    logging.warning("WARNING! Find error data in file {}! Box w and h should > 0. Pass this box "
-                                    "annotation.".format(xml_name))
+                    logging.warning(
+                        "WARNING! Find error data in file {}! Box w and "
+                        "h should > 0. Pass this box annotation.".format(
+                            xml_name))
                     continue
-                coco_box = [max(xmin, 0), max(ymin, 0), min(w, width), min(h, height)]
-                ann = {'image_id': idx + 1,
-                       'bbox': coco_box,
-                       'category_id': cat_id,
-                       'iscrowd': 0,
-                       'id': ann_id,
-                       'area': coco_box[2] * coco_box[3]
-                       }
+                coco_box = [
+                    max(xmin, 0),
+                    max(ymin, 0),
+                    min(w, width),
+                    min(h, height)
+                ]
+                ann = {
+                    "image_id": idx + 1,
+                    "bbox": coco_box,
+                    "category_id": cat_id,
+                    "iscrowd": 0,
+                    "id": ann_id,
+                    "area": coco_box[2] * coco_box[3],
+                }
                 annotations.append(ann)
                 ann_id += 1
 
-        coco_dict = {'images': image_info,
-                     'categories': categories,
-                     'annotations': annotations}
-        logging.info('Load {} xml files and {} boxes'.format(len(image_info), len(annotations)))
-        logging.info('Done (t={:0.2f}s)'.format(time.time() - tic))
+        coco_dict = {
+            "images": image_info,
+            "categories": categories,
+            "annotations": annotations,
+        }
+        logging.info("Load {} xml files and {} boxes".format(
+            len(image_info), len(annotations)))
+        logging.info("Done (t={:0.2f}s)".format(time.time() - tic))
         return coco_dict
 
     def get_data_info(self, ann_path):

@@ -23,7 +23,6 @@ from .base import BaseDataset
 
 
 class CocoDataset(BaseDataset):
-
     def get_data_info(self, ann_path):
         """
         Load basic information of dataset such as image path, label and so on.
@@ -35,7 +34,8 @@ class CocoDataset(BaseDataset):
           'height': 426,
           'width': 640,
           'date_captured': '2013-11-21 01:34:01',
-          'flickr_url': 'http://farm9.staticflickr.com/8035/8024364858_9c41dc1666_z.jpg',
+          'flickr_url':
+              'http://farm9.staticflickr.com/8035/8024364858_9c41dc1666_z.jpg',
           'id': 139},
          ...
         ]
@@ -50,16 +50,18 @@ class CocoDataset(BaseDataset):
 
     def get_per_img_info(self, idx):
         img_info = self.data_info[idx]
-        file_name = img_info['file_name']
-        height = img_info['height']
-        width = img_info['width']
-        id = img_info['id']
+        file_name = img_info["file_name"]
+        height = img_info["height"]
+        width = img_info["width"]
+        id = img_info["id"]
         if not isinstance(id, int):
-            raise TypeError('Image id must be int.')
-        info = {'file_name': file_name,
-                'height': height,
-                'width': width,
-                'id': id}
+            raise TypeError("Image id must be int.")
+        info = {
+            "file_name": file_name,
+            "height": height,
+            "width": width,
+            "id": id
+        }
         return info
 
     def get_img_annotation(self, idx):
@@ -79,23 +81,23 @@ class CocoDataset(BaseDataset):
         if self.use_keypoint:
             gt_keypoints = []
         for ann in anns:
-            if ann.get('ignore', False):
+            if ann.get("ignore", False):
                 continue
-            x1, y1, w, h = ann['bbox']
-            if ann['area'] <= 0 or w < 1 or h < 1:
+            x1, y1, w, h = ann["bbox"]
+            if ann["area"] <= 0 or w < 1 or h < 1:
                 continue
-            if ann['category_id'] not in self.cat_ids:
+            if ann["category_id"] not in self.cat_ids:
                 continue
             bbox = [x1, y1, x1 + w, y1 + h]
-            if ann['iscrowd']:
+            if ann["iscrowd"]:
                 gt_bboxes_ignore.append(bbox)
             else:
                 gt_bboxes.append(bbox)
-                gt_labels.append(self.cat2label[ann['category_id']])
+                gt_labels.append(self.cat2label[ann["category_id"]])
                 if self.use_instance_mask:
                     gt_masks.append(self.coco_api.annToMask(ann))
                 if self.use_keypoint:
-                    gt_keypoints.append(ann['keypoints'])
+                    gt_keypoints.append(ann["keypoints"])
         if gt_bboxes:
             gt_bboxes = np.array(gt_bboxes, dtype=np.float32)
             gt_labels = np.array(gt_labels, dtype=np.int64)
@@ -106,15 +108,17 @@ class CocoDataset(BaseDataset):
             gt_bboxes_ignore = np.array(gt_bboxes_ignore, dtype=np.float32)
         else:
             gt_bboxes_ignore = np.zeros((0, 4), dtype=np.float32)
-        annotation = dict(
-            bboxes=gt_bboxes, labels=gt_labels, bboxes_ignore=gt_bboxes_ignore)
+        annotation = dict(bboxes=gt_bboxes,
+                          labels=gt_labels,
+                          bboxes_ignore=gt_bboxes_ignore)
         if self.use_instance_mask:
-            annotation['masks'] = gt_masks
+            annotation["masks"] = gt_masks
         if self.use_keypoint:
             if gt_keypoints:
-                annotation['keypoints'] = np.array(gt_keypoints, dtype=np.float32)
+                annotation["keypoints"] = np.array(gt_keypoints,
+                                                   dtype=np.float32)
             else:
-                annotation['keypoints'] = np.zeros((0, 51), dtype=np.float32)
+                annotation["keypoints"] = np.zeros((0, 51), dtype=np.float32)
         return annotation
 
     def get_train_data(self, idx):
@@ -124,24 +128,25 @@ class CocoDataset(BaseDataset):
         :return: meta-data (a dict containing image, annotation and other information)
         """
         img_info = self.get_per_img_info(idx)
-        file_name = img_info['file_name']
+        file_name = img_info["file_name"]
         image_path = os.path.join(self.img_path, file_name)
         img = cv2.imread(image_path)
         if img is None:
-            print('image {} read failed.'.format(image_path))
-            raise FileNotFoundError('Cant load image! Please check image path!')
+            print("image {} read failed.".format(image_path))
+            raise FileNotFoundError(
+                "Cant load image! Please check image path!")
         ann = self.get_img_annotation(idx)
         meta = dict(img=img,
                     img_info=img_info,
-                    gt_bboxes=ann['bboxes'],
-                    gt_labels=ann['labels'])
+                    gt_bboxes=ann["bboxes"],
+                    gt_labels=ann["labels"])
         if self.use_instance_mask:
-            meta['gt_masks'] = ann['masks']
+            meta["gt_masks"] = ann["masks"]
         if self.use_keypoint:
-            meta['gt_keypoints'] = ann['keypoints']
+            meta["gt_keypoints"] = ann["keypoints"]
 
         meta = self.pipeline(meta, self.input_size)
-        meta['img'] = torch.from_numpy(meta['img'].transpose(2, 0, 1))
+        meta["img"] = torch.from_numpy(meta["img"].transpose(2, 0, 1))
         return meta
 
     def get_val_data(self, idx):

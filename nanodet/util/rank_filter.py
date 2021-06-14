@@ -12,10 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 def rank_filter(func):
     def func_filter(local_rank=-1, *args, **kwargs):
         if local_rank < 1:
             return func(*args, **kwargs)
         else:
             pass
+
     return func_filter

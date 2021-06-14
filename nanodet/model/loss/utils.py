@@ -23,7 +23,7 @@ def reduce_loss(loss, reduction):
         return loss.sum()
 
 
-def weight_reduce_loss(loss, weight=None, reduction='mean', avg_factor=None):
+def weight_reduce_loss(loss, weight=None, reduction="mean", avg_factor=None):
     """Apply element-wise weight and reduce loss.
 
     Args:
@@ -44,10 +44,10 @@ def weight_reduce_loss(loss, weight=None, reduction='mean', avg_factor=None):
         loss = reduce_loss(loss, reduction)
     else:
         # if reduction is mean, then average the loss by avg_factor
-        if reduction == 'mean':
+        if reduction == "mean":
             loss = loss.sum() / avg_factor
         # if reduction is 'none', then do nothing, otherwise raise an error
-        elif reduction != 'none':
+        elif reduction != "none":
             raise ValueError('avg_factor can not be used with reduction="sum"')
     return loss
 
@@ -82,12 +82,11 @@ def weighted_loss(loss_func):
     >>> l1_loss(pred, target, weight, avg_factor=2)
     tensor(1.5000)
     """
-
     @functools.wraps(loss_func)
     def wrapper(pred,
                 target,
                 weight=None,
-                reduction='mean',
+                reduction="mean",
                 avg_factor=None,
                 **kwargs):
         # get element-wise loss

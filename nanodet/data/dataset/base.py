@@ -41,18 +41,20 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
     :param load_mosaic: using mosaic data augmentation from yolov4
     :param mode: train or val or test
     """
-    def __init__(self,
-                 img_path,
-                 ann_path,
-                 input_size,
-                 pipeline,
-                 keep_ratio=True,
-                 use_instance_mask=False,
-                 use_seg_mask=False,
-                 use_keypoint=False,
-                 load_mosaic=False,
-                 mode='train'
-                 ):
+    def __init__(
+        self,
+        img_path,
+        ann_path,
+        input_size,
+        pipeline,
+        keep_ratio=True,
+        use_instance_mask=False,
+        use_seg_mask=False,
+        use_keypoint=False,
+        load_mosaic=False,
+        mode="train",
+    ):
+
         self.img_path = img_path
         self.ann_path = ann_path
         self.input_size = input_size
@@ -70,7 +72,7 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
         return len(self.data_info)
 
     def __getitem__(self, idx):
-        if self.mode == 'val' or self.mode == 'test':
+        if self.mode == "val" or self.mode == "test":
             return self.get_val_data(idx)
         else:
             while True:
@@ -93,8 +95,4 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
         pass
 
     def get_another_id(self):
-        return np.random.random_integers(0, len(self.data_info)-1)
-
-
-
-
+        return np.random.random_integers(0, len(self.data_info) - 1)

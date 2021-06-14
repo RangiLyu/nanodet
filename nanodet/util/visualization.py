@@ -27,7 +27,7 @@ def overlay_bbox_cv(img, dets, class_names, score_thresh):
     for label in dets:
         for bbox in dets[label]:
             score = bbox[-1]
-            if score>score_thresh:
+            if score > score_thresh:
                 x0, y0, x1, y1 = [int(i) for i in bbox[:4]]
                 all_box.append([label, x0, y0, x1, y1, score])
     all_box.sort(key=lambda v: v[5])
@@ -35,23 +35,34 @@ def overlay_bbox_cv(img, dets, class_names, score_thresh):
         label, x0, y0, x1, y1, score = box
         # color = self.cmap(i)[:3]
         color = (_COLORS[label] * 255).astype(np.uint8).tolist()
-        text = '{}:{:.1f}%'.format(class_names[label], score * 100)
-        txt_color=(0, 0, 0) if np.mean(_COLORS[label]) > 0.5 else (255, 255, 255)
+        text = "{}:{:.1f}%".format(class_names[label], score * 100)
+        txt_color = (0, 0, 0) if np.mean(_COLORS[label]) > 0.5 else (255, 255,
+                                                                     255)
         font = cv2.FONT_HERSHEY_SIMPLEX
         txt_size = cv2.getTextSize(text, font, 0.5, 2)[0]
         cv2.rectangle(img, (x0, y0), (x1, y1), color, 2)
 
-        cv2.rectangle(img,
-                      (x0, y0 - txt_size[1] - 1),
-                      (x0 + txt_size[0] + txt_size[1], y0 - 1), color, -1)
-        cv2.putText(img, text, (x0, y0-1),
-                    font, 0.5, txt_color, thickness=1)
+        cv2.rectangle(
+            img,
+            (x0, y0 - txt_size[1] - 1),
+            (x0 + txt_size[0] + txt_size[1], y0 - 1),
+            color,
+            -1,
+        )
+        cv2.putText(img, text, (x0, y0 - 1), font, 0.5, txt_color, thickness=1)
     return img
 
 
-def rand_cmap(nlabels, type='bright', first_color_black=False, last_color_black=False, verbose=False):
+def rand_cmap(
+    nlabels,
+    type="bright",
+    first_color_black=False,
+    last_color_black=False,
+    verbose=False,
+):
     """
-    Creates a random colormap to be used together with matplotlib. Useful for segmentation tasks
+    Creates a random colormap to be used together with matplotlib.
+    Useful for segmentation tasks
     :param nlabels: Number of labels (size of colormap)
     :param type: 'bright' for strong colors, 'soft' for pastel colors
     :param first_color_black: Option to use first color as black, True or False
@@ -64,23 +75,26 @@ def rand_cmap(nlabels, type='bright', first_color_black=False, last_color_black=
     import numpy as np
     from matplotlib.colors import LinearSegmentedColormap
 
-    if type not in ('bright', 'soft'):
+    if type not in ("bright", "soft"):
         print('Please choose "bright" or "soft" for type')
         return
 
     if verbose:
-        print('Number of labels: ' + str(nlabels))
+        print("Number of labels: " + str(nlabels))
 
     # Generate color map for bright colors, based on hsv
-    if type == 'bright':
-        randHSVcolors = [(np.random.uniform(low=0.0, high=1),
-                          np.random.uniform(low=0.2, high=1),
-                          np.random.uniform(low=0.9, high=1)) for i in range(nlabels)]
+    if type == "bright":
+        randHSVcolors = [(
+            np.random.uniform(low=0.0, high=1),
+            np.random.uniform(low=0.2, high=1),
+            np.random.uniform(low=0.9, high=1),
+        ) for i in range(nlabels)]
 
         # Convert HSV list to RGB
         randRGBcolors = []
         for HSVcolor in randHSVcolors:
-            randRGBcolors.append(colorsys.hsv_to_rgb(HSVcolor[0], HSVcolor[1], HSVcolor[2]))
+            randRGBcolors.append(
+                colorsys.hsv_to_rgb(HSVcolor[0], HSVcolor[1], HSVcolor[2]))
 
         if first_color_black:
             randRGBcolors[0] = [0, 0, 0]
@@ -88,34 +102,49 @@ def rand_cmap(nlabels, type='bright', first_color_black=False, last_color_black=
         if last_color_black:
             randRGBcolors[-1] = [0, 0, 0]
 
-        random_colormap = LinearSegmentedColormap.from_list('new_map', randRGBcolors, N=nlabels)
+        random_colormap = LinearSegmentedColormap.from_list("new_map",
+                                                            randRGBcolors,
+                                                            N=nlabels)
 
     # Generate soft pastel colors, by limiting the RGB spectrum
-    if type == 'soft':
+    if type == "soft":
         low = 0.6
         high = 0.95
-        randRGBcolors = [(np.random.uniform(low=low, high=high),
-                          np.random.uniform(low=low, high=high),
-                          np.random.uniform(low=low, high=high)) for i in range(nlabels)]
+        randRGBcolors = [(
+            np.random.uniform(low=low, high=high),
+            np.random.uniform(low=low, high=high),
+            np.random.uniform(low=low, high=high),
+        ) for i in range(nlabels)]
 
         if first_color_black:
             randRGBcolors[0] = [0, 0, 0]
 
         if last_color_black:
             randRGBcolors[-1] = [0, 0, 0]
-        random_colormap = LinearSegmentedColormap.from_list('new_map', randRGBcolors, N=nlabels)
+        random_colormap = LinearSegmentedColormap.from_list("new_map",
+                                                            randRGBcolors,
+                                                            N=nlabels)
 
     # Display colorbar
     if verbose:
         from matplotlib import colorbar, colors
         from matplotlib import pyplot as plt
+
         fig, ax = plt.subplots(1, 1, figsize=(15, 0.5))
 
         bounds = np.linspace(0, nlabels, nlabels + 1)
         norm = colors.BoundaryNorm(bounds, nlabels)
 
-        cb = colorbar.ColorbarBase(ax, cmap=random_colormap, norm=norm, spacing='proportional', ticks=None,
-                                   boundaries=bounds, format='%1i', orientation=u'horizontal')
+        cb = colorbar.ColorbarBase(
+            ax,
+            cmap=random_colormap,
+            norm=norm,
+            spacing="proportional",
+            ticks=None,
+            boundaries=bounds,
+            format="%1i",
+            orientation=u"horizontal",
+        )
 
     return random_colormap
 
@@ -139,8 +168,10 @@ class VisImage:
             Same as in :meth:`__init__()`.
 
         Returns:
-            fig (matplotlib.pyplot.figure): top level container for all the image plot elements.
-            ax (matplotlib.pyplot.Axes): contains figure elements and sets the coordinate system.
+            fig (matplotlib.pyplot.figure): top level container for all the
+                image plot elements.
+            ax (matplotlib.pyplot.Axes): contains figure elements and sets
+                the coordinate system.
         """
         fig = mplfigure.Figure(frameon=False)
         self.dpi = fig.get_dpi()
@@ -163,10 +194,11 @@ class VisImage:
     def save(self, filepath):
         """
         Args:
-            filepath (str): a string that contains the absolute path, including the file name, where
-                the visualized image will be saved.
+            filepath (str): a string that contains the absolute path, including
+                the file name, where the visualized image will be saved.
         """
-        if filepath.lower().endswith(".jpg") or filepath.lower().endswith(".png"):
+        if filepath.lower().endswith(".jpg") or filepath.lower().endswith(
+                ".png"):
             # faster than matplotlib's imshow
             cv2.imwrite(filepath, self.get_image()[:, :, ::-1])
         else:
@@ -179,7 +211,8 @@ class VisImage:
         Returns:
             ndarray:
                 the visualized image of shape (H, W, 3) (RGB) in uint8 type.
-                The shape is scaled w.r.t the input image using the given `scale` argument.
+                The shape is scaled w.r.t the input image using the given
+                `scale` argument.
         """
         canvas = self.canvas
         s, (width, height) = canvas.print_to_buffer()
@@ -202,7 +235,8 @@ class VisImage:
         try:
             import numexpr as ne  # fuse them with numexpr
 
-            visualized_image = ne.evaluate("img * (1 - alpha / 255.0) + rgb * (alpha / 255.0)")
+            visualized_image = ne.evaluate(
+                "img * (1 - alpha / 255.0) + rgb * (alpha / 255.0)")
         except ImportError:
             alpha = alpha.astype("float32") / 255.0
             visualized_image = img * (1 - alpha) + rgb * alpha
@@ -221,8 +255,7 @@ class Visualizer:
         self.score_thresh = socre_thresh
         self.viz = VisImage(img=self.img)
         self._default_font_size = max(
-            np.sqrt(self.viz.height * self.viz.width) // 100, 10
-        )
+            np.sqrt(self.viz.height * self.viz.width) // 100, 10)
 
     def mask_to_polygon(self, mask, need_binary=True):
         res = cv2.findContours(mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_NONE)
@@ -257,14 +290,13 @@ class Visualizer:
                 linewidth=linewidth * self.viz.scale,
                 alpha=alpha,
                 linestyle=line_style,
-            )
-        )
+            ))
         return self.viz
 
     def draw_polycon(self, mask, color, edge_color, alpha=0.5):
         if edge_color is None:
             edge_color = color
-        edge_color = mpl.colors.to_rgb(edge_color) + (1,)
+        edge_color = mpl.colors.to_rgb(edge_color) + (1, )
 
         polygon = mpl.patches.Polygon(
             mask,
@@ -279,25 +311,31 @@ class Visualizer:
     def draw_mask(self, mask, polys, color, edge_color, alpha=0.5):
         if edge_color is None:
             edge_color = color
-        edge_color = mpl.colors.to_rgb(edge_color) + (1,)
+        edge_color = mpl.colors.to_rgb(edge_color) + (1, )
         color_mask = np.ones((mask.shape[0], mask.shape[1], 3))
         for i in range(3):
             color_mask[:, :, i] = color[i]
-        self.viz.ax.imshow(np.dstack((color_mask, mask*alpha)))
+        self.viz.ax.imshow(np.dstack((color_mask, mask * alpha)))
         for ploy in polys:
-            self.draw_polycon(ploy.reshape(-1, 2), color, edge_color=None, alpha=alpha)
+            self.draw_polycon(ploy.reshape(-1, 2),
+                              color,
+                              edge_color=None,
+                              alpha=alpha)
 
     def _jitter(self, color):
         """
-        Randomly modifies given color to produce a slightly different color than the color given.
+        Randomly modifies given color to produce a slightly different color than
+        the color given.
 
         Args:
-            color (tuple[double]): a tuple of 3 elements, containing the RGB values of the color
-                picked. The values in the list are in the [0.0, 1.0] range.
+            color (tuple[double]): a tuple of 3 elements, containing the RGB
+                values of the color picked. The values in the list are in the
+                 [0.0, 1.0] range.
 
         Returns:
-            jittered_color (tuple[double]): a tuple of 3 elements, containing the RGB values of the
-                color after being jittered. The values in the list are in the [0.0, 1.0] range.
+            jittered_color (tuple[double]): a tuple of 3 elements, containing
+                the RGB values of the color after being jittered. The values
+                in the list are in the [0.0, 1.0] range.
         """
         color = mpl.colors.to_rgb(color)
         vec = np.random.rand(3)
@@ -313,31 +351,33 @@ class Visualizer:
                 if score >= self.score_thresh:
                     # color = self.cmap(i)[:3]
                     color = _COLORS[label]
-                    text = '{}:{:.1f}%'.format(self.class_names[label], score * 100)
-                    self.draw_box(bbox[:4], alpha=1., edge_color=color, line_style='-')
+                    text = "{}:{:.1f}%".format(self.class_names[label],
+                                               score * 100)
+                    self.draw_box(bbox[:4],
+                                  alpha=1.0,
+                                  edge_color=color,
+                                  line_style="-")
                     text_pos = (x0, y0)
                     instance_area = (y1 - y0) * (x1 - x0)
-                    if (
-                            instance_area < _SMALL_OBJECT_AREA_THRESH * self.viz.scale
-                            or y1 - y0 < 40 * self.viz.scale
-                    ):
+                    if (instance_area <
+                            _SMALL_OBJECT_AREA_THRESH * self.viz.scale
+                            or y1 - y0 < 40 * self.viz.scale):
                         if y1 >= self.viz.height - 5:
                             text_pos = (x1, y0)
                         else:
                             text_pos = (x0, y1)
 
-                    height_ratio = (y1 - y0) / np.sqrt(self.viz.height * self.viz.width)
-                    font_size = (
-                            np.clip((height_ratio - 0.02) / 0.08 + 1, 1.2, 2)
-                            * 0.5
-                            * self._default_font_size
-                    )
+                    height_ratio = (y1 - y0) / np.sqrt(
+                        self.viz.height * self.viz.width)
+                    font_size = (np.clip(
+                        (height_ratio - 0.02) / 0.08 + 1, 1.2, 2) * 0.5 *
+                                 self._default_font_size)
 
                     self.draw_text(
                         text,
                         text_pos,
-                        color='black',
-                        horizontal_alignment='left',
+                        color="black",
+                        horizontal_alignment="left",
                         font_size=font_size,
                     )
         out = self.viz.get_image()
@@ -348,17 +388,20 @@ class Visualizer:
         im = self.img  # .astype(np.float32)
         total_ma = np.zeros([im.shape[0], im.shape[1]])
         total_contours = []
-        for i, det in enumerate(self.dets[:: -1]):
-            score = det['score']
+        for i, det in enumerate(self.dets[::-1]):
+            score = det["score"]
             if score >= self.score_thresh:
-                ma = det['mask']
-                _, ma = cv2.threshold(ma, thresh=127, maxval=255, type=cv2.THRESH_BINARY)
-                fg = im * alpha + np.ones(im.shape) * (1 - alpha) * self.cmap(i)[:3] * 255
+                ma = det["mask"]
+                _, ma = cv2.threshold(ma,
+                                      thresh=127,
+                                      maxval=255,
+                                      type=cv2.THRESH_BINARY)
+                fg = (im * alpha + np.ones(im.shape) *
+                      (1 - alpha) * self.cmap(i)[:3] * 255)
                 ov[ma == 255] = fg[ma == 255]
                 total_ma += ma
-                contours = cv2.findContours(ma.copy(), cv2.RETR_CCOMP, cv2.CHAIN_APPROX_NONE)[-2:]
-                # contours = cv2.findContours(ma.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)[-2:]
-                # cv2.drawContours(ov, contours[0], -1, (0.0, 0.0, 0.0), 1)
+                contours = cv2.findContours(ma.copy(), cv2.RETR_CCOMP,
+                                            cv2.CHAIN_APPROX_NONE)[-2:]
                 total_contours.append(contours)
         for cnt in total_contours:
             cv2.drawContours(ov, cnt[0], -1, (0.0, 0.0, 0.0), 1)
@@ -366,64 +409,60 @@ class Visualizer:
         return ov
 
     def overlay_instance(self, alpha=0.4):
-        for i, det in enumerate(self.dets[:: -1]):
-            score = det['score']
+        for i, det in enumerate(self.dets[::-1]):
+            score = det["score"]
             if score >= self.score_thresh:
-                label = det['label']
-                binary_mask = det['mask']
+                label = det["label"]
+                binary_mask = det["mask"]
                 # color = self.cmap(i)[:3]
                 color = _COLORS[label]
                 color = self._jitter(color)
-                contours, bbox, has_holes = self.mask_to_polygon(binary_mask.copy())
+                contours, bbox, has_holes = self.mask_to_polygon(
+                    binary_mask.copy())
                 if not contours:
                     continue
-                # for ploy in contours:
-                #     self.draw_polycon(ploy.reshape(-1, 2), color, edge_color=None, alpha=alpha)
-
-                self.draw_mask(binary_mask, contours, color, edge_color=None, alpha=alpha)
+                self.draw_mask(binary_mask,
+                               contours,
+                               color,
+                               edge_color=None,
+                               alpha=alpha)
 
                 x0, y0, x1, y1 = bbox
-                # self.draw_box(bbox, alpha=1., edge_color=color, line_style='-')
-
-                text = '{}:{:.1f}%'.format(self.class_names[label], score * 100)
+                text = "{}:{:.1f}%".format(self.class_names[label],
+                                           score * 100)
                 text_pos = np.median(binary_mask.nonzero(), axis=1)[::-1]
                 instance_area = (y1 - y0) * (x1 - x0)
-                if (
-                        instance_area < _SMALL_OBJECT_AREA_THRESH * self.viz.scale
-                        or y1 - y0 < 40 * self.viz.scale
-                ):
+                if (instance_area < _SMALL_OBJECT_AREA_THRESH * self.viz.scale
+                        or y1 - y0 < 40 * self.viz.scale):
                     if y1 >= self.viz.height - 5:
                         text_pos = (x1, y0)
                     else:
                         text_pos = (x0, y1)
 
-                height_ratio = (y1 - y0) / np.sqrt(self.viz.height * self.viz.width)
-                font_size = (
-                        np.clip((height_ratio - 0.02) / 0.08 + 1, 1.2, 2)
-                        * 0.5
-                        * self._default_font_size
-                )
+                height_ratio = (y1 - y0) / np.sqrt(
+                    self.viz.height * self.viz.width)
+                font_size = (np.clip(
+                    (height_ratio - 0.02) / 0.08 + 1, 1.2, 2) * 0.5 *
+                             self._default_font_size)
 
                 self.draw_text(
                     text,
                     text_pos,
-                    color='black',
-                    horizontal_alignment='center',
+                    color="black",
+                    horizontal_alignment="center",
                     font_size=font_size,
                 )
         out = self.viz.get_image()
         return out
 
-    def draw_text(
-            self,
-            text,
-            position,
-            *,
-            font_size=None,
-            color="g",
-            horizontal_alignment="center",
-            rotation=0
-    ):
+    def draw_text(self,
+                  text,
+                  position,
+                  *,
+                  font_size=None,
+                  color="g",
+                  horizontal_alignment="center",
+                  rotation=0):
         """
         Args:
             text (str): class label
@@ -452,7 +491,12 @@ class Visualizer:
             text,
             size=font_size * self.viz.scale,
             family="sans-serif",
-            bbox={"facecolor": (0.5, 0.5, 1.), "alpha": 0.8, "pad": 0.7, "edgecolor": (0.8, 0.8, 1.)},
+            bbox={
+                "facecolor": (0.5, 0.5, 1.0),
+                "alpha": 0.8,
+                "pad": 0.7,
+                "edgecolor": (0.8, 0.8, 1.0),
+            },
             verticalalignment="top",
             horizontalalignment=horizontal_alignment,
             color=color,
@@ -462,158 +506,245 @@ class Visualizer:
         return self.viz
 
 
-def rand_cmap(nlabels, type='bright', first_color_black=False, last_color_black=False, verbose=False):
-    """
-    Creates a random colormap to be used together with matplotlib. Useful for segmentation tasks
-    :param nlabels: Number of labels (size of colormap)
-    :param type: 'bright' for strong colors, 'soft' for pastel colors
-    :param first_color_black: Option to use first color as black, True or False
-    :param last_color_black: Option to use last color as black, True or False
-    :param verbose: Prints the number of labels and shows the colormap. True or False
-    :return: colormap for matplotlib
-    """
-    import colorsys
-
-    import numpy as np
-    from matplotlib.colors import LinearSegmentedColormap
-
-    if type not in ('bright', 'soft'):
-        print('Please choose "bright" or "soft" for type')
-        return
-
-    if verbose:
-        print('Number of labels: ' + str(nlabels))
-
-    # Generate color map for bright colors, based on hsv
-    if type == 'bright':
-        randHSVcolors = [(np.random.uniform(low=0.0, high=1),
-                          np.random.uniform(low=0.2, high=1),
-                          np.random.uniform(low=0.9, high=1)) for i in range(nlabels)]
-
-        # Convert HSV list to RGB
-        randRGBcolors = []
-        for HSVcolor in randHSVcolors:
-            randRGBcolors.append(colorsys.hsv_to_rgb(HSVcolor[0], HSVcolor[1], HSVcolor[2]))
-
-        if first_color_black:
-            randRGBcolors[0] = [0, 0, 0]
-
-        if last_color_black:
-            randRGBcolors[-1] = [0, 0, 0]
-
-        random_colormap = LinearSegmentedColormap.from_list('new_map', randRGBcolors, N=nlabels)
-
-    # Generate soft pastel colors, by limiting the RGB spectrum
-    if type == 'soft':
-        low = 0.6
-        high = 0.95
-        randRGBcolors = [(np.random.uniform(low=low, high=high),
-                          np.random.uniform(low=low, high=high),
-                          np.random.uniform(low=low, high=high)) for i in range(nlabels)]
-
-        if first_color_black:
-            randRGBcolors[0] = [0, 0, 0]
-
-        if last_color_black:
-            randRGBcolors[-1] = [0, 0, 0]
-        random_colormap = LinearSegmentedColormap.from_list('new_map', randRGBcolors, N=nlabels)
-
-    # Display colorbar
-    if verbose:
-        from matplotlib import colorbar, colors
-        from matplotlib import pyplot as plt
-        fig, ax = plt.subplots(1, 1, figsize=(15, 0.5))
-
-        bounds = np.linspace(0, nlabels, nlabels + 1)
-        norm = colors.BoundaryNorm(bounds, nlabels)
-
-        cb = colorbar.ColorbarBase(ax, cmap=random_colormap, norm=norm, spacing='proportional', ticks=None,
-                                   boundaries=bounds, format='%1i', orientation=u'horizontal')
-
-    return random_colormap
-
-
-_COLORS = np.array(
-    [
-        0.000, 0.447, 0.741,
-        0.850, 0.325, 0.098,
-        0.929, 0.694, 0.125,
-        0.494, 0.184, 0.556,
-        0.466, 0.674, 0.188,
-        0.301, 0.745, 0.933,
-        0.635, 0.078, 0.184,
-        0.300, 0.300, 0.300,
-        0.600, 0.600, 0.600,
-        1.000, 0.000, 0.000,
-        1.000, 0.500, 0.000,
-        0.749, 0.749, 0.000,
-        0.000, 1.000, 0.000,
-        0.000, 0.000, 1.000,
-        0.667, 0.000, 1.000,
-        0.333, 0.333, 0.000,
-        0.333, 0.667, 0.000,
-        0.333, 1.000, 0.000,
-        0.667, 0.333, 0.000,
-        0.667, 0.667, 0.000,
-        0.667, 1.000, 0.000,
-        1.000, 0.333, 0.000,
-        1.000, 0.667, 0.000,
-        1.000, 1.000, 0.000,
-        0.000, 0.333, 0.500,
-        0.000, 0.667, 0.500,
-        0.000, 1.000, 0.500,
-        0.333, 0.000, 0.500,
-        0.333, 0.333, 0.500,
-        0.333, 0.667, 0.500,
-        0.333, 1.000, 0.500,
-        0.667, 0.000, 0.500,
-        0.667, 0.333, 0.500,
-        0.667, 0.667, 0.500,
-        0.667, 1.000, 0.500,
-        1.000, 0.000, 0.500,
-        1.000, 0.333, 0.500,
-        1.000, 0.667, 0.500,
-        1.000, 1.000, 0.500,
-        0.000, 0.333, 1.000,
-        0.000, 0.667, 1.000,
-        0.000, 1.000, 1.000,
-        0.333, 0.000, 1.000,
-        0.333, 0.333, 1.000,
-        0.333, 0.667, 1.000,
-        0.333, 1.000, 1.000,
-        0.667, 0.000, 1.000,
-        0.667, 0.333, 1.000,
-        0.667, 0.667, 1.000,
-        0.667, 1.000, 1.000,
-        1.000, 0.000, 1.000,
-        1.000, 0.333, 1.000,
-        1.000, 0.667, 1.000,
-        0.333, 0.000, 0.000,
-        0.500, 0.000, 0.000,
-        0.667, 0.000, 0.000,
-        0.833, 0.000, 0.000,
-        1.000, 0.000, 0.000,
-        0.000, 0.167, 0.000,
-        0.000, 0.333, 0.000,
-        0.000, 0.500, 0.000,
-        0.000, 0.667, 0.000,
-        0.000, 0.833, 0.000,
-        0.000, 1.000, 0.000,
-        0.000, 0.000, 0.167,
-        0.000, 0.000, 0.333,
-        0.000, 0.000, 0.500,
-        0.000, 0.000, 0.667,
-        0.000, 0.000, 0.833,
-        0.000, 0.000, 1.000,
-        0.000, 0.000, 0.000,
-        0.143, 0.143, 0.143,
-        0.286, 0.286, 0.286,
-        0.429, 0.429, 0.429,
-        0.571, 0.571, 0.571,
-        0.714, 0.714, 0.714,
-        0.857, 0.857, 0.857,
-        0.000, 0.447, 0.741,
-        0.314, 0.717, 0.741,
-        0.50, 0.5, 0
-    ]
-).astype(np.float32).reshape(-1, 3)
+_COLORS = (np.array([
+    0.000,
+    0.447,
+    0.741,
+    0.850,
+    0.325,
+    0.098,
+    0.929,
+    0.694,
+    0.125,
+    0.494,
+    0.184,
+    0.556,
+    0.466,
+    0.674,
+    0.188,
+    0.301,
+    0.745,
+    0.933,
+    0.635,
+    0.078,
+    0.184,
+    0.300,
+    0.300,
+    0.300,
+    0.600,
+    0.600,
+    0.600,
+    1.000,
+    0.000,
+    0.000,
+    1.000,
+    0.500,
+    0.000,
+    0.749,
+    0.749,
+    0.000,
+    0.000,
+    1.000,
+    0.000,
+    0.000,
+    0.000,
+    1.000,
+    0.667,
+    0.000,
+    1.000,
+    0.333,
+    0.333,
+    0.000,
+    0.333,
+    0.667,
+    0.000,
+    0.333,
+    1.000,
+    0.000,
+    0.667,
+    0.333,
+    0.000,
+    0.667,
+    0.667,
+    0.000,
+    0.667,
+    1.000,
+    0.000,
+    1.000,
+    0.333,
+    0.000,
+    1.000,
+    0.667,
+    0.000,
+    1.000,
+    1.000,
+    0.000,
+    0.000,
+    0.333,
+    0.500,
+    0.000,
+    0.667,
+    0.500,
+    0.000,
+    1.000,
+    0.500,
+    0.333,
+    0.000,
+    0.500,
+    0.333,
+    0.333,
+    0.500,
+    0.333,
+    0.667,
+    0.500,
+    0.333,
+    1.000,
+    0.500,
+    0.667,
+    0.000,
+    0.500,
+    0.667,
+    0.333,
+    0.500,
+    0.667,
+    0.667,
+    0.500,
+    0.667,
+    1.000,
+    0.500,
+    1.000,
+    0.000,
+    0.500,
+    1.000,
+    0.333,
+    0.500,
+    1.000,
+    0.667,
+    0.500,
+    1.000,
+    1.000,
+    0.500,
+    0.000,
+    0.333,
+    1.000,
+    0.000,
+    0.667,
+    1.000,
+    0.000,
+    1.000,
+    1.000,
+    0.333,
+    0.000,
+    1.000,
+    0.333,
+    0.333,
+    1.000,
+    0.333,
+    0.667,
+    1.000,
+    0.333,
+    1.000,
+    1.000,
+    0.667,
+    0.000,
+    1.000,
+    0.667,
+    0.333,
+    1.000,
+    0.667,
+    0.667,
+    1.000,
+    0.667,
+    1.000,
+    1.000,
+    1.000,
+    0.000,
+    1.000,
+    1.000,
+    0.333,
+    1.000,
+    1.000,
+    0.667,
+    1.000,
+    0.333,
+    0.000,
+    0.000,
+    0.500,
+    0.000,
+    0.000,
+    0.667,
+    0.000,
+    0.000,
+    0.833,
+    0.000,
+    0.000,
+    1.000,
+    0.000,
+    0.000,
+    0.000,
+    0.167,
+    0.000,
+    0.000,
+    0.333,
+    0.000,
+    0.000,
+    0.500,
+    0.000,
+    0.000,
+    0.667,
+    0.000,
+    0.000,
+    0.833,
+    0.000,
+    0.000,
+    1.000,
+    0.000,
+    0.000,
+    0.000,
+    0.167,
+    0.000,
+    0.000,
+    0.333,
+    0.000,
+    0.000,
+    0.500,
+    0.000,
+    0.000,
+    0.667,
+    0.000,
+    0.000,
+    0.833,
+    0.000,
+    0.000,
+    1.000,
+    0.000,
+    0.000,
+    0.000,
+    0.143,
+    0.143,
+    0.143,
+    0.286,
+    0.286,
+    0.286,
+    0.429,
+    0.429,
+    0.429,
+    0.571,
+    0.571,
+    0.571,
+    0.714,
+    0.714,
+    0.714,
+    0.857,
+    0.857,
+    0.857,
+    0.000,
+    0.447,
+    0.741,
+    0.314,
+    0.717,
+    0.741,
+    0.50,
+    0.5,
+    0,
+]).astype(np.float32).reshape(-1, 3))

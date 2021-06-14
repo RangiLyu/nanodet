@@ -29,11 +29,11 @@ from nanodet.util import Logger, cfg, convert_old_model, load_config, mkdir
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('config', help='train config file path')
-    parser.add_argument('--local_rank', default=-1, type=int,
-                        help='node rank for distributed training')
-    parser.add_argument('--seed', type=int, default=None,
-                        help='random seed')
+    parser.add_argument("config", help="train config file path")
+    parser.add_argument(
+        "--local_rank", default=-1, type=int, help="node rank for distributed training"
+    )
+    parser.add_argument("--seed", type=int, default=None, help="random seed")
     args = parser.parse_args()
     return args
 
@@ -41,8 +41,12 @@ def parse_args():
 def main(args):
     load_config(cfg, args.config)
     if cfg.model.arch.head.num_classes != len(cfg.class_names):
-        raise ValueError('cfg.model.arch.head.num_classes must equal len(cfg.class_names), '
-                         'but got {} and {}'.format(cfg.model.arch.head.num_classes, len(cfg.class_names)))
+        raise ValueError(
+            "cfg.model.arch.head.num_classes must equal len(cfg.class_names), "
+            "but got {} and {}".format(
+                cfg.model.arch.head.num_classes, len(cfg.class_names)
+            )
+        )
     local_rank = int(args.local_rank)
     torch.backends.cudnn.enabled = True
     torch.backends.cudnn.benchmark = True
@@ -50,51 +54,70 @@ def main(args):
     logger = Logger(local_rank, cfg.save_dir)
 
     if args.seed is not None:
-        logger.log('Set random seed to {}'.format(args.seed))
+        logger.log("Set random seed to {}".format(args.seed))
         pl.seed_everything(args.seed)
 
-    logger.log('Setting up data...')
-    train_dataset = build_dataset(cfg.data.train, 'train')
-    val_dataset = build_dataset(cfg.data.val, 'test')
+    logger.log("Setting up data...")
+    train_dataset = build_dataset(cfg.data.train, "train")
+    val_dataset = build_dataset(cfg.data.val, "test")
 
     evaluator = build_evaluator(cfg, val_dataset)
 
-    train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=cfg.device.batchsize_per_gpu,
-                                                   shuffle=True, num_workers=cfg.device.workers_per_gpu,
-                                                   pin_memory=True, collate_fn=collate_function, drop_last=True)
-    val_dataloader = torch.utils.data.DataLoader(val_dataset, batch_size=cfg.device.batchsize_per_gpu,
-                                                 shuffle=False, num_workers=cfg.device.workers_per_gpu,
-                                                 pin_memory=True, collate_fn=collate_function, drop_last=True)
+    train_dataloader = torch.utils.data.DataLoader(
+        train_dataset,
+        batch_size=cfg.device.batchsize_per_gpu,
+        shuffle=True,
+        num_workers=cfg.device.workers_per_gpu,
+        pin_memory=True,
+        collate_fn=collate_function,
+        drop_last=True,
+    )
+    val_dataloader = torch.utils.data.DataLoader(
+        val_dataset,
+        batch_size=cfg.device.batchsize_per_gpu,
+        shuffle=False,
+        num_workers=cfg.device.workers_per_gpu,
+        pin_memory=True,
+        collate_fn=collate_function,
+        drop_last=True,
+    )
 
-    logger.log('Creating model...')
+    logger.log("Creating model...")
     task = TrainingTask(cfg, evaluator)
 
-    if 'load_model' in cfg.schedule:
+    if "load_model" in cfg.schedule:
         ckpt = torch.load(cfg.schedule.load_model)
-        if 'pytorch-lightning_version' not in ckpt:
-            warnings.warn('Warning! Old .pth checkpoint is deprecated. '
-                          'Convert the checkpoint with tools/convert_old_checkpoint.py ')
+        if "pytorch-lightning_version" not in ckpt:
+            warnings.warn(
+                "Warning! Old .pth checkpoint is deprecated. "
+                "Convert the checkpoint with tools/convert_old_checkpoint.py "
+            )
             ckpt = convert_old_model(ckpt)
-        task.load_state_dict(ckpt['state_dict'], strict=False)
-        logger.log('Loaded model weight from {}'.format(cfg.schedule.load_model))
+        task.load_state_dict(ckpt["state_dict"], strict=False)
+        logger.log("Loaded model weight from {}".format(cfg.schedule.load_model))
 
-    model_resume_path = os.path.join(cfg.save_dir, 'model_last.ckpt') if 'resume' in cfg.schedule else None
+    model_resume_path = (
+        os.path.join(cfg.save_dir, "model_last.ckpt")
+        if "resume" in cfg.schedule
+        else None
+    )
 
-    trainer = pl.Trainer(default_root_dir=cfg.save_dir,
-                         max_epochs=cfg.schedule.total_epochs,
-                         gpus=cfg.device.gpu_ids,
-                         check_val_every_n_epoch=cfg.schedule.val_intervals,
-                         accelerator='ddp',
-                         log_every_n_steps=cfg.log.interval,
-                         num_sanity_val_steps=0,
-                         resume_from_checkpoint=model_resume_path,
-                         callbacks=[ProgressBar(refresh_rate=0)],  # disable tqdm bar
-                         benchmark=True,
-                         )
+    trainer = pl.Trainer(
+        default_root_dir=cfg.save_dir,
+        max_epochs=cfg.schedule.total_epochs,
+        gpus=cfg.device.gpu_ids,
+        check_val_every_n_epoch=cfg.schedule.val_intervals,
+        accelerator="ddp",
+        log_every_n_steps=cfg.log.interval,
+        num_sanity_val_steps=0,
+        resume_from_checkpoint=model_resume_path,
+        callbacks=[ProgressBar(refresh_rate=0)],  # disable tqdm bar
+        benchmark=True,
+    )
 
     trainer.fit(task, train_dataloader, val_dataloader)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     args = parse_args()
     main(args)

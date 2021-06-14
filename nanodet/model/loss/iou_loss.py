@@ -21,7 +21,7 @@ import torch.nn as nn
 from .utils import weighted_loss
 
 
-def bbox_overlaps(bboxes1, bboxes2, mode='iou', is_aligned=False, eps=1e-6):
+def bbox_overlaps(bboxes1, bboxes2, mode="iou", is_aligned=False, eps=1e-6):
     """Calculate overlap between two set of bboxes.
 
     If ``is_aligned `` is ``False``, then calculate the overlaps between each
@@ -73,10 +73,10 @@ def bbox_overlaps(bboxes1, bboxes2, mode='iou', is_aligned=False, eps=1e-6):
         >>> assert tuple(bbox_overlaps(empty, empty).shape) == (0, 0)
     """
 
-    assert mode in ['iou', 'iof', 'giou'], f'Unsupported mode {mode}'
+    assert mode in ["iou", "iof", "giou"], f"Unsupported mode {mode}"
     # Either the boxes are empty or the length of boxes's last dimenstion is 4
-    assert (bboxes1.size(-1) == 4 or bboxes1.size(0) == 0)
-    assert (bboxes2.size(-1) == 4 or bboxes2.size(0) == 0)
+    assert bboxes1.size(-1) == 4 or bboxes1.size(0) == 0
+    assert bboxes2.size(-1) == 4 or bboxes2.size(0) == 0
 
     # Batch dim must be the same
     # Batch dim: (B1, B2, ... Bn)
@@ -94,10 +94,10 @@ def bbox_overlaps(bboxes1, bboxes2, mode='iou', is_aligned=False, eps=1e-6):
         else:
             return bboxes1.new(batch_shape + (rows, cols))
 
-    area1 = (bboxes1[..., 2] - bboxes1[..., 0]) * (
-        bboxes1[..., 3] - bboxes1[..., 1])
-    area2 = (bboxes2[..., 2] - bboxes2[..., 0]) * (
-        bboxes2[..., 3] - bboxes2[..., 1])
+    area1 = (bboxes1[..., 2] - bboxes1[..., 0]) * (bboxes1[..., 3] -
+                                                   bboxes1[..., 1])
+    area2 = (bboxes2[..., 2] - bboxes2[..., 0]) * (bboxes2[..., 3] -
+                                                   bboxes2[..., 1])
 
     if is_aligned:
         lt = torch.max(bboxes1[..., :2], bboxes2[..., :2])  # [B, rows, 2]
@@ -106,11 +106,11 @@ def bbox_overlaps(bboxes1, bboxes2, mode='iou', is_aligned=False, eps=1e-6):
         wh = (rb - lt).clamp(min=0)  # [B, rows, 2]
         overlap = wh[..., 0] * wh[..., 1]
 
-        if mode in ['iou', 'giou']:
+        if mode in ["iou", "giou"]:
             union = area1 + area2 - overlap
         else:
             union = area1
-        if mode == 'giou':
+        if mode == "giou":
             enclosed_lt = torch.min(bboxes1[..., :2], bboxes2[..., :2])
             enclosed_rb = torch.max(bboxes1[..., 2:], bboxes2[..., 2:])
     else:
@@ -122,11 +122,11 @@ def bbox_overlaps(bboxes1, bboxes2, mode='iou', is_aligned=False, eps=1e-6):
         wh = (rb - lt).clamp(min=0)  # [B, rows, cols, 2]
         overlap = wh[..., 0] * wh[..., 1]
 
-        if mode in ['iou', 'giou']:
+        if mode in ["iou", "giou"]:
             union = area1[..., None] + area2[..., None, :] - overlap
         else:
             union = area1[..., None]
-        if mode == 'giou':
+        if mode == "giou":
             enclosed_lt = torch.min(bboxes1[..., :, None, :2],
                                     bboxes2[..., None, :, :2])
             enclosed_rb = torch.max(bboxes1[..., :, None, 2:],
@@ -135,7 +135,7 @@ def bbox_overlaps(bboxes1, bboxes2, mode='iou', is_aligned=False, eps=1e-6):
     eps = union.new_tensor([eps])
     union = torch.max(union, eps)
     ious = overlap / union
-    if mode in ['iou', 'iof']:
+    if mode in ["iou", "iof"]:
         return ious
     # calculate gious
     enclose_wh = (enclosed_rb - enclosed_lt).clamp(min=0)
@@ -143,6 +143,7 @@ def bbox_overlaps(bboxes1, bboxes2, mode='iou', is_aligned=False, eps=1e-6):
     enclose_area = torch.max(enclose_area, eps)
     gious = ious - (enclose_area - union) / enclose_area
     return gious
+
 
 @weighted_loss
 def iou_loss(pred, target, eps=1e-6):
@@ -193,11 +194,13 @@ def bounded_iou_loss(pred, target, beta=0.2, eps=1e-3):
     dy = target_ctry - pred_ctry
 
     loss_dx = 1 - torch.max(
-        (target_w - 2 * dx.abs()) /
-        (target_w + 2 * dx.abs() + eps), torch.zeros_like(dx))
+        (target_w - 2 * dx.abs()) / (target_w + 2 * dx.abs() + eps),
+        torch.zeros_like(dx),
+    )
     loss_dy = 1 - torch.max(
-        (target_h - 2 * dy.abs()) /
-        (target_h + 2 * dy.abs() + eps), torch.zeros_like(dy))
+        (target_h - 2 * dy.abs()) / (target_h + 2 * dy.abs() + eps),
+        torch.zeros_like(dy),
+    )
     loss_dw = 1 - torch.min(target_w / (pred_w + eps), pred_w /
                             (target_w + eps))
     loss_dh = 1 - torch.min(target_h / (pred_h + eps), pred_h /
@@ -224,7 +227,7 @@ def giou_loss(pred, target, eps=1e-7):
     Return:
         Tensor: Loss tensor.
     """
-    gious = bbox_overlaps(pred, target, mode='giou', is_aligned=True, eps=eps)
+    gious = bbox_overlaps(pred, target, mode="giou", is_aligned=True, eps=eps)
     loss = 1 - gious
     return loss
 
@@ -354,20 +357,21 @@ class IoULoss(nn.Module):
         reduction (str): Options are "none", "mean" and "sum".
         loss_weight (float): Weight of loss.
     """
-
-    def __init__(self, eps=1e-6, reduction='mean', loss_weight=1.0):
+    def __init__(self, eps=1e-6, reduction="mean", loss_weight=1.0):
         super(IoULoss, self).__init__()
         self.eps = eps
         self.reduction = reduction
         self.loss_weight = loss_weight
 
-    def forward(self,
-                pred,
-                target,
-                weight=None,
-                avg_factor=None,
-                reduction_override=None,
-                **kwargs):
+    def forward(
+        self,
+        pred,
+        target,
+        weight=None,
+        avg_factor=None,
+        reduction_override=None,
+        **kwargs,
+    ):
         """Forward function.
 
         Args:
@@ -381,11 +385,10 @@ class IoULoss(nn.Module):
                 override the original reduction method of the loss.
                 Defaults to None. Options are "none", "mean" and "sum".
         """
-        assert reduction_override in (None, 'none', 'mean', 'sum')
-        reduction = (
-            reduction_override if reduction_override else self.reduction)
-        if (weight is not None) and (not torch.any(weight > 0)) and (
-                reduction != 'none'):
+        assert reduction_override in (None, "none", "mean", "sum")
+        reduction = reduction_override if reduction_override else self.reduction
+        if ((weight is not None) and (not torch.any(weight > 0))
+                and (reduction != "none")):
             return (pred * weight).sum()  # 0
         if weight is not None and weight.dim() > 1:
             # TODO: remove this in the future
@@ -400,31 +403,32 @@ class IoULoss(nn.Module):
             eps=self.eps,
             reduction=reduction,
             avg_factor=avg_factor,
-            **kwargs)
+            **kwargs,
+        )
         return loss
 
 
 class BoundedIoULoss(nn.Module):
-
-    def __init__(self, beta=0.2, eps=1e-3, reduction='mean', loss_weight=1.0):
+    def __init__(self, beta=0.2, eps=1e-3, reduction="mean", loss_weight=1.0):
         super(BoundedIoULoss, self).__init__()
         self.beta = beta
         self.eps = eps
         self.reduction = reduction
         self.loss_weight = loss_weight
 
-    def forward(self,
-                pred,
-                target,
-                weight=None,
-                avg_factor=None,
-                reduction_override=None,
-                **kwargs):
+    def forward(
+        self,
+        pred,
+        target,
+        weight=None,
+        avg_factor=None,
+        reduction_override=None,
+        **kwargs,
+    ):
         if weight is not None and not torch.any(weight > 0):
             return (pred * weight).sum()  # 0
-        assert reduction_override in (None, 'none', 'mean', 'sum')
-        reduction = (
-            reduction_override if reduction_override else self.reduction)
+        assert reduction_override in (None, "none", "mean", "sum")
+        reduction = reduction_override if reduction_override else self.reduction
         loss = self.loss_weight * bounded_iou_loss(
             pred,
             target,
@@ -433,31 +437,32 @@ class BoundedIoULoss(nn.Module):
             eps=self.eps,
             reduction=reduction,
             avg_factor=avg_factor,
-            **kwargs)
+            **kwargs,
+        )
         return loss
 
 
 class GIoULoss(nn.Module):
-
-    def __init__(self, eps=1e-6, reduction='mean', loss_weight=1.0):
+    def __init__(self, eps=1e-6, reduction="mean", loss_weight=1.0):
         super(GIoULoss, self).__init__()
         self.eps = eps
         self.reduction = reduction
         self.loss_weight = loss_weight
 
-    def forward(self,
-                pred,
-                target,
-                weight=None,
-                avg_factor=None,
-                reduction_override=None,
-                **kwargs):
+    def forward(
+        self,
+        pred,
+        target,
+        weight=None,
+        avg_factor=None,
+        reduction_override=None,
+        **kwargs,
+    ):
         if weight is not None and not torch.any(weight > 0):
             # return (pred * weight).sum()  # 0 #TODO: fix bug
-            return pred.sum() * 0.  # 0
-        assert reduction_override in (None, 'none', 'mean', 'sum')
-        reduction = (
-            reduction_override if reduction_override else self.reduction)
+            return pred.sum() * 0.0  # 0
+        assert reduction_override in (None, "none", "mean", "sum")
+        reduction = reduction_override if reduction_override else self.reduction
         if weight is not None and weight.dim() > 1:
             # TODO: remove this in the future
             # reduce the weight of shape (n, 4) to (n,) to match the
@@ -471,30 +476,31 @@ class GIoULoss(nn.Module):
             eps=self.eps,
             reduction=reduction,
             avg_factor=avg_factor,
-            **kwargs)
+            **kwargs,
+        )
         return loss
 
 
 class DIoULoss(nn.Module):
-
-    def __init__(self, eps=1e-6, reduction='mean', loss_weight=1.0):
+    def __init__(self, eps=1e-6, reduction="mean", loss_weight=1.0):
         super(DIoULoss, self).__init__()
         self.eps = eps
         self.reduction = reduction
         self.loss_weight = loss_weight
 
-    def forward(self,
-                pred,
-                target,
-                weight=None,
-                avg_factor=None,
-                reduction_override=None,
-                **kwargs):
+    def forward(
+        self,
+        pred,
+        target,
+        weight=None,
+        avg_factor=None,
+        reduction_override=None,
+        **kwargs,
+    ):
         if weight is not None and not torch.any(weight > 0):
             return (pred * weight).sum()  # 0
-        assert reduction_override in (None, 'none', 'mean', 'sum')
-        reduction = (
-            reduction_override if reduction_override else self.reduction)
+        assert reduction_override in (None, "none", "mean", "sum")
+        reduction = reduction_override if reduction_override else self.reduction
         if weight is not None and weight.dim() > 1:
             # TODO: remove this in the future
             # reduce the weight of shape (n, 4) to (n,) to match the
@@ -508,30 +514,31 @@ class DIoULoss(nn.Module):
             eps=self.eps,
             reduction=reduction,
             avg_factor=avg_factor,
-            **kwargs)
+            **kwargs,
+        )
         return loss
 
 
 class CIoULoss(nn.Module):
-
-    def __init__(self, eps=1e-6, reduction='mean', loss_weight=1.0):
+    def __init__(self, eps=1e-6, reduction="mean", loss_weight=1.0):
         super(CIoULoss, self).__init__()
         self.eps = eps
         self.reduction = reduction
         self.loss_weight = loss_weight
 
-    def forward(self,
-                pred,
-                target,
-                weight=None,
-                avg_factor=None,
-                reduction_override=None,
-                **kwargs):
+    def forward(
+        self,
+        pred,
+        target,
+        weight=None,
+        avg_factor=None,
+        reduction_override=None,
+        **kwargs,
+    ):
         if weight is not None and not torch.any(weight > 0):
             return (pred * weight).sum()  # 0
-        assert reduction_override in (None, 'none', 'mean', 'sum')
-        reduction = (
-            reduction_override if reduction_override else self.reduction)
+        assert reduction_override in (None, "none", "mean", "sum")
+        reduction = reduction_override if reduction_override else self.reduction
         if weight is not None and weight.dim() > 1:
             # TODO: remove this in the future
             # reduce the weight of shape (n, 4) to (n,) to match the
@@ -545,5 +552,6 @@ class CIoULoss(nn.Module):
             eps=self.eps,
             reduction=reduction,
             avg_factor=avg_factor,
-            **kwargs)
+            **kwargs,
+        )
         return loss

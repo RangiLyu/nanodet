@@ -31,8 +31,8 @@ def multiclass_nms(multi_bboxes,
     if multi_bboxes.shape[1] > 4:
         bboxes = multi_bboxes.view(multi_scores.size(0), -1, 4)
     else:
-        bboxes = multi_bboxes[:, None].expand(
-            multi_scores.size(0), num_classes, 4)
+        bboxes = multi_bboxes[:, None].expand(multi_scores.size(0),
+                                              num_classes, 4)
     scores = multi_scores[:, :-1]
 
     # filter out boxes with low scores
@@ -55,8 +55,8 @@ def multiclass_nms(multi_bboxes,
         labels = multi_bboxes.new_zeros((0, ), dtype=torch.long)
 
         if torch.onnx.is_in_onnx_export():
-            raise RuntimeError('[ONNX Error] Can not record NMS '
-                               'as it has not been executed this time')
+            raise RuntimeError("[ONNX Error] Can not record NMS "
+                               "as it has not been executed this time")
         return bboxes, labels
 
     dets, keep = batched_nms(bboxes, scores, labels, nms_cfg)
@@ -97,7 +97,7 @@ def batched_nms(boxes, scores, idxs, nms_cfg, class_agnostic=False):
         tuple: kept dets and indice.
     """
     nms_cfg_ = nms_cfg.copy()
-    class_agnostic = nms_cfg_.pop('class_agnostic', class_agnostic)
+    class_agnostic = nms_cfg_.pop("class_agnostic", class_agnostic)
     if class_agnostic:
         boxes_for_nms = boxes
     else:
@@ -105,7 +105,7 @@ def batched_nms(boxes, scores, idxs, nms_cfg, class_agnostic=False):
         offsets = idxs.to(boxes) * (max_coordinate + 1)
         boxes_for_nms = boxes + offsets[:, None]
 
-    split_thr = nms_cfg_.pop('split_thr', 10000)
+    split_thr = nms_cfg_.pop("split_thr", 10000)
     if len(boxes_for_nms) < split_thr:
         keep = nms(boxes_for_nms, scores, **nms_cfg_)
         boxes = boxes[keep]

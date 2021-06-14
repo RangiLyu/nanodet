@@ -19,7 +19,7 @@ from .trainer import Trainer
 
 
 def average_gradients(model):
-    """ Gradient averaging. """
+    """Gradient averaging."""
     size = float(dist.get_world_size())
     for param in model.parameters():
         if param.grad is not None:
@@ -31,11 +31,10 @@ class DistTrainer(Trainer):
     """
     Distributed trainer for multi-gpu training. (not finish yet)
     """
-
-    def run_step(self, model, batch, mode='train'):
+    def run_step(self, model, batch, mode="train"):
         output, loss, loss_stats = model.module.forward_train(batch)
         loss = loss.mean()
-        if mode == 'train':
+        if mode == "train":
             self.optimizer.zero_grad()
             loss.backward()
             average_gradients(model)
@@ -50,4 +49,9 @@ class DistTrainer(Trainer):
         :param device: cuda
         """
         self.rank = rank
-        self.model = DDP(batch_per_gpu, module=self.model.cuda(), device_ids=[rank], output_device=rank)
+        self.model = DDP(
+            batch_per_gpu,
+            module=self.model.cuda(),
+            device_ids=[rank],
+            output_device=rank,
+        )

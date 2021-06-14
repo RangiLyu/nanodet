@@ -13,3 +13,5 @@
 # limitations under the License.
 
 from .pipeline import Pipeline
+
+__all__ = ["Pipeline"]

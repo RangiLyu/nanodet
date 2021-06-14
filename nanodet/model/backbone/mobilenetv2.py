@@ -6,17 +6,31 @@ from ..module.activation import act_layers
 
 
 class ConvBNReLU(nn.Sequential):
-    def __init__(self, in_planes, out_planes, kernel_size=3, stride=1, groups=1, act='ReLU'):
+    def __init__(self,
+                 in_planes,
+                 out_planes,
+                 kernel_size=3,
+                 stride=1,
+                 groups=1,
+                 act="ReLU"):
         padding = (kernel_size - 1) // 2
         super(ConvBNReLU, self).__init__(
-            nn.Conv2d(in_planes, out_planes, kernel_size, stride, padding, groups=groups, bias=False),
+            nn.Conv2d(
+                in_planes,
+                out_planes,
+                kernel_size,
+                stride,
+                padding,
+                groups=groups,
+                bias=False,
+            ),
             nn.BatchNorm2d(out_planes),
-            act_layers(act)
+            act_layers(act),
         )
 
 
 class InvertedResidual(nn.Module):
-    def __init__(self, inp, oup, stride, expand_ratio, act='ReLU'):
+    def __init__(self, inp, oup, stride, expand_ratio, act="ReLU"):
         super(InvertedResidual, self).__init__()
         self.stride = stride
         assert stride in [1, 2]
@@ -30,7 +44,11 @@ class InvertedResidual(nn.Module):
             layers.append(ConvBNReLU(inp, hidden_dim, kernel_size=1, act=act))
         layers.extend([
             # dw
-            ConvBNReLU(hidden_dim, hidden_dim, stride=stride, groups=hidden_dim, act=act),
+            ConvBNReLU(hidden_dim,
+                       hidden_dim,
+                       stride=stride,
+                       groups=hidden_dim,
+                       act=act),
             # pw-linear
             nn.Conv2d(hidden_dim, oup, 1, 1, 0, bias=False),
             nn.BatchNorm2d(oup),
@@ -45,7 +63,11 @@ class InvertedResidual(nn.Module):
 
 
 class MobileNetV2(nn.Module):
-    def __init__(self, width_mult=1., out_stages=(1, 2, 4, 6), last_channel=1280, act='ReLU'):
+    def __init__(self,
+                 width_mult=1.0,
+                 out_stages=(1, 2, 4, 6),
+                 last_channel=1280,
+                 act="ReLU"):
         super(MobileNetV2, self).__init__()
         self.width_mult = width_mult
         self.out_stages = out_stages
@@ -68,7 +90,7 @@ class MobileNetV2(nn.Module):
         self.first_layer = ConvBNReLU(3, input_channel, stride=2, act=self.act)
         # building inverted residual blocks
         for i in range(7):
-            name = 'stage{}'.format(i)
+            name = "stage{}".format(i)
             setattr(self, name, self.build_mobilenet_stage(stage_num=i))
 
     def build_mobilenet_stage(self, stage_num):
@@ -77,12 +99,29 @@ class MobileNetV2(nn.Module):
         output_channel = int(c * self.width_mult)
         for i in range(n):
             if i == 0:
-                stage.append(InvertedResidual(self.input_channel, output_channel, s, expand_ratio=t, act=self.act))
+                stage.append(
+                    InvertedResidual(
+                        self.input_channel,
+                        output_channel,
+                        s,
+                        expand_ratio=t,
+                        act=self.act,
+                    ))
             else:
-                stage.append(InvertedResidual(self.input_channel, output_channel, 1, expand_ratio=t, act=self.act))
+                stage.append(
+                    InvertedResidual(
+                        self.input_channel,
+                        output_channel,
+                        1,
+                        expand_ratio=t,
+                        act=self.act,
+                    ))
             self.input_channel = output_channel
         if stage_num == 6:
-            last_layer = ConvBNReLU(self.input_channel, self.last_channel, kernel_size=1, act=self.act)
+            last_layer = ConvBNReLU(self.input_channel,
+                                    self.last_channel,
+                                    kernel_size=1,
+                                    act=self.act)
             stage.append(last_layer)
         stage = nn.Sequential(*stage)
         return stage
@@ -91,7 +130,7 @@ class MobileNetV2(nn.Module):
         x = self.first_layer(x)
         output = []
         for i in range(0, 7):
-            stage = getattr(self, 'stage{}'.format(i))
+            stage = getattr(self, "stage{}".format(i))
             x = stage(x)
             if i in self.out_stages:
                 output.append(x)
@@ -107,4 +146,3 @@ class MobileNetV2(nn.Module):
             elif isinstance(m, nn.BatchNorm2d):
                 m.weight.data.fill_(1)
                 m.bias.data.zero_()
-

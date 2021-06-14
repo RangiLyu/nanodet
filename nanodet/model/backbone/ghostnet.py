@@ -19,10 +19,10 @@ from ..module.activation import act_layers
 
 
 def get_url(width_mult=1.0):
-    if width_mult==1.0:
-        return 'https://github.com/huawei-noah/ghostnet/raw/master/pytorch/models/state_dict_93.98.pth'
+    if width_mult == 1.0:
+        return "https://github.com/huawei-noah/ghostnet/raw/master/pytorch/models/state_dict_93.98.pth"
     else:
-        logging.info('GhostNet only has 1.0 pretrain model. ')
+        logging.info("GhostNet only has 1.0 pretrain model. ")
         return None
 
 
@@ -44,17 +44,24 @@ def _make_divisible(v, divisor, min_value=None):
 
 def hard_sigmoid(x, inplace: bool = False):
     if inplace:
-        return x.add_(3.).clamp_(0., 6.).div_(6.)
+        return x.add_(3.0).clamp_(0.0, 6.0).div_(6.0)
     else:
-        return F.relu6(x + 3.) / 6.
+        return F.relu6(x + 3.0) / 6.0
 
 
 class SqueezeExcite(nn.Module):
-    def __init__(self, in_chs, se_ratio=0.25, reduced_base_chs=None,
-                 act="ReLU", gate_fn=hard_sigmoid, divisor=4, **_):
+    def __init__(self,
+                 in_chs,
+                 se_ratio=0.25,
+                 reduced_base_chs=None,
+                 act="ReLU",
+                 gate_fn=hard_sigmoid,
+                 divisor=4,
+                 **_):
         super(SqueezeExcite, self).__init__()
         self.gate_fn = gate_fn
-        reduced_chs = _make_divisible((reduced_base_chs or in_chs) * se_ratio, divisor)
+        reduced_chs = _make_divisible((reduced_base_chs or in_chs) * se_ratio,
+                                      divisor)
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
         self.conv_reduce = nn.Conv2d(in_chs, reduced_chs, 1, bias=True)
         self.act1 = act_layers(act)
@@ -70,10 +77,14 @@ class SqueezeExcite(nn.Module):
 
 
 class ConvBnAct(nn.Module):
-    def __init__(self, in_chs, out_chs, kernel_size,
-                 stride=1, act="ReLU"):
+    def __init__(self, in_chs, out_chs, kernel_size, stride=1, act="ReLU"):
         super(ConvBnAct, self).__init__()
-        self.conv = nn.Conv2d(in_chs, out_chs, kernel_size, stride, kernel_size // 2, bias=False)
+        self.conv = nn.Conv2d(in_chs,
+                              out_chs,
+                              kernel_size,
+                              stride,
+                              kernel_size // 2,
+                              bias=False)
         self.bn1 = nn.BatchNorm2d(out_chs)
         self.act1 = act_layers(act)
 
@@ -85,20 +96,40 @@ class ConvBnAct(nn.Module):
 
 
 class GhostModule(nn.Module):
-    def __init__(self, inp, oup, kernel_size=1, ratio=2, dw_size=3, stride=1, act="ReLU"):
+    def __init__(self,
+                 inp,
+                 oup,
+                 kernel_size=1,
+                 ratio=2,
+                 dw_size=3,
+                 stride=1,
+                 act="ReLU"):
         super(GhostModule, self).__init__()
         self.oup = oup
         init_channels = math.ceil(oup / ratio)
         new_channels = init_channels * (ratio - 1)
 
         self.primary_conv = nn.Sequential(
-            nn.Conv2d(inp, init_channels, kernel_size, stride, kernel_size // 2, bias=False),
+            nn.Conv2d(inp,
+                      init_channels,
+                      kernel_size,
+                      stride,
+                      kernel_size // 2,
+                      bias=False),
             nn.BatchNorm2d(init_channels),
             act_layers(act) if act else nn.Sequential(),
         )
 
         self.cheap_operation = nn.Sequential(
-            nn.Conv2d(init_channels, new_channels, dw_size, 1, dw_size // 2, groups=init_channels, bias=False),
+            nn.Conv2d(
+                init_channels,
+                new_channels,
+                dw_size,
+                1,
+                dw_size // 2,
+                groups=init_channels,
+                bias=False,
+            ),
             nn.BatchNorm2d(new_channels),
             act_layers(act) if act else nn.Sequential(),
         )
@@ -111,12 +142,19 @@ class GhostModule(nn.Module):
 
 
 class GhostBottleneck(nn.Module):
-    """ Ghost bottleneck w/ optional SE"""
-
-    def __init__(self, in_chs, mid_chs, out_chs, dw_kernel_size=3,
-                 stride=1, act="ReLU", se_ratio=0.):
+    """Ghost bottleneck w/ optional SE"""
+    def __init__(
+        self,
+        in_chs,
+        mid_chs,
+        out_chs,
+        dw_kernel_size=3,
+        stride=1,
+        act="ReLU",
+        se_ratio=0.0,
+    ):
         super(GhostBottleneck, self).__init__()
-        has_se = se_ratio is not None and se_ratio > 0.
+        has_se = se_ratio is not None and se_ratio > 0.0
         self.stride = stride
 
         # Point-wise expansion
@@ -124,9 +162,15 @@ class GhostBottleneck(nn.Module):
 
         # Depth-wise convolution
         if self.stride > 1:
-            self.conv_dw = nn.Conv2d(mid_chs, mid_chs, dw_kernel_size, stride=stride,
-                                     padding=(dw_kernel_size - 1) // 2,
-                                     groups=mid_chs, bias=False)
+            self.conv_dw = nn.Conv2d(
+                mid_chs,
+                mid_chs,
+                dw_kernel_size,
+                stride=stride,
+                padding=(dw_kernel_size - 1) // 2,
+                groups=mid_chs,
+                bias=False,
+            )
             self.bn_dw = nn.BatchNorm2d(mid_chs)
 
         # Squeeze-and-excitation
@@ -143,8 +187,15 @@ class GhostBottleneck(nn.Module):
             self.shortcut = nn.Sequential()
         else:
             self.shortcut = nn.Sequential(
-                nn.Conv2d(in_chs, in_chs, dw_kernel_size, stride=stride,
-                          padding=(dw_kernel_size - 1) // 2, groups=in_chs, bias=False),
+                nn.Conv2d(
+                    in_chs,
+                    in_chs,
+                    dw_kernel_size,
+                    stride=stride,
+                    padding=(dw_kernel_size - 1) // 2,
+                    groups=in_chs,
+                    bias=False,
+                ),
                 nn.BatchNorm2d(in_chs),
                 nn.Conv2d(in_chs, out_chs, 1, stride=1, padding=0, bias=False),
                 nn.BatchNorm2d(out_chs),
@@ -173,7 +224,11 @@ class GhostBottleneck(nn.Module):
 
 
 class GhostNet(nn.Module):
-    def __init__(self, width_mult=1.0, out_stages=(4, 6, 9), act='ReLU', pretrain=True):
+    def __init__(self,
+                 width_mult=1.0,
+                 out_stages=(4, 6, 9),
+                 act="ReLU",
+                 pretrain=True):
         super(GhostNet, self).__init__()
         self.width_mult = width_mult
         self.out_stages = out_stages
@@ -181,28 +236,30 @@ class GhostNet(nn.Module):
         self.cfgs = [
             # k, t,   c,  SE, s
             # stage1
-            [[3, 16,  16, 0, 1]],     # 0
+            [[3, 16, 16, 0, 1]],  # 0
             # stage2
-            [[3, 48,  24, 0, 2]],     # 1
-            [[3, 72,  24, 0, 1]],     # 2  1/4
+            [[3, 48, 24, 0, 2]],  # 1
+            [[3, 72, 24, 0, 1]],  # 2  1/4
             # stage3
-            [[5, 72,  40, 0.25, 2]],  # 3
+            [[5, 72, 40, 0.25, 2]],  # 3
             [[5, 120, 40, 0.25, 1]],  # 4  1/8
             # stage4
-            [[3, 240, 80, 0, 2]],     # 5
-            [[3, 200, 80, 0, 1],
-             [3, 184, 80, 0, 1],
-             [3, 184, 80, 0, 1],
-             [3, 480, 112, 0.25, 1],
-             [3, 672, 112, 0.25, 1]
-             ],                       # 6  1/16
+            [[3, 240, 80, 0, 2]],  # 5
+            [
+                [3, 200, 80, 0, 1],
+                [3, 184, 80, 0, 1],
+                [3, 184, 80, 0, 1],
+                [3, 480, 112, 0.25, 1],
+                [3, 672, 112, 0.25, 1],
+            ],  # 6  1/16
             # stage5
-            [[5, 672, 160, 0.25, 2]], # 7
-            [[5, 960, 160, 0, 1],
-             [5, 960, 160, 0.25, 1],
-             [5, 960, 160, 0, 1],
-             [5, 960, 160, 0.25, 1]
-             ]                        # 8
+            [[5, 672, 160, 0.25, 2]],  # 7
+            [
+                [5, 960, 160, 0, 1],
+                [5, 960, 160, 0.25, 1],
+                [5, 960, 160, 0, 1],
+                [5, 960, 160, 0.25, 1],
+            ],  # 8
         ]
         #  ------conv+bn+act----------# 9  1/32
 
@@ -221,13 +278,23 @@ class GhostNet(nn.Module):
             for k, exp_size, c, se_ratio, s in cfg:
                 output_channel = _make_divisible(c * width_mult, 4)
                 hidden_channel = _make_divisible(exp_size * width_mult, 4)
-                layers.append(block(input_channel, hidden_channel, output_channel, k, s,
-                                    act=act, se_ratio=se_ratio))
+                layers.append(
+                    block(
+                        input_channel,
+                        hidden_channel,
+                        output_channel,
+                        k,
+                        s,
+                        act=act,
+                        se_ratio=se_ratio,
+                    ))
                 input_channel = output_channel
             stages.append(nn.Sequential(*layers))
 
         output_channel = _make_divisible(exp_size * width_mult, 4)
-        stages.append(nn.Sequential(ConvBnAct(input_channel, output_channel, 1, act=act)))  #9
+        stages.append(
+            nn.Sequential(ConvBnAct(input_channel, output_channel, 1,
+                                    act=act)))  # 9
 
         self.blocks = nn.Sequential(*stages)
 
@@ -245,10 +312,10 @@ class GhostNet(nn.Module):
         return tuple(output)
 
     def _initialize_weights(self, pretrain=True):
-        print('init weights...')
+        print("init weights...")
         for name, m in self.named_modules():
             if isinstance(m, nn.Conv2d):
-                if 'conv_stem' in name:
+                if "conv_stem" in name:
                     nn.init.normal_(m.weight, 0, 0.01)
                 else:
                     nn.init.normal_(m.weight, 0, 1.0 / m.weight.shape[1])
@@ -271,5 +338,6 @@ class GhostNet(nn.Module):
         if pretrain:
             url = get_url(self.width_mult)
             if url is not None:
-                state_dict = torch.hub.load_state_dict_from_url(url, progress=True)
+                state_dict = torch.hub.load_state_dict_from_url(url,
+                                                                progress=True)
                 self.load_state_dict(state_dict, strict=False)

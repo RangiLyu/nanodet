@@ -15,9 +15,10 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
 from ..module.conv import ConvModule
-from ..module.transformer import TransformerBlock
 from ..module.init_weights import normal_init
+from ..module.transformer import TransformerBlock
 
 
 class TAN(nn.Module):

@@ -2,13 +2,15 @@
 ConvModule refers from MMDetection
 RepVGGConvModule refers from RepVGG: Making VGG-style ConvNets Great Again
 """
+import warnings
+
+import numpy as np
 import torch
 import torch.nn as nn
-import numpy as np
-import warnings
-from .init_weights import kaiming_init, normal_init, xavier_init, constant_init
-from .norm import build_norm_layer
+
 from .activation import act_layers
+from .init_weights import constant_init, kaiming_init
+from .norm import build_norm_layer
 
 
 class ConvModule(nn.Module):

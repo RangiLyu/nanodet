@@ -1,8 +1,10 @@
 import math
+
 import torch
-from torch import nn
 import torch.functional as F
 import torch.utils.model_zoo as model_zoo
+from torch import nn
+
 from ..module.activation import act_layers
 
 efficientnet_lite_params = {

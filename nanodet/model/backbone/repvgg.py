@@ -7,9 +7,10 @@ RepVGG Backbone from paper RepVGG: Making VGG-style ConvNets Great Again
 Code from https://github.com/DingXiaoH/RepVGG
 """
 
-import torch.nn as nn
 import numpy as np
 import torch
+import torch.nn as nn
+
 from nanodet.model.module.conv import RepVGGConvModule
 
 optional_groupwise_layers = [2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26]

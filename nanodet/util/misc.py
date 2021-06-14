@@ -13,8 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import torch
 from functools import partial
+
+import torch
 
 
 def multi_apply(func, *args, **kwargs):

@@ -1,18 +1,56 @@
+# Copyright 2021 RangiLyu.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import torch
 import torch.nn as nn
+
 from ..module.conv import ConvModule
 
 
 class TinyResBlock(nn.Module):
-    def __init__(self, in_channels, kernel_size, norm_cfg, activation, res_type='concat'):
+    def __init__(self,
+                 in_channels,
+                 kernel_size,
+                 norm_cfg,
+                 activation,
+                 res_type='concat'):
         super(TinyResBlock, self).__init__()
         assert in_channels % 2 == 0
         assert res_type in ['concat', 'add']
         self.res_type = res_type
-        self.in_conv = ConvModule(in_channels, in_channels//2, kernel_size, padding=(kernel_size-1)//2, norm_cfg=norm_cfg, activation=activation)
-        self.mid_conv = ConvModule(in_channels//2, in_channels//2, kernel_size, padding=(kernel_size-1)//2, norm_cfg=norm_cfg, activation=activation)
+        self.in_conv = ConvModule(
+            in_channels,
+            in_channels//2,
+            kernel_size,
+            padding=(kernel_size-1)//2,
+            norm_cfg=norm_cfg,
+            activation=activation)
+        self.mid_conv = ConvModule(
+            in_channels//2,
+            in_channels//2,
+            kernel_size,
+            padding=(kernel_size-1)//2,
+            norm_cfg=norm_cfg,
+            activation=activation)
         if res_type == 'add':
-            self.out_conv = ConvModule(in_channels//2, in_channels, kernel_size, padding=(kernel_size-1)//2, norm_cfg=norm_cfg, activation=activation)
+            self.out_conv = ConvModule(
+                in_channels//2,
+                in_channels,
+                kernel_size,
+                padding=(kernel_size-1)//2,
+                norm_cfg=norm_cfg,
+                activation=activation)
 
     def forward(self, x):
         x = self.in_conv(x)
@@ -24,16 +62,35 @@ class TinyResBlock(nn.Module):
 
 
 class CspBlock(nn.Module):
-    def __init__(self, in_channels, num_res, kernel_size=3, stride=0, norm_cfg=dict(type='BN', requires_grad=True), activation='LeakyReLU'):
+    def __init__(self,
+                 in_channels,
+                 num_res,
+                 kernel_size=3,
+                 stride=0,
+                 norm_cfg=dict(type='BN', requires_grad=True),
+                 activation='LeakyReLU'):
         super(CspBlock, self).__init__()
         assert in_channels % 2 == 0
-        self.in_conv = ConvModule(in_channels, in_channels, kernel_size, stride, padding=(kernel_size-1)//2, norm_cfg=norm_cfg, activation=activation)
+        self.in_conv = ConvModule(
+            in_channels,
+            in_channels,
+            kernel_size,
+            stride,
+            padding=(kernel_size-1)//2,
+            norm_cfg=norm_cfg,
+            activation=activation)
         res_blocks = []
         for i in range(num_res):
             res_block = TinyResBlock(in_channels, kernel_size, norm_cfg, activation)
             res_blocks.append(res_block)
         self.res_blocks = nn.Sequential(*res_blocks)
-        self.res_out_conv = ConvModule(in_channels, in_channels, kernel_size, padding=(kernel_size-1)//2, norm_cfg=norm_cfg, activation=activation)
+        self.res_out_conv = ConvModule(
+            in_channels,
+            in_channels,
+            kernel_size,
+            padding=(kernel_size-1)//2,
+            norm_cfg=norm_cfg,
+            activation=activation)
 
     def forward(self, x):
         x = self.in_conv(x)
@@ -44,7 +101,11 @@ class CspBlock(nn.Module):
 
 
 class CustomCspNet(nn.Module):
-    def __init__(self, net_cfg, out_stages, norm_cfg=dict(type='BN', requires_grad=True), activation='LeakyReLU'):
+    def __init__(self,
+                 net_cfg,
+                 out_stages,
+                 norm_cfg=dict(type='BN', requires_grad=True),
+                 activation='LeakyReLU'):
         super(CustomCspNet, self).__init__()
         self.out_stages = out_stages
         self.activation = activation
@@ -52,13 +113,29 @@ class CustomCspNet(nn.Module):
         for stage_cfg in net_cfg:
             if stage_cfg[0] == 'Conv':
                 in_channels, out_channels, kernel_size, stride = stage_cfg[1:]
-                stage = ConvModule(in_channels, out_channels, kernel_size, stride, padding=(kernel_size-1)//2, norm_cfg=norm_cfg, activation=activation)
+                stage = ConvModule(
+                    in_channels,
+                    out_channels,
+                    kernel_size,
+                    stride,
+                    padding=(kernel_size-1)//2,
+                    norm_cfg=norm_cfg,
+                    activation=activation)
             elif stage_cfg[0] == 'CspBlock':
                 in_channels, num_res, kernel_size, stride = stage_cfg[1:]
-                stage = CspBlock(in_channels, num_res, kernel_size, stride, norm_cfg, activation)
+                stage = CspBlock(
+                    in_channels,
+                    num_res,
+                    kernel_size,
+                    stride,
+                    norm_cfg,
+                    activation)
             elif stage_cfg[0] == 'MaxPool':
                 kernel_size, stride = stage_cfg[1:]
-                stage = nn.MaxPool2d(kernel_size, stride, padding=(kernel_size-1)//2)
+                stage = nn.MaxPool2d(
+                    kernel_size,
+                    stride,
+                    padding=(kernel_size-1)//2)
             else:
                 raise ModuleNotFoundError
             self.stages.append(stage)
@@ -79,7 +156,9 @@ class CustomCspNet(nn.Module):
             else:
                 nonlinearity = 'relu'
             if isinstance(m, nn.Conv2d):
-                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity=nonlinearity)
+                nn.init.kaiming_normal_(m.weight,
+                                        mode='fan_out',
+                                        nonlinearity=nonlinearity)
             elif isinstance(m, nn.BatchNorm2d):
                 m.weight.data.fill_(1)
                 m.bias.data.zero_()

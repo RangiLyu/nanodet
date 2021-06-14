@@ -1,6 +1,22 @@
+# Copyright 2021 RangiLyu.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import torch
 import torch.nn as nn
+
 from nanodet.util import multi_apply
+
 from ..module.conv import ConvModule, DepthwiseConvModule
 from ..module.init_weights import normal_init
 from .gfl_head import GFLHead
@@ -94,11 +110,12 @@ class NanoDetHead(GFLHead):
         for m in self.reg_convs.modules():
             if isinstance(m, nn.Conv2d):
                 normal_init(m, std=0.01)
-        bias_cls = -4.595  # 用0.01的置信度初始化
+        # init cls head with confidence = 0.01
+        bias_cls = -4.595
         for i in range(len(self.strides)):
             normal_init(self.gfl_cls[i], std=0.01, bias=bias_cls)
             normal_init(self.gfl_reg[i], std=0.01)
-        print('Finish initialize Lite GFL Head.')
+        print('Finish initialize NanoDet Head.')
 
     def forward(self, feats):
         return multi_apply(self.forward_single,

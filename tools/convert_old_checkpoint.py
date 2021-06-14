@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 import argparse
+
 import torch
 
 from nanodet.util import convert_old_model

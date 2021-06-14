@@ -1,18 +1,21 @@
+import cv2
+import numpy as np
 import torch
+import torch.distributed as dist
 import torch.nn as nn
 import torch.nn.functional as F
-import torch.distributed as dist
-import numpy as np
-import cv2
-from nanodet.util import distance2bbox, bbox2distance, overlay_bbox_cv, multi_apply, images_to_levels
-from ..module.scale import Scale
+
+from nanodet.util import (bbox2distance, distance2bbox, images_to_levels,
+                          multi_apply, overlay_bbox_cv)
+
+from ...data.transform.warp import warp_boxes
+from ..loss.gfocal_loss import DistributionFocalLoss, QualityFocalLoss
+from ..loss.iou_loss import GIoULoss, bbox_overlaps
 from ..module.conv import ConvModule
 from ..module.init_weights import normal_init
 from ..module.nms import multiclass_nms
-from ..loss.gfocal_loss import QualityFocalLoss, DistributionFocalLoss
-from ..loss.iou_loss import GIoULoss, bbox_overlaps
+from ..module.scale import Scale
 from .assigner.atss_assigner import ATSSAssigner
-from ...data.transform.warp import warp_boxes
 
 
 def reduce_mean(tensor):
@@ -602,4 +605,3 @@ class GFLHead(nn.Module):
         cells_cx = (grid_cells[:, 2] + grid_cells[:, 0]) / 2
         cells_cy = (grid_cells[:, 3] + grid_cells[:, 1]) / 2
         return torch.stack([cells_cx, cells_cy], dim=-1)
-

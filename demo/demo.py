@@ -1,12 +1,13 @@
-import cv2
+import argparse
 import os
 import time
+
+import cv2
 import torch
-import argparse
-from nanodet.util import cfg, load_config, Logger
-from nanodet.model.arch import build_model
-from nanodet.util import load_model_weight
+
 from nanodet.data.transform import Pipeline
+from nanodet.model.arch import build_model
+from nanodet.util import Logger, cfg, load_config, load_model_weight
 from nanodet.util.path import mkdir
 
 image_ext = ['.jpg', '.jpeg', '.webp', '.bmp', '.png']

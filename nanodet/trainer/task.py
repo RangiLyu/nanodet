@@ -13,15 +13,16 @@
 # limitations under the License.
 
 import copy
+import json
+import logging
 import os
 import warnings
-import json
-import torch
-import logging
-
-from pytorch_lightning import LightningModule
 from typing import Any, List
-from nanodet.util import mkdir, gather_results
+
+import torch
+from pytorch_lightning import LightningModule
+
+from nanodet.util import gather_results, mkdir
 
 from ..model.arch import build_model
 

@@ -1,12 +1,25 @@
-import os
-import torch
-import numpy as np
-import cv2
-import time
+# Copyright 2021 RangiLyu.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import logging
-from collections import defaultdict
+import os
+import time
 import xml.etree.ElementTree as ET
+from collections import defaultdict
+
 from pycocotools.coco import COCO
+
 from .coco import CocoDataset
 
 
@@ -21,7 +34,7 @@ def get_file_list(path, type='.xml'):
     return file_names
 
 
-class COCO_XML(COCO):
+class CocoXML(COCO):
 
     def __init__(self, annotation):
         """
@@ -121,7 +134,7 @@ class XMLDataset(CocoDataset):
         ]
         """
         coco_dict = self.xml_to_coco(ann_path)
-        self.coco_api = COCO_XML(coco_dict)
+        self.coco_api = CocoXML(coco_dict)
         self.cat_ids = sorted(self.coco_api.getCatIds())
         self.cat2label = {cat_id: i for i, cat_id in enumerate(self.cat_ids)}
         self.cats = self.coco_api.loadCats(self.cat_ids)

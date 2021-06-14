@@ -1,16 +1,20 @@
-# 2020.06.09-Changed for building GhostNet
-#            Huawei Technologies Co., Ltd. <foss@huawei.com>
 """
+2020.06.09-Changed for building GhostNet
+Huawei Technologies Co., Ltd. <foss@huawei.com>
 Creates a GhostNet Model as defined in:
-GhostNet: More Features from Cheap Operations By Kai Han, Yunhe Wang, Qi Tian, Jianyuan Guo, Chunjing Xu, Chang Xu.
+GhostNet: More Features from Cheap Operations By Kai Han, Yunhe Wang,
+Qi Tian, Jianyuan Guo, Chunjing Xu, Chang Xu.
 https://arxiv.org/abs/1911.11907
-Modified from https://github.com/d-li14/mobilenetv3.pytorch and https://github.com/rwightman/pytorch-image-models
+Modified from https://github.com/d-li14/mobilenetv3.pytorch
+and https://github.com/rwightman/pytorch-image-models
 """
 import logging
+import math
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import math
+
 from ..module.activation import act_layers
 
 

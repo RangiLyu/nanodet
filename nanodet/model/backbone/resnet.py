@@ -1,13 +1,9 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+from __future__ import absolute_import, division, print_function
 
-
-import torch
 import torch.nn as nn
 import torch.utils.model_zoo as model_zoo
-from ..module.activation import act_layers
 
+from ..module.activation import act_layers
 
 model_urls = {
     'resnet18': 'https://download.pytorch.org/models/resnet18-5c106cde.pth',

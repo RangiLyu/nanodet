@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import torch
 import torch.nn as nn
+
 from nanodet.model.module.activation import act_layers
 from nanodet.model.module.conv import ConvModule
 

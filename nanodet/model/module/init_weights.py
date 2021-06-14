@@ -1,6 +1,6 @@
-"""
-from MMDetection
-"""
+# Modification 2020 RangiLyu
+# Copyright 2018-2019 Open-MMLab.
+
 import torch.nn as nn
 
 

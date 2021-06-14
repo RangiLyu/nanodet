@@ -16,8 +16,8 @@
 import torch
 
 from ...loss.iou_loss import bbox_overlaps
-from .base_assigner import BaseAssigner
 from .assign_result import AssignResult
+from .base_assigner import BaseAssigner
 
 
 class ATSSAssigner(BaseAssigner):

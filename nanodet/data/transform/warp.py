@@ -1,13 +1,30 @@
-import random
-import numpy as np
-import cv2
+# Copyright 2021 RangiLyu.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import math
+import random
+
+import cv2
+import numpy as np
+
 
 def get_flip_matrix(prob=0.5):
     F = np.eye(3)
     if random.random() < prob:
         F[0, 0] = -1
     return F
+
 
 def get_perspective_matrix(perspective=0):
     """
@@ -36,8 +53,7 @@ def get_rotation_matrix(degree=0):
 def get_scale_matrix(ratio=(1, 1)):
     """
 
-    :param width_ratio:
-    :param height_ratio:
+    :param ratio:
     """
     Scl = np.eye(3)
     scale = random.uniform(*ratio)
@@ -113,6 +129,7 @@ def get_resize_matrix(raw_shape, dst_shape, keep_ratio):
         Rs[0, 0] *= d_w / r_w
         Rs[1, 1] *= d_h / r_h
         return Rs
+
 
 def warp_and_resize(meta, warp_kwargs, dst_shape, keep_ratio=True):
     # TODO: background, type
@@ -204,16 +221,3 @@ def warp_boxes(boxes, M, width, height):
 #         xy[:, [0, 2]] = xy[:, [0, 2]].clip(0, width)
 #         xy[:, [1, 3]] = xy[:, [1, 3]].clip(0, height)
 #         return xy
-
-
-
-
-
-
-
-
-
-
-
-
-

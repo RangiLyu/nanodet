@@ -40,7 +40,6 @@ def multiclass_nms(multi_bboxes,
 
     # We use masked_select for ONNX exporting purpose,
     # which is equivalent to bboxes = bboxes[valid_mask]
-    # (TODO): as ONNX does not support repeat now,
     # we have to use this ugly code
     bboxes = torch.masked_select(
         bboxes,
@@ -106,21 +105,15 @@ def batched_nms(boxes, scores, idxs, nms_cfg, class_agnostic=False):
         offsets = idxs.to(boxes) * (max_coordinate + 1)
         boxes_for_nms = boxes + offsets[:, None]
 
-    nms_type = nms_cfg_.pop('type', 'nms')
-    # nms_op = eval(nms_type)
-
     split_thr = nms_cfg_.pop('split_thr', 10000)
     if len(boxes_for_nms) < split_thr:
-        # dets, keep = nms_op(boxes_for_nms, scores, **nms_cfg_)
         keep = nms(boxes_for_nms, scores, **nms_cfg_)
         boxes = boxes[keep]
-        # scores = dets[:, -1]
         scores = scores[keep]
     else:
         total_mask = scores.new_zeros(scores.size(), dtype=torch.bool)
         for id in torch.unique(idxs):
             mask = (idxs == id).nonzero(as_tuple=False).view(-1)
-            # dets, keep = nms_op(boxes_for_nms[mask], scores[mask], **nms_cfg_)
             keep = nms(boxes_for_nms[mask], scores[mask], **nms_cfg_)
             total_mask[mask[keep]] = True
 

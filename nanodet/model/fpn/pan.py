@@ -1,6 +1,20 @@
-import torch.nn as nn
+# Modification 2020 RangiLyu
+# Copyright 2018-2019 Open-MMLab.
+
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+
+#     http://www.apache.org/licenses/LICENSE-2.0
+
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import torch.nn.functional as F
-from ..module.conv import ConvModule
+
 from .fpn import FPN
 
 
@@ -18,17 +32,9 @@ class PAN(FPN):
             build the feature pyramid. Default: 0.
         end_level (int): Index of the end input backbone level (exclusive) to
             build the feature pyramid. Default: -1, which means the last level.
-        add_extra_convs (bool): Whether to add conv layers on top of the
-            original feature maps. Default: False.
-        extra_convs_on_inputs (bool): Whether to apply extra conv on
-            the original feature from the backbone. Default: False.
-        relu_before_extra_convs (bool): Whether to apply relu before the extra
-            conv. Default: False.
-        no_norm_on_lateral (bool): Whether to apply norm on lateral.
-            Default: False.
         conv_cfg (dict): Config dict for convolution layer. Default: None.
         norm_cfg (dict): Config dict for normalization layer. Default: None.
-        act_cfg (str): Config dict for activation layer in ConvModule.
+        activation (str): Config dict for activation layer in ConvModule.
             Default: None.
     """
 

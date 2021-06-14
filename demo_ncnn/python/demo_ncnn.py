@@ -8,15 +8,14 @@ Env.:       Python 3.7.3, WIN 10
 '''
 
 import argparse
-from pathlib import Path
 from abc import ABCMeta, abstractmethod
+from pathlib import Path
 
 import cv2
-import numpy as np
 import matplotlib.pyplot as plt
-from tqdm import tqdm
+import numpy as np
 from scipy.special import softmax
-
+from tqdm import tqdm
 
 # Copy from nanodet/util/visualization.py
 _COLORS = np.array(
@@ -427,6 +426,7 @@ class NanoDetONNX(NanoDetABC):
 class NanoDetTorch(NanoDetABC):
     def __init__(self, model_path, cfg_path, *args, **kwargs):
         import torch
+
         from nanodet.model.arch import build_model
         from nanodet.util import Logger, cfg, load_config, load_model_weight
 

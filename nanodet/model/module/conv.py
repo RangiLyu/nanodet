@@ -62,7 +62,7 @@ class ConvModule(nn.Module):
         self.inplace = inplace
         self.order = order
         assert isinstance(self.order, tuple) and len(self.order) == 3
-        assert set(order) == set(["conv", "norm", "act"])
+        assert set(order) == {"conv", "norm", "act"}
 
         self.with_norm = norm_cfg is not None
         # if the conv layer is before a norm layer, bias is unnecessary.
@@ -162,9 +162,14 @@ class DepthwiseConvModule(nn.Module):
         self.inplace = inplace
         self.order = order
         assert isinstance(self.order, tuple) and len(self.order) == 6
-        assert set(order) == set(
-            ["depthwise", "dwnorm", "act", "pointwise", "pwnorm", "act"]
-        )
+        assert set(order) == {
+            "depthwise",
+            "dwnorm",
+            "act",
+            "pointwise",
+            "pwnorm",
+            "act",
+        }
 
         self.with_norm = norm_cfg is not None
         # if the conv layer is before a norm layer, bias is unnecessary.

@@ -19,7 +19,7 @@ jobs:
       - name: Lint
         run: |
           echo "Running isort"
-          isort .
+          isort --profile black .
           echo "Running black"
           black --check .
           echo "Running flake8"

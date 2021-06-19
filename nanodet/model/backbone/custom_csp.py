@@ -19,12 +19,9 @@ from ..module.conv import ConvModule
 
 
 class TinyResBlock(nn.Module):
-    def __init__(self,
-                 in_channels,
-                 kernel_size,
-                 norm_cfg,
-                 activation,
-                 res_type="concat"):
+    def __init__(
+        self, in_channels, kernel_size, norm_cfg, activation, res_type="concat"
+    ):
         super(TinyResBlock, self).__init__()
         assert in_channels % 2 == 0
         assert res_type in ["concat", "add"]
@@ -87,8 +84,7 @@ class CspBlock(nn.Module):
         )
         res_blocks = []
         for i in range(num_res):
-            res_block = TinyResBlock(in_channels, kernel_size, norm_cfg,
-                                     activation)
+            res_block = TinyResBlock(in_channels, kernel_size, norm_cfg, activation)
             res_blocks.append(res_block)
         self.res_blocks = nn.Sequential(*res_blocks)
         self.res_out_conv = ConvModule(
@@ -134,13 +130,14 @@ class CustomCspNet(nn.Module):
                 )
             elif stage_cfg[0] == "CspBlock":
                 in_channels, num_res, kernel_size, stride = stage_cfg[1:]
-                stage = CspBlock(in_channels, num_res, kernel_size, stride,
-                                 norm_cfg, activation)
+                stage = CspBlock(
+                    in_channels, num_res, kernel_size, stride, norm_cfg, activation
+                )
             elif stage_cfg[0] == "MaxPool":
                 kernel_size, stride = stage_cfg[1:]
-                stage = nn.MaxPool2d(kernel_size,
-                                     stride,
-                                     padding=(kernel_size - 1) // 2)
+                stage = nn.MaxPool2d(
+                    kernel_size, stride, padding=(kernel_size - 1) // 2
+                )
             else:
                 raise ModuleNotFoundError
             self.stages.append(stage)
@@ -161,9 +158,9 @@ class CustomCspNet(nn.Module):
             else:
                 nonlinearity = "relu"
             if isinstance(m, nn.Conv2d):
-                nn.init.kaiming_normal_(m.weight,
-                                        mode="fan_out",
-                                        nonlinearity=nonlinearity)
+                nn.init.kaiming_normal_(
+                    m.weight, mode="fan_out", nonlinearity=nonlinearity
+                )
             elif isinstance(m, nn.BatchNorm2d):
                 m.weight.data.fill_(1)
                 m.bias.data.zero_()

@@ -21,9 +21,9 @@ from .trainer import Trainer
 def build_trainer(rank, cfg, model, logger):
     if len(cfg.device.gpu_ids) > 1:
         trainer = DistTrainer(rank, cfg, model, logger)
-        trainer.set_device(cfg.device.batchsize_per_gpu,
-                           rank,
-                           device=torch.device("cuda"))  # TODO: device
+        trainer.set_device(
+            cfg.device.batchsize_per_gpu, rank, device=torch.device("cuda")
+        )  # TODO: device
     else:
         trainer = Trainer(rank, cfg, model, logger)
         trainer.set_device(

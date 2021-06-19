@@ -34,6 +34,7 @@ class TAN(nn.Module):
     :param dropout_ratio: Probability of an element to be zeroed.
     :param activation: Activation layer type.
     """
+
     def __init__(
         self,
         in_channels,
@@ -73,7 +74,8 @@ class TAN(nn.Module):
             activation=activation,
         )
         self.pos_embed = nn.Parameter(
-            torch.zeros(feature_hw[0] * feature_hw[1], 1, out_channels))
+            torch.zeros(feature_hw[0] * feature_hw[1], 1, out_channels)
+        )
 
         self.init_weights()
 
@@ -95,8 +97,7 @@ class TAN(nn.Module):
 
         # build laterals
         laterals = [
-            lateral_conv(inputs[i])
-            for i, lateral_conv in enumerate(self.lateral_convs)
+            lateral_conv(inputs[i]) for i, lateral_conv in enumerate(self.lateral_convs)
         ]
 
         # transformer attention
@@ -113,10 +114,10 @@ class TAN(nn.Module):
 
         # build outputs
         outs = [
-            laterals[0] + F.interpolate(
-                mid_lvl, size=laterals[0].shape[2:], mode="bilinear"),
+            laterals[0]
+            + F.interpolate(mid_lvl, size=laterals[0].shape[2:], mode="bilinear"),
             laterals[1] + mid_lvl,
-            laterals[2] + F.interpolate(
-                mid_lvl, size=laterals[2].shape[2:], mode="bilinear"),
+            laterals[2]
+            + F.interpolate(mid_lvl, size=laterals[2].shape[2:], mode="bilinear"),
         ]
         return tuple(outs)

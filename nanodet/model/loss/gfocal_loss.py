@@ -24,7 +24,8 @@ def quality_focal_loss(pred, target, beta=2.0):
         torch.Tensor: Loss tensor with shape (N,).
     """
     assert (
-        len(target) == 2), """target for QFL must be a tuple of two elements,
+        len(target) == 2
+    ), """target for QFL must be a tuple of two elements,
         including category label and quality label, respectively"""
     # label denotes the category id, score denotes the quality score
     label, score = target
@@ -34,18 +35,20 @@ def quality_focal_loss(pred, target, beta=2.0):
     scale_factor = pred_sigmoid
     zerolabel = scale_factor.new_zeros(pred.shape)
     loss = F.binary_cross_entropy_with_logits(
-        pred, zerolabel, reduction="none") * scale_factor.pow(beta)
+        pred, zerolabel, reduction="none"
+    ) * scale_factor.pow(beta)
 
     # FG cat_id: [0, num_classes -1], BG cat_id: num_classes
     bg_class_ind = pred.size(1)
-    pos = torch.nonzero((label >= 0) & (label < bg_class_ind),
-                        as_tuple=False).squeeze(1)
+    pos = torch.nonzero((label >= 0) & (label < bg_class_ind), as_tuple=False).squeeze(
+        1
+    )
     pos_label = label[pos].long()
     # positives are supervised by bbox quality (IoU) score
     scale_factor = score[pos] - pred_sigmoid[pos, pos_label]
     loss[pos, pos_label] = F.binary_cross_entropy_with_logits(
-        pred[pos, pos_label], score[pos],
-        reduction="none") * scale_factor.abs().pow(beta)
+        pred[pos, pos_label], score[pos], reduction="none"
+    ) * scale_factor.abs().pow(beta)
 
     loss = loss.sum(dim=1, keepdim=False)
     return loss
@@ -71,8 +74,10 @@ def distribution_focal_loss(pred, label):
     dis_right = dis_left + 1
     weight_left = dis_right.float() - label
     weight_right = label - dis_left.float()
-    loss = (F.cross_entropy(pred, dis_left, reduction="none") * weight_left +
-            F.cross_entropy(pred, dis_right, reduction="none") * weight_right)
+    loss = (
+        F.cross_entropy(pred, dis_left, reduction="none") * weight_left
+        + F.cross_entropy(pred, dis_right, reduction="none") * weight_right
+    )
     return loss
 
 
@@ -89,11 +94,8 @@ class QualityFocalLoss(nn.Module):
         reduction (str): Options are "none", "mean" and "sum".
         loss_weight (float): Loss weight of current loss.
     """
-    def __init__(self,
-                 use_sigmoid=True,
-                 beta=2.0,
-                 reduction="mean",
-                 loss_weight=1.0):
+
+    def __init__(self, use_sigmoid=True, beta=2.0, reduction="mean", loss_weight=1.0):
         super(QualityFocalLoss, self).__init__()
         assert use_sigmoid is True, "Only sigmoid in QFL supported now."
         self.use_sigmoid = use_sigmoid
@@ -101,12 +103,9 @@ class QualityFocalLoss(nn.Module):
         self.reduction = reduction
         self.loss_weight = loss_weight
 
-    def forward(self,
-                pred,
-                target,
-                weight=None,
-                avg_factor=None,
-                reduction_override=None):
+    def forward(
+        self, pred, target, weight=None, avg_factor=None, reduction_override=None
+    ):
         """Forward function.
 
         Args:
@@ -148,17 +147,15 @@ class DistributionFocalLoss(nn.Module):
         reduction (str): Options are `'none'`, `'mean'` and `'sum'`.
         loss_weight (float): Loss weight of current loss.
     """
+
     def __init__(self, reduction="mean", loss_weight=1.0):
         super(DistributionFocalLoss, self).__init__()
         self.reduction = reduction
         self.loss_weight = loss_weight
 
-    def forward(self,
-                pred,
-                target,
-                weight=None,
-                avg_factor=None,
-                reduction_override=None):
+    def forward(
+        self, pred, target, weight=None, avg_factor=None, reduction_override=None
+    ):
         """Forward function.
 
         Args:
@@ -178,5 +175,6 @@ class DistributionFocalLoss(nn.Module):
         assert reduction_override in (None, "none", "mean", "sum")
         reduction = reduction_override if reduction_override else self.reduction
         loss_cls = self.loss_weight * distribution_focal_loss(
-            pred, target, weight, reduction=reduction, avg_factor=avg_factor)
+            pred, target, weight, reduction=reduction, avg_factor=avg_factor
+        )
         return loss_cls

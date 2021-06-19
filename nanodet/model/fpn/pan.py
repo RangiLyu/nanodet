@@ -37,6 +37,7 @@ class PAN(FPN):
         activation (str): Config dict for activation layer in ConvModule.
             Default: None.
     """
+
     def __init__(
         self,
         in_channels,
@@ -73,9 +74,9 @@ class PAN(FPN):
         # build top-down path
         used_backbone_levels = len(laterals)
         for i in range(used_backbone_levels - 1, 0, -1):
-            laterals[i - 1] += F.interpolate(laterals[i],
-                                             scale_factor=2,
-                                             mode="bilinear")
+            laterals[i - 1] += F.interpolate(
+                laterals[i], scale_factor=2, mode="bilinear"
+            )
 
         # build outputs
         # part 1: from original levels
@@ -83,9 +84,9 @@ class PAN(FPN):
 
         # part 2: add bottom-up path
         for i in range(0, used_backbone_levels - 1):
-            inter_outs[i + 1] += F.interpolate(inter_outs[i],
-                                               scale_factor=0.5,
-                                               mode="bilinear")
+            inter_outs[i + 1] += F.interpolate(
+                inter_outs[i], scale_factor=0.5, mode="bilinear"
+            )
 
         outs = []
         outs.append(inter_outs[0])

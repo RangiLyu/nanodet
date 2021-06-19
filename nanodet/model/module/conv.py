@@ -35,21 +35,22 @@ class ConvModule(nn.Module):
             sequence of "conv", "norm" and "act". Examples are
             ("conv", "norm", "act") and ("act", "conv", "norm").
     """
+
     def __init__(
-            self,
-            in_channels,
-            out_channels,
-            kernel_size,
-            stride=1,
-            padding=0,
-            dilation=1,
-            groups=1,
-            bias="auto",
-            conv_cfg=None,
-            norm_cfg=None,
-            activation="ReLU",
-            inplace=True,
-            order=("conv", "norm", "act"),
+        self,
+        in_channels,
+        out_channels,
+        kernel_size,
+        stride=1,
+        padding=0,
+        dilation=1,
+        groups=1,
+        bias="auto",
+        conv_cfg=None,
+        norm_cfg=None,
+        activation="ReLU",
+        inplace=True,
+        order=("conv", "norm", "act"),
     ):
         super(ConvModule, self).__init__()
         assert conv_cfg is None or isinstance(conv_cfg, dict)
@@ -142,18 +143,18 @@ class ConvModule(nn.Module):
 
 class DepthwiseConvModule(nn.Module):
     def __init__(
-            self,
-            in_channels,
-            out_channels,
-            kernel_size,
-            stride=1,
-            padding=0,
-            dilation=1,
-            bias="auto",
-            norm_cfg=dict(type="BN"),
-            activation="ReLU",
-            inplace=True,
-            order=("depthwise", "dwnorm", "act", "pointwise", "pwnorm", "act"),
+        self,
+        in_channels,
+        out_channels,
+        kernel_size,
+        stride=1,
+        padding=0,
+        dilation=1,
+        bias="auto",
+        norm_cfg=dict(type="BN"),
+        activation="ReLU",
+        inplace=True,
+        order=("depthwise", "dwnorm", "act", "pointwise", "pwnorm", "act"),
     ):
         super(DepthwiseConvModule, self).__init__()
         assert activation is None or isinstance(activation, str)
@@ -162,7 +163,8 @@ class DepthwiseConvModule(nn.Module):
         self.order = order
         assert isinstance(self.order, tuple) and len(self.order) == 6
         assert set(order) == set(
-            ["depthwise", "dwnorm", "act", "pointwise", "pwnorm", "act"])
+            ["depthwise", "dwnorm", "act", "pointwise", "pwnorm", "act"]
+        )
 
         self.with_norm = norm_cfg is not None
         # if the conv layer is before a norm layer, bias is unnecessary.
@@ -184,12 +186,9 @@ class DepthwiseConvModule(nn.Module):
             groups=in_channels,
             bias=bias,
         )
-        self.pointwise = nn.Conv2d(in_channels,
-                                   out_channels,
-                                   kernel_size=1,
-                                   stride=1,
-                                   padding=0,
-                                   bias=bias)
+        self.pointwise = nn.Conv2d(
+            in_channels, out_channels, kernel_size=1, stride=1, padding=0, bias=bias
+        )
 
         # export the attributes of self.conv to a higher level for convenience
         self.in_channels = self.depthwise.in_channels
@@ -241,6 +240,7 @@ class RepVGGConvModule(nn.Module):
     https://arxiv.org/abs/2101.03697
     https://github.com/DingXiaoH/RepVGG
     """
+
     def __init__(
         self,
         in_channels,
@@ -285,9 +285,11 @@ class RepVGGConvModule(nn.Module):
             )
 
         else:
-            self.rbr_identity = (nn.BatchNorm2d(
-                num_features=in_channels) if out_channels == in_channels
-                                 and stride == 1 else None)
+            self.rbr_identity = (
+                nn.BatchNorm2d(num_features=in_channels)
+                if out_channels == in_channels and stride == 1
+                else None
+            )
 
             self.rbr_dense = nn.Sequential(
                 nn.Conv2d(
@@ -360,12 +362,12 @@ class RepVGGConvModule(nn.Module):
             assert isinstance(branch, nn.BatchNorm2d)
             if not hasattr(self, "id_tensor"):
                 input_dim = self.in_channels // self.groups
-                kernel_value = np.zeros((self.in_channels, input_dim, 3, 3),
-                                        dtype=np.float32)
+                kernel_value = np.zeros(
+                    (self.in_channels, input_dim, 3, 3), dtype=np.float32
+                )
                 for i in range(self.in_channels):
                     kernel_value[i, i % input_dim, 1, 1] = 1
-                self.id_tensor = torch.from_numpy(kernel_value).to(
-                    branch.weight.device)
+                self.id_tensor = torch.from_numpy(kernel_value).to(branch.weight.device)
             kernel = self.id_tensor
             running_mean = branch.running_mean
             running_var = branch.running_var

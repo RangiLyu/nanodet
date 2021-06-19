@@ -23,8 +23,6 @@ class DDP(DistributedDataParallel):
         super(DDP, self).__init__(**kwargs)
 
     def scatter(self, inputs, kwargs, device_ids):
-        return scatter_kwargs(inputs,
-                              kwargs,
-                              device_ids,
-                              dim=self.dim,
-                              chunk_sizes=[self.batchsize])
+        return scatter_kwargs(
+            inputs, kwargs, device_ids, dim=self.dim, chunk_sizes=[self.batchsize]
+        )

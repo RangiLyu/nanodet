@@ -663,7 +663,7 @@ class NanoDetMNN(NanoDetABC):
 
     def __init__(self, model_path, *args, **kwargs):
         super(NanoDetMNN, self).__init__(*args, **kwargs)
-        print(f"Using MNN as inference backend")
+        print("Using MNN as inference backend")
         print(f"Using weight: {model_path}")
 
         # load model
@@ -709,7 +709,7 @@ class NanoDetONNX(NanoDetABC):
 
     def __init__(self, model_path, *args, **kwargs):
         super(NanoDetONNX, self).__init__(*args, **kwargs)
-        print(f"Using ONNX as inference backend")
+        print("Using ONNX as inference backend")
         print(f"Using weight: {model_path}")
 
         # load model
@@ -732,7 +732,7 @@ class NanoDetTorch(NanoDetABC):
         from nanodet.util import Logger, cfg, load_config, load_model_weight
 
         super(NanoDetTorch, self).__init__(*args, **kwargs)
-        print(f"Using PyTorch as inference backend")
+        print("Using PyTorch as inference backend")
         print(f"Using weight: {model_path}")
 
         # load model

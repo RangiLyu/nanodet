@@ -19,80 +19,67 @@ g2_map = {layer: 2 for layer in optional_groupwise_layers}
 g4_map = {layer: 4 for layer in optional_groupwise_layers}
 
 model_param = {
-    "RepVGG-A0":
-    dict(
+    "RepVGG-A0": dict(
         num_blocks=[2, 4, 14, 1],
         width_multiplier=[0.75, 0.75, 0.75, 2.5],
         override_groups_map=None,
     ),
-    "RepVGG-A1":
-    dict(
+    "RepVGG-A1": dict(
         num_blocks=[2, 4, 14, 1],
         width_multiplier=[1, 1, 1, 2.5],
         override_groups_map=None,
     ),
-    "RepVGG-A2":
-    dict(
+    "RepVGG-A2": dict(
         num_blocks=[2, 4, 14, 1],
         width_multiplier=[1.5, 1.5, 1.5, 2.75],
         override_groups_map=None,
     ),
-    "RepVGG-B0":
-    dict(
+    "RepVGG-B0": dict(
         num_blocks=[4, 6, 16, 1],
         width_multiplier=[1, 1, 1, 2.5],
         override_groups_map=None,
     ),
-    "RepVGG-B1":
-    dict(
+    "RepVGG-B1": dict(
         num_blocks=[4, 6, 16, 1],
         width_multiplier=[2, 2, 2, 4],
         override_groups_map=None,
     ),
-    "RepVGG-B1g2":
-    dict(
+    "RepVGG-B1g2": dict(
         num_blocks=[4, 6, 16, 1],
         width_multiplier=[2, 2, 2, 4],
         override_groups_map=g2_map,
     ),
-    "RepVGG-B1g4":
-    dict(
+    "RepVGG-B1g4": dict(
         num_blocks=[4, 6, 16, 1],
         width_multiplier=[2, 2, 2, 4],
         override_groups_map=g4_map,
     ),
-    "RepVGG-B2":
-    dict(
+    "RepVGG-B2": dict(
         num_blocks=[4, 6, 16, 1],
         width_multiplier=[2.5, 2.5, 2.5, 5],
         override_groups_map=None,
     ),
-    "RepVGG-B2g2":
-    dict(
+    "RepVGG-B2g2": dict(
         num_blocks=[4, 6, 16, 1],
         width_multiplier=[2.5, 2.5, 2.5, 5],
         override_groups_map=g2_map,
     ),
-    "RepVGG-B2g4":
-    dict(
+    "RepVGG-B2g4": dict(
         num_blocks=[4, 6, 16, 1],
         width_multiplier=[2.5, 2.5, 2.5, 5],
         override_groups_map=g4_map,
     ),
-    "RepVGG-B3":
-    dict(
+    "RepVGG-B3": dict(
         num_blocks=[4, 6, 16, 1],
         width_multiplier=[3, 3, 3, 5],
         override_groups_map=None,
     ),
-    "RepVGG-B3g2":
-    dict(
+    "RepVGG-B3g2": dict(
         num_blocks=[4, 6, 16, 1],
         width_multiplier=[3, 3, 3, 5],
         override_groups_map=g2_map,
     ),
-    "RepVGG-B3g4":
-    dict(
+    "RepVGG-B3g4": dict(
         num_blocks=[4, 6, 16, 1],
         width_multiplier=[3, 3, 3, 5],
         override_groups_map=g4_map,
@@ -136,7 +123,8 @@ class RepVGG(nn.Module):
         self.activation = activation
         self.deploy = deploy
         self.override_groups_map = (
-            model_param[model_name]["override_groups_map"] or dict())
+            model_param[model_name]["override_groups_map"] or dict()
+        )
 
         assert 0 not in self.override_groups_map
 
@@ -152,17 +140,16 @@ class RepVGG(nn.Module):
             deploy=self.deploy,
         )
         self.cur_layer_idx = 1
-        self.stage1 = self._make_stage(int(64 * width_multiplier[0]),
-                                       num_blocks[0],
-                                       stride=2)
-        self.stage2 = self._make_stage(int(128 * width_multiplier[1]),
-                                       num_blocks[1],
-                                       stride=2)
-        self.stage3 = self._make_stage(int(256 * width_multiplier[2]),
-                                       num_blocks[2],
-                                       stride=2)
-        out_planes = last_channel if last_channel else int(512 *
-                                                           width_multiplier[3])
+        self.stage1 = self._make_stage(
+            int(64 * width_multiplier[0]), num_blocks[0], stride=2
+        )
+        self.stage2 = self._make_stage(
+            int(128 * width_multiplier[1]), num_blocks[1], stride=2
+        )
+        self.stage3 = self._make_stage(
+            int(256 * width_multiplier[2]), num_blocks[2], stride=2
+        )
+        out_planes = last_channel if last_channel else int(512 * width_multiplier[3])
         self.stage4 = self._make_stage(out_planes, num_blocks[3], stride=2)
 
     def _make_stage(self, planes, num_blocks, stride):
@@ -180,7 +167,8 @@ class RepVGG(nn.Module):
                     groups=cur_groups,
                     activation=self.activation,
                     deploy=self.deploy,
-                ))
+                )
+            )
             self.in_planes = planes
             self.cur_layer_idx += 1
         return nn.Sequential(*blocks)
@@ -211,15 +199,12 @@ def repvgg_model_convert(model, deploy_model, save_path=None):
             converted_weights[name + ".rbr_reparam.weight"] = kernel
             converted_weights[name + ".rbr_reparam.bias"] = bias
         elif isinstance(module, torch.nn.Linear):
-            converted_weights[
-                name + ".weight"] = module.weight.detach().cpu().numpy()
-            converted_weights[name +
-                              ".bias"] = module.bias.detach().cpu().numpy()
+            converted_weights[name + ".weight"] = module.weight.detach().cpu().numpy()
+            converted_weights[name + ".bias"] = module.bias.detach().cpu().numpy()
     del model
 
     for name, param in deploy_model.named_parameters():
-        print("deploy param: ", name, param.size(),
-              np.mean(converted_weights[name]))
+        print("deploy param: ", name, param.size(), np.mean(converted_weights[name]))
         param.data = torch.from_numpy(converted_weights[name]).float()
 
     if save_path is not None:
@@ -237,13 +222,10 @@ def repvgg_det_model_convert(model, deploy_model):
             converted_weights[name + ".rbr_reparam.weight"] = kernel
             converted_weights[name + ".rbr_reparam.bias"] = bias
         elif isinstance(module, torch.nn.Linear):
-            converted_weights[
-                name + ".weight"] = module.weight.detach().cpu().numpy()
-            converted_weights[name +
-                              ".bias"] = module.bias.detach().cpu().numpy()
+            converted_weights[name + ".weight"] = module.weight.detach().cpu().numpy()
+            converted_weights[name + ".bias"] = module.bias.detach().cpu().numpy()
     del model
     for name, param in deploy_model.backbone.named_parameters():
-        print("deploy param: ", name, param.size(),
-              np.mean(converted_weights[name]))
+        print("deploy param: ", name, param.size(), np.mean(converted_weights[name]))
         param.data = torch.from_numpy(converted_weights[name]).float()
     return deploy_model

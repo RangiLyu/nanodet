@@ -17,16 +17,11 @@ efficientnet_lite_params = {
 }
 
 model_urls = {
-    "efficientnet_lite0":
-    "https://github.com/RangiLyu/EfficientNet-Lite/releases/download/v1.0/efficientnet_lite0.pth",
-    "efficientnet_lite1":
-    "https://github.com/RangiLyu/EfficientNet-Lite/releases/download/v1.0/efficientnet_lite1.pth",
-    "efficientnet_lite2":
-    "https://github.com/RangiLyu/EfficientNet-Lite/releases/download/v1.0/efficientnet_lite2.pth",
-    "efficientnet_lite3":
-    "https://github.com/RangiLyu/EfficientNet-Lite/releases/download/v1.0/efficientnet_lite3.pth",
-    "efficientnet_lite4":
-    "https://github.com/RangiLyu/EfficientNet-Lite/releases/download/v1.0/efficientnet_lite4.pth",
+    "efficientnet_lite0": "https://github.com/RangiLyu/EfficientNet-Lite/releases/download/v1.0/efficientnet_lite0.pth",  # noqa: E501
+    "efficientnet_lite1": "https://github.com/RangiLyu/EfficientNet-Lite/releases/download/v1.0/efficientnet_lite1.pth",  # noqa: E501
+    "efficientnet_lite2": "https://github.com/RangiLyu/EfficientNet-Lite/releases/download/v1.0/efficientnet_lite2.pth",  # noqa: E501
+    "efficientnet_lite3": "https://github.com/RangiLyu/EfficientNet-Lite/releases/download/v1.0/efficientnet_lite3.pth",  # noqa: E501
+    "efficientnet_lite4": "https://github.com/RangiLyu/EfficientNet-Lite/releases/download/v1.0/efficientnet_lite4.pth",  # noqa: E501
 }
 
 
@@ -36,8 +31,7 @@ def round_filters(filters, multiplier, divisor=8, min_width=None):
         return filters
     filters *= multiplier
     min_width = min_width or divisor
-    new_filters = max(min_width,
-                      int(filters + divisor / 2) // divisor * divisor)
+    new_filters = max(min_width, int(filters + divisor / 2) // divisor * divisor)
     # Make sure that round down does not go down by more than 10%.
     if new_filters < 0.9 * filters:
         new_filters += divisor
@@ -57,9 +51,7 @@ def drop_connect(x, drop_connect_rate, training):
     keep_prob = 1.0 - drop_connect_rate
     batch_size = x.shape[0]
     random_tensor = keep_prob
-    random_tensor += torch.rand([batch_size, 1, 1, 1],
-                                dtype=x.dtype,
-                                device=x.device)
+    random_tensor += torch.rand([batch_size, 1, 1, 1], dtype=x.dtype, device=x.device)
     binary_mask = torch.floor(random_tensor)
     x = (x / keep_prob) * binary_mask
     return x
@@ -91,13 +83,12 @@ class MBConvBlock(nn.Module):
         # Expansion phase
         oup = inp * expand_ratio  # number of output channels
         if expand_ratio != 1:
-            self._expand_conv = nn.Conv2d(in_channels=inp,
-                                          out_channels=oup,
-                                          kernel_size=1,
-                                          bias=False)
-            self._bn0 = nn.BatchNorm2d(num_features=oup,
-                                       momentum=self._momentum,
-                                       eps=self._epsilon)
+            self._expand_conv = nn.Conv2d(
+                in_channels=inp, out_channels=oup, kernel_size=1, bias=False
+            )
+            self._bn0 = nn.BatchNorm2d(
+                num_features=oup, momentum=self._momentum, eps=self._epsilon
+            )
 
         # Depthwise convolution phase
         self._depthwise_conv = nn.Conv2d(
@@ -109,28 +100,27 @@ class MBConvBlock(nn.Module):
             stride=s,
             bias=False,
         )
-        self._bn1 = nn.BatchNorm2d(num_features=oup,
-                                   momentum=self._momentum,
-                                   eps=self._epsilon)
+        self._bn1 = nn.BatchNorm2d(
+            num_features=oup, momentum=self._momentum, eps=self._epsilon
+        )
 
         # Squeeze and Excitation layer, if desired
         if self.has_se:
             num_squeezed_channels = max(1, int(inp * se_ratio))
-            self._se_reduce = nn.Conv2d(in_channels=oup,
-                                        out_channels=num_squeezed_channels,
-                                        kernel_size=1)
-            self._se_expand = nn.Conv2d(in_channels=num_squeezed_channels,
-                                        out_channels=oup,
-                                        kernel_size=1)
+            self._se_reduce = nn.Conv2d(
+                in_channels=oup, out_channels=num_squeezed_channels, kernel_size=1
+            )
+            self._se_expand = nn.Conv2d(
+                in_channels=num_squeezed_channels, out_channels=oup, kernel_size=1
+            )
 
         # Output phase
-        self._project_conv = nn.Conv2d(in_channels=oup,
-                                       out_channels=final_oup,
-                                       kernel_size=1,
-                                       bias=False)
-        self._bn2 = nn.BatchNorm2d(num_features=final_oup,
-                                   momentum=self._momentum,
-                                   eps=self._epsilon)
+        self._project_conv = nn.Conv2d(
+            in_channels=oup, out_channels=final_oup, kernel_size=1, bias=False
+        )
+        self._bn2 = nn.BatchNorm2d(
+            num_features=final_oup, momentum=self._momentum, eps=self._epsilon
+        )
         self._relu = act_layers(activation)
 
     def forward(self, x, drop_connect_rate=None):
@@ -149,15 +139,17 @@ class MBConvBlock(nn.Module):
         # Squeeze and Excitation
         if self.has_se:
             x_squeezed = F.adaptive_avg_pool2d(x, 1)
-            x_squeezed = self._se_expand(
-                self._relu(self._se_reduce(x_squeezed)))
+            x_squeezed = self._se_expand(self._relu(self._se_reduce(x_squeezed)))
             x = torch.sigmoid(x_squeezed) * x
 
         x = self._bn2(self._project_conv(x))
 
         # Skip connection and drop connect
-        if (self.id_skip and self.stride == 1
-                and self.input_filters == self.output_filters):
+        if (
+            self.id_skip
+            and self.stride == 1
+            and self.input_filters == self.output_filters
+        ):
             if drop_connect_rate:
                 x = drop_connect(x, drop_connect_rate, training=self.training)
             x += identity  # skip connection
@@ -165,11 +157,9 @@ class MBConvBlock(nn.Module):
 
 
 class EfficientNetLite(nn.Module):
-    def __init__(self,
-                 model_name,
-                 out_stages=(2, 4, 6),
-                 activation="ReLU6",
-                 pretrain=True):
+    def __init__(
+        self, model_name, out_stages=(2, 4, 6), activation="ReLU6", pretrain=True
+    ):
         super(EfficientNetLite, self).__init__()
 
         self.model_name = model_name
@@ -177,7 +167,8 @@ class EfficientNetLite(nn.Module):
         momentum = 0.01
         epsilon = 1e-3
         width_multiplier, depth_multiplier, _, dropout_rate = efficientnet_lite_params[
-            model_name]
+            model_name
+        ]
         self.drop_connect_rate = 0.2
         self.out_stages = out_stages
 
@@ -195,15 +186,8 @@ class EfficientNetLite(nn.Module):
         # Stem
         out_channels = 32
         self.stem = nn.Sequential(
-            nn.Conv2d(3,
-                      out_channels,
-                      kernel_size=3,
-                      stride=2,
-                      padding=1,
-                      bias=False),
-            nn.BatchNorm2d(num_features=out_channels,
-                           momentum=momentum,
-                           eps=epsilon),
+            nn.Conv2d(3, out_channels, kernel_size=3, stride=2, padding=1, bias=False),
+            nn.BatchNorm2d(num_features=out_channels, momentum=momentum, eps=epsilon),
             act_layers(activation),
         )
 
@@ -221,11 +205,17 @@ class EfficientNetLite(nn.Module):
                 se_ratio,
             ) = stage_setting
             # Update block input and output filters based on width multiplier.
-            input_filters = (input_filters if i == 0 else round_filters(
-                input_filters, width_multiplier))
+            input_filters = (
+                input_filters
+                if i == 0
+                else round_filters(input_filters, width_multiplier)
+            )
             output_filters = round_filters(output_filters, width_multiplier)
-            num_repeat = (num_repeat if i == 0 or i == len(mb_block_settings) -
-                          1 else round_repeats(num_repeat, depth_multiplier))
+            num_repeat = (
+                num_repeat
+                if i == 0 or i == len(mb_block_settings) - 1
+                else round_repeats(num_repeat, depth_multiplier)
+            )
 
             # The first block needs to take care of stride and filter size increase.
             stage.append(
@@ -237,7 +227,8 @@ class EfficientNetLite(nn.Module):
                     expand_ratio,
                     se_ratio,
                     has_se=False,
-                ))
+                )
+            )
             if num_repeat > 1:
                 input_filters = output_filters
                 stride = 1
@@ -251,7 +242,8 @@ class EfficientNetLite(nn.Module):
                         expand_ratio,
                         se_ratio,
                         has_se=False,
-                    ))
+                    )
+                )
 
             self.blocks.append(stage)
         self._initialize_weights(pretrain)
@@ -298,7 +290,9 @@ class EfficientNetLite(nn.Module):
 
 
 if __name__ == "__main__":
-    model = EfficientNetLite(model_name="efficientnet_lite0", )
+    model = EfficientNetLite(
+        model_name="efficientnet_lite0",
+    )
     print(model)
     test_data = torch.rand(5, 3, 320, 320)
     test_outputs = model(test_data)

@@ -82,13 +82,9 @@ def weighted_loss(loss_func):
     >>> l1_loss(pred, target, weight, avg_factor=2)
     tensor(1.5000)
     """
+
     @functools.wraps(loss_func)
-    def wrapper(pred,
-                target,
-                weight=None,
-                reduction="mean",
-                avg_factor=None,
-                **kwargs):
+    def wrapper(pred, target, weight=None, reduction="mean", avg_factor=None, **kwargs):
         # get element-wise loss
         loss = loss_func(pred, target, **kwargs)
         loss = weight_reduce_loss(loss, weight, reduction, avg_factor)

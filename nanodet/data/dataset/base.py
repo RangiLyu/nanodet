@@ -41,6 +41,7 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
     :param load_mosaic: using mosaic data augmentation from yolov4
     :param mode: train or val or test
     """
+
     def __init__(
         self,
         img_path,

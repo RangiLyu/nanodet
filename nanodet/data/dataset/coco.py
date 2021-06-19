@@ -56,12 +56,7 @@ class CocoDataset(BaseDataset):
         id = img_info["id"]
         if not isinstance(id, int):
             raise TypeError("Image id must be int.")
-        info = {
-            "file_name": file_name,
-            "height": height,
-            "width": width,
-            "id": id
-        }
+        info = {"file_name": file_name, "height": height, "width": width, "id": id}
         return info
 
     def get_img_annotation(self, idx):
@@ -108,15 +103,14 @@ class CocoDataset(BaseDataset):
             gt_bboxes_ignore = np.array(gt_bboxes_ignore, dtype=np.float32)
         else:
             gt_bboxes_ignore = np.zeros((0, 4), dtype=np.float32)
-        annotation = dict(bboxes=gt_bboxes,
-                          labels=gt_labels,
-                          bboxes_ignore=gt_bboxes_ignore)
+        annotation = dict(
+            bboxes=gt_bboxes, labels=gt_labels, bboxes_ignore=gt_bboxes_ignore
+        )
         if self.use_instance_mask:
             annotation["masks"] = gt_masks
         if self.use_keypoint:
             if gt_keypoints:
-                annotation["keypoints"] = np.array(gt_keypoints,
-                                                   dtype=np.float32)
+                annotation["keypoints"] = np.array(gt_keypoints, dtype=np.float32)
             else:
                 annotation["keypoints"] = np.zeros((0, 51), dtype=np.float32)
         return annotation
@@ -133,13 +127,11 @@ class CocoDataset(BaseDataset):
         img = cv2.imread(image_path)
         if img is None:
             print("image {} read failed.".format(image_path))
-            raise FileNotFoundError(
-                "Cant load image! Please check image path!")
+            raise FileNotFoundError("Cant load image! Please check image path!")
         ann = self.get_img_annotation(idx)
-        meta = dict(img=img,
-                    img_info=img_info,
-                    gt_bboxes=ann["bboxes"],
-                    gt_labels=ann["labels"])
+        meta = dict(
+            img=img, img_info=img_info, gt_bboxes=ann["bboxes"], gt_labels=ann["labels"]
+        )
         if self.use_instance_mask:
             meta["gt_masks"] = ann["masks"]
         if self.use_keypoint:

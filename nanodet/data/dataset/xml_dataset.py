@@ -43,13 +43,12 @@ class CocoXML(COCO):
         :return:
         """
         # load dataset
-        self.dataset, self.anns, self.cats, self.imgs = dict(), dict(), dict(
-        ), dict()
+        self.dataset, self.anns, self.cats, self.imgs = dict(), dict(), dict(), dict()
         self.imgToAnns, self.catToImgs = defaultdict(list), defaultdict(list)
         dataset = annotation
-        assert type(
-            dataset) == dict, "annotation file format {} not supported".format(
-                type(dataset))
+        assert type(dataset) == dict, "annotation file format {} not supported".format(
+            type(dataset)
+        )
         self.dataset = dataset
         self.createIndex()
 
@@ -73,11 +72,9 @@ class XMLDataset(CocoDataset):
         categories = []
         annotations = []
         for idx, supercat in enumerate(self.class_names):
-            categories.append({
-                "supercategory": supercat,
-                "id": idx + 1,
-                "name": supercat
-            })
+            categories.append(
+                {"supercategory": supercat, "id": idx + 1, "name": supercat}
+            )
         ann_id = 1
         for idx, xml_name in enumerate(ann_file_names):
             tree = ET.parse(os.path.join(ann_path, xml_name))
@@ -97,7 +94,8 @@ class XMLDataset(CocoDataset):
                 if category not in self.class_names:
                     logging.warning(
                         "WARNING! {} is not in class_names! "
-                        "Pass this box annotation.".format(category))
+                        "Pass this box annotation.".format(category)
+                    )
                     continue
                 for cat in categories:
                     if category == cat["name"]:
@@ -111,15 +109,10 @@ class XMLDataset(CocoDataset):
                 if w < 0 or h < 0:
                     logging.warning(
                         "WARNING! Find error data in file {}! Box w and "
-                        "h should > 0. Pass this box annotation.".format(
-                            xml_name))
+                        "h should > 0. Pass this box annotation.".format(xml_name)
+                    )
                     continue
-                coco_box = [
-                    max(xmin, 0),
-                    max(ymin, 0),
-                    min(w, width),
-                    min(h, height)
-                ]
+                coco_box = [max(xmin, 0), max(ymin, 0), min(w, width), min(h, height)]
                 ann = {
                     "image_id": idx + 1,
                     "bbox": coco_box,
@@ -136,8 +129,9 @@ class XMLDataset(CocoDataset):
             "categories": categories,
             "annotations": annotations,
         }
-        logging.info("Load {} xml files and {} boxes".format(
-            len(image_info), len(annotations)))
+        logging.info(
+            "Load {} xml files and {} boxes".format(len(image_info), len(annotations))
+        )
         logging.info("Done (t={:0.2f}s)".format(time.time() - tic))
         return coco_dict
 

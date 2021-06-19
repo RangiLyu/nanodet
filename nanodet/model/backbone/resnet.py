@@ -16,23 +16,15 @@ model_urls = {
 
 def conv3x3(in_planes, out_planes, stride=1):
     """3x3 convolution with padding"""
-    return nn.Conv2d(in_planes,
-                     out_planes,
-                     kernel_size=3,
-                     stride=stride,
-                     padding=1,
-                     bias=False)
+    return nn.Conv2d(
+        in_planes, out_planes, kernel_size=3, stride=stride, padding=1, bias=False
+    )
 
 
 class BasicBlock(nn.Module):
     expansion = 1
 
-    def __init__(self,
-                 inplanes,
-                 planes,
-                 stride=1,
-                 downsample=None,
-                 activation="ReLU"):
+    def __init__(self, inplanes, planes, stride=1, downsample=None, activation="ReLU"):
         super(BasicBlock, self).__init__()
         self.conv1 = conv3x3(inplanes, planes, stride)
         self.bn1 = nn.BatchNorm2d(planes)
@@ -64,26 +56,17 @@ class BasicBlock(nn.Module):
 class Bottleneck(nn.Module):
     expansion = 4
 
-    def __init__(self,
-                 inplanes,
-                 planes,
-                 stride=1,
-                 downsample=None,
-                 activation="ReLU"):
+    def __init__(self, inplanes, planes, stride=1, downsample=None, activation="ReLU"):
         super(Bottleneck, self).__init__()
         self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=1, bias=False)
         self.bn1 = nn.BatchNorm2d(planes)
-        self.conv2 = nn.Conv2d(planes,
-                               planes,
-                               kernel_size=3,
-                               stride=stride,
-                               padding=1,
-                               bias=False)
+        self.conv2 = nn.Conv2d(
+            planes, planes, kernel_size=3, stride=stride, padding=1, bias=False
+        )
         self.bn2 = nn.BatchNorm2d(planes)
-        self.conv3 = nn.Conv2d(planes,
-                               planes * self.expansion,
-                               kernel_size=1,
-                               bias=False)
+        self.conv3 = nn.Conv2d(
+            planes, planes * self.expansion, kernel_size=1, bias=False
+        )
         self.bn3 = nn.BatchNorm2d(planes * self.expansion)
         self.act = act_layers(activation)
         self.downsample = downsample
@@ -131,11 +114,9 @@ class ResNet(nn.Module):
         152: (Bottleneck, [3, 8, 36, 3]),
     }
 
-    def __init__(self,
-                 depth,
-                 out_stages=(1, 2, 3, 4),
-                 activation="ReLU",
-                 pretrain=True):
+    def __init__(
+        self, depth, out_stages=(1, 2, 3, 4), activation="ReLU", pretrain=True
+    ):
         super(ResNet, self).__init__()
         if depth not in self.resnet_spec:
             raise KeyError("invalid resnet depth {}".format(depth))
@@ -145,12 +126,7 @@ class ResNet(nn.Module):
         self.inplanes = 64
         self.out_stages = out_stages
 
-        self.conv1 = nn.Conv2d(3,
-                               64,
-                               kernel_size=7,
-                               stride=2,
-                               padding=3,
-                               bias=False)
+        self.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3, bias=False)
         self.bn1 = nn.BatchNorm2d(64)
         self.act = act_layers(self.activation)
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
@@ -176,15 +152,11 @@ class ResNet(nn.Module):
 
         layers = []
         layers.append(
-            block(self.inplanes,
-                  planes,
-                  stride,
-                  downsample,
-                  activation=self.activation))
+            block(self.inplanes, planes, stride, downsample, activation=self.activation)
+        )
         self.inplanes = planes * block.expansion
         for i in range(1, blocks):
-            layers.append(
-                block(self.inplanes, planes, activation=self.activation))
+            layers.append(block(self.inplanes, planes, activation=self.activation))
 
         return nn.Sequential(*layers)
 
@@ -215,9 +187,9 @@ class ResNet(nn.Module):
                 else:
                     nonlinearity = "relu"
                 if isinstance(m, nn.Conv2d):
-                    nn.init.kaiming_normal_(m.weight,
-                                            mode="fan_out",
-                                            nonlinearity=nonlinearity)
+                    nn.init.kaiming_normal_(
+                        m.weight, mode="fan_out", nonlinearity=nonlinearity
+                    )
                 elif isinstance(m, nn.BatchNorm2d):
                     m.weight.data.fill_(1)
                     m.bias.data.zero_()

@@ -21,7 +21,8 @@ np_str_obj_array_pattern = re.compile(r"[SaUO]")
 
 default_collate_err_msg_format = (
     "default_collate: batch must contain tensors, numpy arrays, numbers, "
-    "dicts or lists; found {}")
+    "dicts or lists; found {}"
+)
 
 
 def collate_function(batch):
@@ -39,14 +40,16 @@ def collate_function(batch):
         #     storage = elem.storage()._new_shared(numel)
         #     out = elem.new(storage)
         return torch.stack(batch, 0, out=out)
-    elif (elem_type.__module__ == "numpy" and elem_type.__name__ != "str_"
-          and elem_type.__name__ != "string_"):
+    elif (
+        elem_type.__module__ == "numpy"
+        and elem_type.__name__ != "str_"
+        and elem_type.__name__ != "string_"
+    ):
         elem = batch[0]
         if elem_type.__name__ == "ndarray":
             # array of string classes and object
             if np_str_obj_array_pattern.search(elem.dtype.str) is not None:
-                raise TypeError(
-                    default_collate_err_msg_format.format(elem.dtype))
+                raise TypeError(default_collate_err_msg_format.format(elem.dtype))
 
             # return collate_function([torch.as_tensor(b) for b in batch])
             return batch
@@ -62,8 +65,7 @@ def collate_function(batch):
     elif isinstance(elem, container_abcs.Mapping):
         return {key: collate_function([d[key] for d in batch]) for key in elem}
     elif isinstance(elem, tuple) and hasattr(elem, "_fields"):  # namedtuple
-        return elem_type(*(collate_function(samples)
-                           for samples in zip(*batch)))
+        return elem_type(*(collate_function(samples) for samples in zip(*batch)))
     elif isinstance(elem, container_abcs.Sequence):
         transposed = zip(*batch)
         return [collate_function(samples) for samples in transposed]

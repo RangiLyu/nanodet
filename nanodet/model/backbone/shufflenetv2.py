@@ -5,10 +5,8 @@ import torch.utils.model_zoo as model_zoo
 from ..module.activation import act_layers
 
 model_urls = {
-    "shufflenetv2_0.5x":
-    "https://download.pytorch.org/models/shufflenetv2_x0.5-f707e7126e.pth",
-    "shufflenetv2_1.0x":
-    "https://download.pytorch.org/models/shufflenetv2_x1-5666bf0f80.pth",
+    "shufflenetv2_0.5x": "https://download.pytorch.org/models/shufflenetv2_x0.5-f707e7126e.pth",  # noqa: E501
+    "shufflenetv2_1.0x": "https://download.pytorch.org/models/shufflenetv2_x1-5666bf0f80.pth",  # noqa: E501
     "shufflenetv2_1.5x": None,
     "shufflenetv2_2.0x": None,
 }
@@ -43,18 +41,13 @@ class ShuffleV2Block(nn.Module):
 
         if self.stride > 1:
             self.branch1 = nn.Sequential(
-                self.depthwise_conv(inp,
-                                    inp,
-                                    kernel_size=3,
-                                    stride=self.stride,
-                                    padding=1),
+                self.depthwise_conv(
+                    inp, inp, kernel_size=3, stride=self.stride, padding=1
+                ),
                 nn.BatchNorm2d(inp),
-                nn.Conv2d(inp,
-                          branch_features,
-                          kernel_size=1,
-                          stride=1,
-                          padding=0,
-                          bias=False),
+                nn.Conv2d(
+                    inp, branch_features, kernel_size=1, stride=1, padding=0, bias=False
+                ),
                 nn.BatchNorm2d(branch_features),
                 act_layers(activation),
             )
@@ -94,13 +87,7 @@ class ShuffleV2Block(nn.Module):
 
     @staticmethod
     def depthwise_conv(i, o, kernel_size, stride=1, padding=0, bias=False):
-        return nn.Conv2d(i,
-                         o,
-                         kernel_size,
-                         stride,
-                         padding,
-                         bias=bias,
-                         groups=i)
+        return nn.Conv2d(i, o, kernel_size, stride, padding, bias=bias, groups=i)
 
     def forward(self, x):
         if self.stride == 1:
@@ -158,26 +145,25 @@ class ShuffleNetV2(nn.Module):
 
         stage_names = ["stage{}".format(i) for i in [2, 3, 4]]
         for name, repeats, output_channels in zip(
-                stage_names, self.stage_repeats, self._stage_out_channels[1:]):
+            stage_names, self.stage_repeats, self._stage_out_channels[1:]
+        ):
             seq = [
-                ShuffleV2Block(input_channels,
-                               output_channels,
-                               2,
-                               activation=activation)
+                ShuffleV2Block(
+                    input_channels, output_channels, 2, activation=activation
+                )
             ]
             for i in range(repeats - 1):
                 seq.append(
-                    ShuffleV2Block(output_channels,
-                                   output_channels,
-                                   1,
-                                   activation=activation))
+                    ShuffleV2Block(
+                        output_channels, output_channels, 1, activation=activation
+                    )
+                )
             setattr(self, name, nn.Sequential(*seq))
             input_channels = output_channels
         output_channels = self._stage_out_channels[-1]
         if self.with_last_conv:
             conv5 = nn.Sequential(
-                nn.Conv2d(input_channels, output_channels, 1, 1, 0,
-                          bias=False),
+                nn.Conv2d(input_channels, output_channels, 1, 1, 0, bias=False),
                 nn.BatchNorm2d(output_channels),
                 act_layers(activation),
             )
@@ -228,7 +214,9 @@ class ShuffleNetV2(nn.Module):
 
 
 if __name__ == "__main__":
-    model = ShuffleNetV2(model_size="1.0x", )
+    model = ShuffleNetV2(
+        model_size="1.0x",
+    )
     print(model)
     test_data = torch.rand(5, 3, 320, 320)
     test_outputs = model(test_data)

@@ -50,18 +50,19 @@ def hard_sigmoid(x, inplace: bool = False):
 
 
 class SqueezeExcite(nn.Module):
-    def __init__(self,
-                 in_chs,
-                 se_ratio=0.25,
-                 reduced_base_chs=None,
-                 act="ReLU",
-                 gate_fn=hard_sigmoid,
-                 divisor=4,
-                 **_):
+    def __init__(
+        self,
+        in_chs,
+        se_ratio=0.25,
+        reduced_base_chs=None,
+        act="ReLU",
+        gate_fn=hard_sigmoid,
+        divisor=4,
+        **_
+    ):
         super(SqueezeExcite, self).__init__()
         self.gate_fn = gate_fn
-        reduced_chs = _make_divisible((reduced_base_chs or in_chs) * se_ratio,
-                                      divisor)
+        reduced_chs = _make_divisible((reduced_base_chs or in_chs) * se_ratio, divisor)
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
         self.conv_reduce = nn.Conv2d(in_chs, reduced_chs, 1, bias=True)
         self.act1 = act_layers(act)
@@ -79,12 +80,9 @@ class SqueezeExcite(nn.Module):
 class ConvBnAct(nn.Module):
     def __init__(self, in_chs, out_chs, kernel_size, stride=1, act="ReLU"):
         super(ConvBnAct, self).__init__()
-        self.conv = nn.Conv2d(in_chs,
-                              out_chs,
-                              kernel_size,
-                              stride,
-                              kernel_size // 2,
-                              bias=False)
+        self.conv = nn.Conv2d(
+            in_chs, out_chs, kernel_size, stride, kernel_size // 2, bias=False
+        )
         self.bn1 = nn.BatchNorm2d(out_chs)
         self.act1 = act_layers(act)
 
@@ -96,26 +94,18 @@ class ConvBnAct(nn.Module):
 
 
 class GhostModule(nn.Module):
-    def __init__(self,
-                 inp,
-                 oup,
-                 kernel_size=1,
-                 ratio=2,
-                 dw_size=3,
-                 stride=1,
-                 act="ReLU"):
+    def __init__(
+        self, inp, oup, kernel_size=1, ratio=2, dw_size=3, stride=1, act="ReLU"
+    ):
         super(GhostModule, self).__init__()
         self.oup = oup
         init_channels = math.ceil(oup / ratio)
         new_channels = init_channels * (ratio - 1)
 
         self.primary_conv = nn.Sequential(
-            nn.Conv2d(inp,
-                      init_channels,
-                      kernel_size,
-                      stride,
-                      kernel_size // 2,
-                      bias=False),
+            nn.Conv2d(
+                inp, init_channels, kernel_size, stride, kernel_size // 2, bias=False
+            ),
             nn.BatchNorm2d(init_channels),
             act_layers(act) if act else nn.Sequential(),
         )
@@ -143,6 +133,7 @@ class GhostModule(nn.Module):
 
 class GhostBottleneck(nn.Module):
     """Ghost bottleneck w/ optional SE"""
+
     def __init__(
         self,
         in_chs,
@@ -224,11 +215,7 @@ class GhostBottleneck(nn.Module):
 
 
 class GhostNet(nn.Module):
-    def __init__(self,
-                 width_mult=1.0,
-                 out_stages=(4, 6, 9),
-                 act="ReLU",
-                 pretrain=True):
+    def __init__(self, width_mult=1.0, out_stages=(4, 6, 9), act="ReLU", pretrain=True):
         super(GhostNet, self).__init__()
         self.width_mult = width_mult
         self.out_stages = out_stages
@@ -287,14 +274,15 @@ class GhostNet(nn.Module):
                         s,
                         act=act,
                         se_ratio=se_ratio,
-                    ))
+                    )
+                )
                 input_channel = output_channel
             stages.append(nn.Sequential(*layers))
 
         output_channel = _make_divisible(exp_size * width_mult, 4)
         stages.append(
-            nn.Sequential(ConvBnAct(input_channel, output_channel, 1,
-                                    act=act)))  # 9
+            nn.Sequential(ConvBnAct(input_channel, output_channel, 1, act=act))
+        )  # 9
 
         self.blocks = nn.Sequential(*stages)
 
@@ -338,6 +326,5 @@ class GhostNet(nn.Module):
         if pretrain:
             url = get_url(self.width_mult)
             if url is not None:
-                state_dict = torch.hub.load_state_dict_from_url(url,
-                                                                progress=True)
+                state_dict = torch.hub.load_state_dict_from_url(url, progress=True)
                 self.load_state_dict(state_dict, strict=False)

@@ -25,10 +25,12 @@ class Logger:
     def __init__(self, local_rank, save_dir="./", use_tensorboard=True):
         mkdir(local_rank, save_dir)
         self.rank = local_rank
-        fmt = (colored("[%(name)s]", "magenta", attrs=["bold"]) +
-               colored("[%(asctime)s]", "blue") +
-               colored("%(levelname)s:", "green") +
-               colored("%(message)s", "white"))
+        fmt = (
+            colored("[%(name)s]", "magenta", attrs=["bold"])
+            + colored("[%(asctime)s]", "blue")
+            + colored("%(levelname)s:", "green")
+            + colored("%(message)s", "white")
+        )
         logging.basicConfig(
             level=logging.INFO,
             filename=os.path.join(save_dir, "logs.txt"),
@@ -47,11 +49,12 @@ class Logger:
                 raise ImportError(
                     'Please run "pip install future tensorboard" to install '
                     "the dependencies to use torch.utils.tensorboard "
-                    "(applicable to PyTorch 1.1 or higher)")
+                    "(applicable to PyTorch 1.1 or higher)"
+                )
             if self.rank < 1:
                 logging.info(
-                    "Using Tensorboard, logs will be saved in {}".format(
-                        self.log_dir))
+                    "Using Tensorboard, logs will be saved in {}".format(self.log_dir)
+                )
                 self.writer = SummaryWriter(log_dir=self.log_dir)
 
     def log(self, string):
@@ -83,6 +86,7 @@ class MovingAverage(object):
 
 class AverageMeter(object):
     """Computes and stores the average and current value"""
+
     def __init__(self, val):
         self.reset()
         self.update(val)

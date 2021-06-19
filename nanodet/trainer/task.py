@@ -35,6 +35,7 @@ class TrainingTask(LightningModule):
         cfg: Training configurations
         evaluator: Evaluator for evaluating the model performance.
     """
+
     def __init__(self, cfg, evaluator=None):
         super(TrainingTask, self).__init__()
         self.cfg = cfg
@@ -78,8 +79,10 @@ class TrainingTask(LightningModule):
                     prog_bar=True,
                     sync_dist=True,
                 )
-        elif (self.log_style == "NanoDet"
-              and self.global_step % self.cfg.log.interval == 0):
+        elif (
+            self.log_style == "NanoDet"
+            and self.global_step % self.cfg.log.interval == 0
+        ):
             lr = self.optimizers().param_groups[0]["lr"]
             log_msg = "Train|Epoch{}/{}|Iter{}({})| lr:{:.2e}| ".format(
                 self.current_epoch + 1,
@@ -91,7 +94,8 @@ class TrainingTask(LightningModule):
             self.scalar_summary("Train_loss/lr", "Train", lr, self.global_step)
             for loss_name in loss_states:
                 log_msg += "{}:{:.4f}| ".format(
-                    loss_name, loss_states[loss_name].mean().item())
+                    loss_name, loss_states[loss_name].mean().item()
+                )
                 self.scalar_summary(
                     "Train_loss/" + loss_name,
                     "Train",
@@ -103,8 +107,7 @@ class TrainingTask(LightningModule):
         return loss
 
     def training_epoch_end(self, outputs: List[Any]) -> None:
-        self.trainer.save_checkpoint(
-            os.path.join(self.cfg.save_dir, "model_last.ckpt"))
+        self.trainer.save_checkpoint(os.path.join(self.cfg.save_dir, "model_last.ckpt"))
         self.lr_scheduler.step()
 
     def validation_step(self, batch, batch_idx):
@@ -139,7 +142,8 @@ class TrainingTask(LightningModule):
             )
             for loss_name in loss_states:
                 log_msg += "{}:{:.4f}| ".format(
-                    loss_name, loss_states[loss_name].mean().item())
+                    loss_name, loss_states[loss_name].mean().item()
+                )
             self.info(log_msg)
 
         dets = self.model.head.post_process(preds, batch)
@@ -159,9 +163,9 @@ class TrainingTask(LightningModule):
             results.update(res)
         all_results = gather_results(results)
         if all_results:
-            eval_results = self.evaluator.evaluate(all_results,
-                                                   self.cfg.save_dir,
-                                                   rank=self.local_rank)
+            eval_results = self.evaluator.evaluate(
+                all_results, self.cfg.save_dir, rank=self.local_rank
+            )
             metric = eval_results[self.cfg.evaluator.save_key]
             # save best model
             if metric > self.save_flag:
@@ -169,7 +173,8 @@ class TrainingTask(LightningModule):
                 best_save_path = os.path.join(self.cfg.save_dir, "model_best")
                 mkdir(self.local_rank, best_save_path)
                 self.trainer.save_checkpoint(
-                    os.path.join(best_save_path, "model_best.ckpt"))
+                    os.path.join(best_save_path, "model_best.ckpt")
+                )
                 txt_path = os.path.join(best_save_path, "eval_results.txt")
                 if self.local_rank < 1:
                     with open(txt_path, "a") as f:
@@ -192,8 +197,9 @@ class TrainingTask(LightningModule):
                     )
             elif self.log_style == "NanoDet":
                 for k, v in eval_results.items():
-                    self.scalar_summary("Val_metrics/" + k, "Val", v,
-                                        self.current_epoch + 1)
+                    self.scalar_summary(
+                        "Val_metrics/" + k, "Val", v, self.current_epoch + 1
+                    )
         else:
             self.info("Skip val on rank {}".format(self.local_rank))
 
@@ -212,9 +218,9 @@ class TrainingTask(LightningModule):
             json.dump(res_json, open(json_path, "w"))
 
             if self.cfg.test_mode == "val":
-                eval_results = self.evaluator.evaluate(all_results,
-                                                       self.cfg.save_dir,
-                                                       rank=self.local_rank)
+                eval_results = self.evaluator.evaluate(
+                    all_results, self.cfg.save_dir, rank=self.local_rank
+                )
                 txt_path = os.path.join(self.cfg.save_dir, "eval_results.txt")
                 with open(txt_path, "a") as f:
                     for k, v in eval_results.items():
@@ -238,8 +244,7 @@ class TrainingTask(LightningModule):
         schedule_cfg = copy.deepcopy(self.cfg.schedule.lr_schedule)
         name = schedule_cfg.pop("name")
         build_scheduler = getattr(torch.optim.lr_scheduler, name)
-        self.lr_scheduler = build_scheduler(optimizer=optimizer,
-                                            **schedule_cfg)
+        self.lr_scheduler = build_scheduler(optimizer=optimizer, **schedule_cfg)
         # lr_scheduler = {'scheduler': self.lr_scheduler,
         #                 'interval': 'epoch',
         #                 'frequency': 1}
@@ -273,17 +278,18 @@ class TrainingTask(LightningModule):
         # warm up lr
         if self.trainer.global_step <= self.cfg.schedule.warmup.steps:
             if self.cfg.schedule.warmup.name == "constant":
-                warmup_lr = (self.cfg.schedule.optimizer.lr *
-                             self.cfg.schedule.warmup.ratio)
+                warmup_lr = (
+                    self.cfg.schedule.optimizer.lr * self.cfg.schedule.warmup.ratio
+                )
             elif self.cfg.schedule.warmup.name == "linear":
-                k = (1 -
-                     self.trainer.global_step / self.cfg.schedule.warmup.steps
-                     ) * (1 - self.cfg.schedule.warmup.ratio)
+                k = (1 - self.trainer.global_step / self.cfg.schedule.warmup.steps) * (
+                    1 - self.cfg.schedule.warmup.ratio
+                )
                 warmup_lr = self.cfg.schedule.optimizer.lr * (1 - k)
             elif self.cfg.schedule.warmup.name == "exp":
-                k = self.cfg.schedule.warmup.ratio**(
-                    1 -
-                    self.trainer.global_step / self.cfg.schedule.warmup.steps)
+                k = self.cfg.schedule.warmup.ratio ** (
+                    1 - self.trainer.global_step / self.cfg.schedule.warmup.steps
+                )
                 warmup_lr = self.cfg.schedule.optimizer.lr * k
             else:
                 raise Exception("Unsupported warm up type!")

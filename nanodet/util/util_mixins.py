@@ -71,6 +71,7 @@ class NiceRepr(object):
         >>> baz = Baz()
         >>> assert str(baz) == '<Baz(5)>'
     """
+
     def __nice__(self):
         """str: a "nice" summary string describing this module"""
         if hasattr(self, "__len__"):
@@ -80,7 +81,8 @@ class NiceRepr(object):
         else:
             # In all other cases force the subclass to overload __nice__
             raise NotImplementedError(
-                f"Define the __nice__ method for {self.__class__!r}")
+                f"Define the __nice__ method for {self.__class__!r}"
+            )
 
     def __repr__(self):
         """str: the string of the module"""

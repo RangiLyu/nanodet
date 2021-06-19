@@ -5,10 +5,10 @@ import torch.utils.model_zoo as model_zoo
 from ..module.activation import act_layers
 
 model_urls = {
-    "shufflenetv2_0.5x": "https://download.pytorch.org/models/shufflenetv2_x0.5-f707e7126e.pth",  # noqa: E501
-    "shufflenetv2_1.0x": "https://download.pytorch.org/models/shufflenetv2_x1-5666bf0f80.pth",  # noqa: E501
-    "shufflenetv2_1.5x": None,
-    "shufflenetv2_2.0x": None,
+    'shufflenetv2_0.5x': 'https://download.pytorch.org/models/shufflenetv2_x0.5-f707e7126e.pth',  # noqa: E501
+    'shufflenetv2_1.0x': 'https://download.pytorch.org/models/shufflenetv2_x1-5666bf0f80.pth',  # noqa: E501
+    'shufflenetv2_1.5x': None,
+    'shufflenetv2_2.0x': None,
 }
 
 
@@ -29,11 +29,11 @@ def channel_shuffle(x, groups):
 
 
 class ShuffleV2Block(nn.Module):
-    def __init__(self, inp, oup, stride, activation="ReLU"):
+    def __init__(self, inp, oup, stride, activation='ReLU'):
         super(ShuffleV2Block, self).__init__()
 
         if not (1 <= stride <= 3):
-            raise ValueError("illegal stride value")
+            raise ValueError('illegal stride value')
         self.stride = stride
 
         branch_features = oup // 2
@@ -104,15 +104,15 @@ class ShuffleV2Block(nn.Module):
 class ShuffleNetV2(nn.Module):
     def __init__(
         self,
-        model_size="1.5x",
+        model_size='1.5x',
         out_stages=(2, 3, 4),
         with_last_conv=False,
         kernal_size=3,
-        activation="ReLU",
+        activation='ReLU',
         pretrain=True,
     ):
         super(ShuffleNetV2, self).__init__()
-        print("model size is ", model_size)
+        print('model size is ', model_size)
 
         self.stage_repeats = [4, 8, 4]
         self.model_size = model_size
@@ -120,13 +120,13 @@ class ShuffleNetV2(nn.Module):
         self.with_last_conv = with_last_conv
         self.kernal_size = kernal_size
         self.activation = activation
-        if model_size == "0.5x":
+        if model_size == '0.5x':
             self._stage_out_channels = [24, 48, 96, 192, 1024]
-        elif model_size == "1.0x":
+        elif model_size == '1.0x':
             self._stage_out_channels = [24, 116, 232, 464, 1024]
-        elif model_size == "1.5x":
+        elif model_size == '1.5x':
             self._stage_out_channels = [24, 176, 352, 704, 1024]
-        elif model_size == "2.0x":
+        elif model_size == '2.0x':
             self._stage_out_channels = [24, 244, 488, 976, 2048]
         else:
             raise NotImplementedError
@@ -143,7 +143,7 @@ class ShuffleNetV2(nn.Module):
 
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
 
-        stage_names = ["stage{}".format(i) for i in [2, 3, 4]]
+        stage_names = ['stage{}'.format(i) for i in [2, 3, 4]]
         for name, repeats, output_channels in zip(
             stage_names, self.stage_repeats, self._stage_out_channels[1:]
         ):
@@ -167,7 +167,7 @@ class ShuffleNetV2(nn.Module):
                 nn.BatchNorm2d(output_channels),
                 act_layers(activation),
             )
-            self.stage4.add_module("conv5", conv5)
+            self.stage4.add_module('conv5', conv5)
         self._initialize_weights(pretrain)
 
     def forward(self, x):
@@ -175,17 +175,17 @@ class ShuffleNetV2(nn.Module):
         x = self.maxpool(x)
         output = []
         for i in range(2, 5):
-            stage = getattr(self, "stage{}".format(i))
+            stage = getattr(self, 'stage{}'.format(i))
             x = stage(x)
             if i in self.out_stages:
                 output.append(x)
         return tuple(output)
 
     def _initialize_weights(self, pretrain=True):
-        print("init weights...")
+        print('init weights...')
         for name, m in self.named_modules():
             if isinstance(m, nn.Conv2d):
-                if "first" in name:
+                if 'first' in name:
                     nn.init.normal_(m.weight, 0, 0.01)
                 else:
                     nn.init.normal_(m.weight, 0, 1.0 / m.weight.shape[1])
@@ -206,16 +206,16 @@ class ShuffleNetV2(nn.Module):
                 if m.bias is not None:
                     nn.init.constant_(m.bias, 0)
         if pretrain:
-            url = model_urls["shufflenetv2_{}".format(self.model_size)]
+            url = model_urls['shufflenetv2_{}'.format(self.model_size)]
             if url is not None:
                 pretrained_state_dict = model_zoo.load_url(url)
-                print("=> loading pretrained model {}".format(url))
+                print('=> loading pretrained model {}'.format(url))
                 self.load_state_dict(pretrained_state_dict, strict=False)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     model = ShuffleNetV2(
-        model_size="1.0x",
+        model_size='1.0x',
     )
     print(model)
     test_data = torch.rand(5, 3, 320, 320)

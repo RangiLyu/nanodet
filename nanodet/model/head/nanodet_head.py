@@ -34,19 +34,19 @@ class NanoDetHead(GFLHead):
         input_channel,
         stacked_convs=2,
         octave_base_scale=5,
-        conv_type="DWConv",
+        conv_type='DWConv',
         conv_cfg=None,
-        norm_cfg=dict(type="BN"),
+        norm_cfg=dict(type='BN'),
         reg_max=16,
         share_cls_reg=False,
-        activation="LeakyReLU",
+        activation='LeakyReLU',
         feat_channels=256,
         strides=[8, 16, 32],
         **kwargs
     ):
         self.share_cls_reg = share_cls_reg
         self.activation = activation
-        self.ConvModule = ConvModule if conv_type == "Conv" else DepthwiseConvModule
+        self.ConvModule = ConvModule if conv_type == 'Conv' else DepthwiseConvModule
         super(NanoDetHead, self).__init__(
             num_classes,
             loss,
@@ -135,7 +135,7 @@ class NanoDetHead(GFLHead):
         for i in range(len(self.strides)):
             normal_init(self.gfl_cls[i], std=0.01, bias=bias_cls)
             normal_init(self.gfl_reg[i], std=0.01)
-        print("Finish initialize NanoDet Head.")
+        print('Finish initialize NanoDet Head.')
 
     def forward(self, feats):
         return multi_apply(

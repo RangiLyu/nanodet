@@ -44,7 +44,7 @@ class TAN(nn.Module):
         num_encoders,
         mlp_ratio,
         dropout_ratio,
-        activation="LeakyReLU",
+        activation='LeakyReLU',
     ):
         super(TAN, self).__init__()
         assert isinstance(in_channels, list)
@@ -59,7 +59,7 @@ class TAN(nn.Module):
                 in_channels[i],
                 out_channels,
                 1,
-                norm_cfg=dict(type="BN"),
+                norm_cfg=dict(type='BN'),
                 activation=activation,
                 inplace=False,
             )
@@ -104,9 +104,9 @@ class TAN(nn.Module):
         mid_shape = laterals[1].shape[2:]
         mid_lvl = torch.cat(
             (
-                F.interpolate(laterals[0], size=mid_shape, mode="bilinear"),
+                F.interpolate(laterals[0], size=mid_shape, mode='bilinear'),
                 laterals[1],
-                F.interpolate(laterals[2], size=mid_shape, mode="bilinear"),
+                F.interpolate(laterals[2], size=mid_shape, mode='bilinear'),
             ),
             dim=1,
         )
@@ -115,9 +115,9 @@ class TAN(nn.Module):
         # build outputs
         outs = [
             laterals[0]
-            + F.interpolate(mid_lvl, size=laterals[0].shape[2:], mode="bilinear"),
+            + F.interpolate(mid_lvl, size=laterals[0].shape[2:], mode='bilinear'),
             laterals[1] + mid_lvl,
             laterals[2]
-            + F.interpolate(mid_lvl, size=laterals[2].shape[2:], mode="bilinear"),
+            + F.interpolate(mid_lvl, size=laterals[2].shape[2:], mode='bilinear'),
         ]
         return tuple(outs)

@@ -39,7 +39,7 @@ def scatter(inputs, target_gpus, dim=0, chunk_sizes=None):
     def scatter_map(obj):
         if isinstance(obj, Variable):
             return Scatter.apply(target_gpus, chunk_sizes, dim, obj)
-        assert not torch.is_tensor(obj), "Tensors not supported in scatter."
+        assert not torch.is_tensor(obj), 'Tensors not supported in scatter.'
         if isinstance(obj, list):
             return list_scatter(obj, target_gpus, chunk_sizes)
         if isinstance(obj, tuple):
@@ -73,17 +73,17 @@ def gather_results(result_part):
 
     # dump result part to tensor with pickle
     part_tensor = torch.tensor(
-        bytearray(pickle.dumps(result_part)), dtype=torch.uint8, device="cuda"
+        bytearray(pickle.dumps(result_part)), dtype=torch.uint8, device='cuda'
     )
 
     # gather all result part tensor shape
-    shape_tensor = torch.tensor(part_tensor.shape, device="cuda")
+    shape_tensor = torch.tensor(part_tensor.shape, device='cuda')
     shape_list = [shape_tensor.clone() for _ in range(world_size)]
     dist.all_gather(shape_list, shape_tensor)
 
     # padding result part tensor to max length
     shape_max = torch.tensor(shape_list).max()
-    part_send = torch.zeros(shape_max, dtype=torch.uint8, device="cuda")
+    part_send = torch.zeros(shape_max, dtype=torch.uint8, device='cuda')
     part_send[: shape_tensor[0]] = part_tensor
     part_recv_list = [part_tensor.new_zeros(shape_max) for _ in range(world_size)]
 

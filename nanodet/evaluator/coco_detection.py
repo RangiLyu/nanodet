@@ -35,10 +35,10 @@ def xyxy2xywh(bbox):
 
 class CocoDetectionEvaluator:
     def __init__(self, dataset):
-        assert hasattr(dataset, "coco_api")
+        assert hasattr(dataset, 'coco_api')
         self.coco_api = dataset.coco_api
         self.cat_ids = dataset.cat_ids
-        self.metric_names = ["mAP", "AP_50", "AP_75", "AP_small", "AP_m", "AP_l"]
+        self.metric_names = ['mAP', 'AP_50', 'AP_75', 'AP_small', 'AP_m', 'AP_l']
 
     def results2json(self, results):
         """
@@ -65,11 +65,11 @@ class CocoDetectionEvaluator:
 
     def evaluate(self, results, save_dir, rank=-1):
         results_json = self.results2json(results)
-        json_path = os.path.join(save_dir, "results{}.json".format(rank))
-        json.dump(results_json, open(json_path, "w"))
+        json_path = os.path.join(save_dir, 'results{}.json'.format(rank))
+        json.dump(results_json, open(json_path, 'w'))
         coco_dets = self.coco_api.loadRes(json_path)
         coco_eval = COCOeval(
-            copy.deepcopy(self.coco_api), copy.deepcopy(coco_dets), "bbox"
+            copy.deepcopy(self.coco_api), copy.deepcopy(coco_dets), 'bbox'
         )
         coco_eval.evaluate()
         coco_eval.accumulate()

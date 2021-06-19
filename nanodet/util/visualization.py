@@ -35,7 +35,7 @@ def overlay_bbox_cv(img, dets, class_names, score_thresh):
         label, x0, y0, x1, y1, score = box
         # color = self.cmap(i)[:3]
         color = (_COLORS[label] * 255).astype(np.uint8).tolist()
-        text = "{}:{:.1f}%".format(class_names[label], score * 100)
+        text = '{}:{:.1f}%'.format(class_names[label], score * 100)
         txt_color = (0, 0, 0) if np.mean(_COLORS[label]) > 0.5 else (255, 255, 255)
         font = cv2.FONT_HERSHEY_SIMPLEX
         txt_size = cv2.getTextSize(text, font, 0.5, 2)[0]
@@ -54,7 +54,7 @@ def overlay_bbox_cv(img, dets, class_names, score_thresh):
 
 def rand_cmap(
     nlabels,
-    type="bright",
+    type='bright',
     first_color_black=False,
     last_color_black=False,
     verbose=False,
@@ -74,15 +74,15 @@ def rand_cmap(
     import numpy as np
     from matplotlib.colors import LinearSegmentedColormap
 
-    if type not in ("bright", "soft"):
+    if type not in ('bright', 'soft'):
         print('Please choose "bright" or "soft" for type')
         return
 
     if verbose:
-        print("Number of labels: " + str(nlabels))
+        print('Number of labels: ' + str(nlabels))
 
     # Generate color map for bright colors, based on hsv
-    if type == "bright":
+    if type == 'bright':
         randHSVcolors = [
             (
                 np.random.uniform(low=0.0, high=1),
@@ -106,11 +106,11 @@ def rand_cmap(
             randRGBcolors[-1] = [0, 0, 0]
 
         random_colormap = LinearSegmentedColormap.from_list(
-            "new_map", randRGBcolors, N=nlabels
+            'new_map', randRGBcolors, N=nlabels
         )
 
     # Generate soft pastel colors, by limiting the RGB spectrum
-    if type == "soft":
+    if type == 'soft':
         low = 0.6
         high = 0.95
         randRGBcolors = [
@@ -128,7 +128,7 @@ def rand_cmap(
         if last_color_black:
             randRGBcolors[-1] = [0, 0, 0]
         random_colormap = LinearSegmentedColormap.from_list(
-            "new_map", randRGBcolors, N=nlabels
+            'new_map', randRGBcolors, N=nlabels
         )
 
     return random_colormap
@@ -170,7 +170,7 @@ class VisImage:
         self.canvas = FigureCanvasAgg(fig)
         # self.canvas = mpl.backends.backend_cairo.FigureCanvasCairo(fig)
         ax = fig.add_axes([0.0, 0.0, 1.0, 1.0])
-        ax.axis("off")
+        ax.axis('off')
         ax.set_xlim(0.0, self.width)
         ax.set_ylim(self.height)
 
@@ -183,12 +183,12 @@ class VisImage:
             filepath (str): a string that contains the absolute path, including
                 the file name, where the visualized image will be saved.
         """
-        if filepath.lower().endswith(".jpg") or filepath.lower().endswith(".png"):
+        if filepath.lower().endswith('.jpg') or filepath.lower().endswith('.png'):
             # faster than matplotlib's imshow
             cv2.imwrite(filepath, self.get_image()[:, :, ::-1])
         else:
             # support general formats (e.g. pdf)
-            self.ax.imshow(self.img, interpolation="nearest")
+            self.ax.imshow(self.img, interpolation='nearest')
             self.fig.savefig(filepath)
 
     def get_image(self):
@@ -211,7 +211,7 @@ class VisImage:
         # width, height = self.width, self.height
         # s = buf.getvalue()
 
-        buffer = np.frombuffer(s, dtype="uint8")
+        buffer = np.frombuffer(s, dtype='uint8')
 
         # imshow is slow. blend manually (still quite slow)
         img_rgba = buffer.reshape(height, width, 4)
@@ -221,13 +221,13 @@ class VisImage:
             import numexpr as ne  # fuse them with numexpr
 
             visualized_image = ne.evaluate(
-                "img * (1 - alpha / 255.0) + rgb * (alpha / 255.0)"
+                'img * (1 - alpha / 255.0) + rgb * (alpha / 255.0)'
             )
         except ImportError:
-            alpha = alpha.astype("float32") / 255.0
+            alpha = alpha.astype('float32') / 255.0
             visualized_image = img * (1 - alpha) + rgb * alpha
 
-        visualized_image = visualized_image.astype("uint8")
+        visualized_image = visualized_image.astype('uint8')
 
         return visualized_image
 
@@ -262,7 +262,7 @@ class Visualizer:
 
         return res, bbox, has_holes
 
-    def draw_box(self, box_coord, alpha=0.5, edge_color="g", line_style="-"):
+    def draw_box(self, box_coord, alpha=0.5, edge_color='g', line_style='-'):
         x0, y0, x1, y1 = box_coord
         width = x1 - x0
         height = y1 - y0
@@ -336,8 +336,8 @@ class Visualizer:
                 if score >= self.score_thresh:
                     # color = self.cmap(i)[:3]
                     color = _COLORS[label]
-                    text = "{}:{:.1f}%".format(self.class_names[label], score * 100)
-                    self.draw_box(bbox[:4], alpha=1.0, edge_color=color, line_style="-")
+                    text = '{}:{:.1f}%'.format(self.class_names[label], score * 100)
+                    self.draw_box(bbox[:4], alpha=1.0, edge_color=color, line_style='-')
                     text_pos = (x0, y0)
                     instance_area = (y1 - y0) * (x1 - x0)
                     if (
@@ -359,8 +359,8 @@ class Visualizer:
                     self.draw_text(
                         text,
                         text_pos,
-                        color="black",
-                        horizontal_alignment="left",
+                        color='black',
+                        horizontal_alignment='left',
                         font_size=font_size,
                     )
         out = self.viz.get_image()
@@ -372,9 +372,9 @@ class Visualizer:
         total_ma = np.zeros([im.shape[0], im.shape[1]])
         total_contours = []
         for i, det in enumerate(self.dets[::-1]):
-            score = det["score"]
+            score = det['score']
             if score >= self.score_thresh:
-                ma = det["mask"]
+                ma = det['mask']
                 _, ma = cv2.threshold(
                     ma, thresh=127, maxval=255, type=cv2.THRESH_BINARY
                 )
@@ -395,10 +395,10 @@ class Visualizer:
 
     def overlay_instance(self, alpha=0.4):
         for i, det in enumerate(self.dets[::-1]):
-            score = det["score"]
+            score = det['score']
             if score >= self.score_thresh:
-                label = det["label"]
-                binary_mask = det["mask"]
+                label = det['label']
+                binary_mask = det['mask']
                 # color = self.cmap(i)[:3]
                 color = _COLORS[label]
                 color = self._jitter(color)
@@ -410,7 +410,7 @@ class Visualizer:
                 )
 
                 x0, y0, x1, y1 = bbox
-                text = "{}:{:.1f}%".format(self.class_names[label], score * 100)
+                text = '{}:{:.1f}%'.format(self.class_names[label], score * 100)
                 text_pos = np.median(binary_mask.nonzero(), axis=1)[::-1]
                 instance_area = (y1 - y0) * (x1 - x0)
                 if (
@@ -432,8 +432,8 @@ class Visualizer:
                 self.draw_text(
                     text,
                     text_pos,
-                    color="black",
-                    horizontal_alignment="center",
+                    color='black',
+                    horizontal_alignment='center',
                     font_size=font_size,
                 )
         out = self.viz.get_image()
@@ -445,8 +445,8 @@ class Visualizer:
         position,
         *,
         font_size=None,
-        color="g",
-        horizontal_alignment="center",
+        color='g',
+        horizontal_alignment='center',
         rotation=0
     ):
         """
@@ -476,14 +476,14 @@ class Visualizer:
             y,
             text,
             size=font_size * self.viz.scale,
-            family="sans-serif",
+            family='sans-serif',
             bbox={
-                "facecolor": (0.5, 0.5, 1.0),
-                "alpha": 0.8,
-                "pad": 0.7,
-                "edgecolor": (0.8, 0.8, 1.0),
+                'facecolor': (0.5, 0.5, 1.0),
+                'alpha': 0.8,
+                'pad': 0.7,
+                'edgecolor': (0.8, 0.8, 1.0),
             },
-            verticalalignment="top",
+            verticalalignment='top',
             horizontalalignment=horizontal_alignment,
             color=color,
             zorder=10,

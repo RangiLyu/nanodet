@@ -21,12 +21,12 @@ from .tan import TAN
 
 def build_fpn(cfg):
     fpn_cfg = copy.deepcopy(cfg)
-    name = fpn_cfg.pop("name")
-    if name == "FPN":
+    name = fpn_cfg.pop('name')
+    if name == 'FPN':
         return FPN(**fpn_cfg)
-    elif name == "PAN":
+    elif name == 'PAN':
         return PAN(**fpn_cfg)
-    elif name == "TAN":
+    elif name == 'TAN':
         return TAN(**fpn_cfg)
     else:
         raise NotImplementedError

@@ -6,11 +6,11 @@ import torch.utils.model_zoo as model_zoo
 from ..module.activation import act_layers
 
 model_urls = {
-    "resnet18": "https://download.pytorch.org/models/resnet18-5c106cde.pth",
-    "resnet34": "https://download.pytorch.org/models/resnet34-333f7ec4.pth",
-    "resnet50": "https://download.pytorch.org/models/resnet50-19c8e357.pth",
-    "resnet101": "https://download.pytorch.org/models/resnet101-5d3b4d8f.pth",
-    "resnet152": "https://download.pytorch.org/models/resnet152-b121ed2d.pth",
+    'resnet18': 'https://download.pytorch.org/models/resnet18-5c106cde.pth',
+    'resnet34': 'https://download.pytorch.org/models/resnet34-333f7ec4.pth',
+    'resnet50': 'https://download.pytorch.org/models/resnet50-19c8e357.pth',
+    'resnet101': 'https://download.pytorch.org/models/resnet101-5d3b4d8f.pth',
+    'resnet152': 'https://download.pytorch.org/models/resnet152-b121ed2d.pth',
 }
 
 
@@ -24,7 +24,7 @@ def conv3x3(in_planes, out_planes, stride=1):
 class BasicBlock(nn.Module):
     expansion = 1
 
-    def __init__(self, inplanes, planes, stride=1, downsample=None, activation="ReLU"):
+    def __init__(self, inplanes, planes, stride=1, downsample=None, activation='ReLU'):
         super(BasicBlock, self).__init__()
         self.conv1 = conv3x3(inplanes, planes, stride)
         self.bn1 = nn.BatchNorm2d(planes)
@@ -56,7 +56,7 @@ class BasicBlock(nn.Module):
 class Bottleneck(nn.Module):
     expansion = 4
 
-    def __init__(self, inplanes, planes, stride=1, downsample=None, activation="ReLU"):
+    def __init__(self, inplanes, planes, stride=1, downsample=None, activation='ReLU'):
         super(Bottleneck, self).__init__()
         self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=1, bias=False)
         self.bn1 = nn.BatchNorm2d(planes)
@@ -115,11 +115,11 @@ class ResNet(nn.Module):
     }
 
     def __init__(
-        self, depth, out_stages=(1, 2, 3, 4), activation="ReLU", pretrain=True
+        self, depth, out_stages=(1, 2, 3, 4), activation='ReLU', pretrain=True
     ):
         super(ResNet, self).__init__()
         if depth not in self.resnet_spec:
-            raise KeyError("invalid resnet depth {}".format(depth))
+            raise KeyError('invalid resnet depth {}'.format(depth))
         self.activation = activation
         block, layers = self.resnet_spec[depth]
         self.depth = depth
@@ -167,7 +167,7 @@ class ResNet(nn.Module):
         x = self.maxpool(x)
         output = []
         for i in range(1, 5):
-            res_layer = getattr(self, "layer{}".format(i))
+            res_layer = getattr(self, 'layer{}'.format(i))
             x = res_layer(x)
             if i in self.out_stages:
                 output.append(x)
@@ -176,19 +176,19 @@ class ResNet(nn.Module):
 
     def init_weights(self, pretrain=True):
         if pretrain:
-            url = model_urls["resnet{}".format(self.depth)]
+            url = model_urls['resnet{}'.format(self.depth)]
             pretrained_state_dict = model_zoo.load_url(url)
-            print("=> loading pretrained model {}".format(url))
+            print('=> loading pretrained model {}'.format(url))
             self.load_state_dict(pretrained_state_dict, strict=False)
         else:
             for m in self.modules():
-                if self.activation == "LeakyReLU":
-                    nonlinearity = "leaky_relu"
+                if self.activation == 'LeakyReLU':
+                    nonlinearity = 'leaky_relu'
                 else:
-                    nonlinearity = "relu"
+                    nonlinearity = 'relu'
                 if isinstance(m, nn.Conv2d):
                     nn.init.kaiming_normal_(
-                        m.weight, mode="fan_out", nonlinearity=nonlinearity
+                        m.weight, mode='fan_out', nonlinearity=nonlinearity
                     )
                 elif isinstance(m, nn.BatchNorm2d):
                     m.weight.data.fill_(1)

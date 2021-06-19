@@ -7,7 +7,7 @@ from ..module.activation import act_layers
 
 class ConvBNReLU(nn.Sequential):
     def __init__(
-        self, in_planes, out_planes, kernel_size=3, stride=1, groups=1, act="ReLU"
+        self, in_planes, out_planes, kernel_size=3, stride=1, groups=1, act='ReLU'
     ):
         padding = (kernel_size - 1) // 2
         super(ConvBNReLU, self).__init__(
@@ -26,7 +26,7 @@ class ConvBNReLU(nn.Sequential):
 
 
 class InvertedResidual(nn.Module):
-    def __init__(self, inp, oup, stride, expand_ratio, act="ReLU"):
+    def __init__(self, inp, oup, stride, expand_ratio, act='ReLU'):
         super(InvertedResidual, self).__init__()
         self.stride = stride
         assert stride in [1, 2]
@@ -60,7 +60,7 @@ class InvertedResidual(nn.Module):
 
 class MobileNetV2(nn.Module):
     def __init__(
-        self, width_mult=1.0, out_stages=(1, 2, 4, 6), last_channel=1280, act="ReLU"
+        self, width_mult=1.0, out_stages=(1, 2, 4, 6), last_channel=1280, act='ReLU'
     ):
         super(MobileNetV2, self).__init__()
         self.width_mult = width_mult
@@ -84,7 +84,7 @@ class MobileNetV2(nn.Module):
         self.first_layer = ConvBNReLU(3, input_channel, stride=2, act=self.act)
         # building inverted residual blocks
         for i in range(7):
-            name = "stage{}".format(i)
+            name = 'stage{}'.format(i)
             setattr(self, name, self.build_mobilenet_stage(stage_num=i))
 
     def build_mobilenet_stage(self, stage_num):
@@ -125,7 +125,7 @@ class MobileNetV2(nn.Module):
         x = self.first_layer(x)
         output = []
         for i in range(0, 7):
-            stage = getattr(self, "stage{}".format(i))
+            stage = getattr(self, 'stage{}'.format(i))
             x = stage(x)
             if i in self.out_stages:
                 output.append(x)

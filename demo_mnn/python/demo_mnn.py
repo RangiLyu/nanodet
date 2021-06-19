@@ -335,7 +335,7 @@ def overlay_bbox_cv(img, all_box, class_names):
         label, x0, y0, x1, y1, score = box
         # color = self.cmap(i)[:3]
         color = (_COLORS[label] * 255).astype(np.uint8).tolist()
-        text = "{}:{:.1f}%".format(class_names[label], score * 100)
+        text = '{}:{:.1f}%'.format(class_names[label], score * 100)
         txt_color = (0, 0, 0) if np.mean(_COLORS[label]) > 0.5 else (255, 255, 255)
         font = cv2.FONT_HERSHEY_SIMPLEX
         txt_size = cv2.getTextSize(text, font, 0.5, 2)[0]
@@ -444,86 +444,86 @@ class NanoDetABC(metaclass=ABCMeta):
         self.img_std = [57.375, 57.12, 58.395]
         self.input_size = (self.input_shape[1], self.input_shape[0])
         self.class_names = [
-            "person",
-            "bicycle",
-            "car",
-            "motorcycle",
-            "airplane",
-            "bus",
-            "train",
-            "truck",
-            "boat",
-            "traffic_light",
-            "fire_hydrant",
-            "stop_sign",
-            "parking_meter",
-            "bench",
-            "bird",
-            "cat",
-            "dog",
-            "horse",
-            "sheep",
-            "cow",
-            "elephant",
-            "bear",
-            "zebra",
-            "giraffe",
-            "backpack",
-            "umbrella",
-            "handbag",
-            "tie",
-            "suitcase",
-            "frisbee",
-            "skis",
-            "snowboard",
-            "sports_ball",
-            "kite",
-            "baseball_bat",
-            "baseball_glove",
-            "skateboard",
-            "surfboard",
-            "tennis_racket",
-            "bottle",
-            "wine_glass",
-            "cup",
-            "fork",
-            "knife",
-            "spoon",
-            "bowl",
-            "banana",
-            "apple",
-            "sandwich",
-            "orange",
-            "broccoli",
-            "carrot",
-            "hot_dog",
-            "pizza",
-            "donut",
-            "cake",
-            "chair",
-            "couch",
-            "potted_plant",
-            "bed",
-            "dining_table",
-            "toilet",
-            "tv",
-            "laptop",
-            "mouse",
-            "remote",
-            "keyboard",
-            "cell_phone",
-            "microwave",
-            "oven",
-            "toaster",
-            "sink",
-            "refrigerator",
-            "book",
-            "clock",
-            "vase",
-            "scissors",
-            "teddy_bear",
-            "hair_drier",
-            "toothbrush",
+            'person',
+            'bicycle',
+            'car',
+            'motorcycle',
+            'airplane',
+            'bus',
+            'train',
+            'truck',
+            'boat',
+            'traffic_light',
+            'fire_hydrant',
+            'stop_sign',
+            'parking_meter',
+            'bench',
+            'bird',
+            'cat',
+            'dog',
+            'horse',
+            'sheep',
+            'cow',
+            'elephant',
+            'bear',
+            'zebra',
+            'giraffe',
+            'backpack',
+            'umbrella',
+            'handbag',
+            'tie',
+            'suitcase',
+            'frisbee',
+            'skis',
+            'snowboard',
+            'sports_ball',
+            'kite',
+            'baseball_bat',
+            'baseball_glove',
+            'skateboard',
+            'surfboard',
+            'tennis_racket',
+            'bottle',
+            'wine_glass',
+            'cup',
+            'fork',
+            'knife',
+            'spoon',
+            'bowl',
+            'banana',
+            'apple',
+            'sandwich',
+            'orange',
+            'broccoli',
+            'carrot',
+            'hot_dog',
+            'pizza',
+            'donut',
+            'cake',
+            'chair',
+            'couch',
+            'potted_plant',
+            'bed',
+            'dining_table',
+            'toilet',
+            'tv',
+            'laptop',
+            'mouse',
+            'remote',
+            'keyboard',
+            'cell_phone',
+            'microwave',
+            'oven',
+            'toaster',
+            'sink',
+            'refrigerator',
+            'book',
+            'clock',
+            'vase',
+            'scissors',
+            'teddy_bear',
+            'hair_drier',
+            'toothbrush',
         ]
 
     def preprocess(self, img):
@@ -644,17 +644,17 @@ class NanoDetABC(metaclass=ABCMeta):
         result_path.mkdir(parents=True, exist_ok=True)
 
         img_name_list = filter(
-            lambda x: str(x).endswith(".png") or str(x).endswith(".jpg"),
+            lambda x: str(x).endswith('.png') or str(x).endswith('.jpg'),
             img_fold.iterdir(),
         )
         img_name_list = list(img_name_list)
-        print(f"find {len(img_name_list)} images")
+        print(f'find {len(img_name_list)} images')
 
         for img_path in tqdm(img_name_list):
             img = cv2.imread(str(img_path))
             bbox, label, score = self.detect(img)
             img_draw = self.draw_box(img, bbox, label, score)
-            save_path = str(result_path / img_path.name.replace(".png", ".jpg"))
+            save_path = str(result_path / img_path.name.replace('.png', '.jpg'))
             cv2.imwrite(save_path, img_draw)
 
 
@@ -663,8 +663,8 @@ class NanoDetMNN(NanoDetABC):
 
     def __init__(self, model_path, *args, **kwargs):
         super(NanoDetMNN, self).__init__(*args, **kwargs)
-        print("Using MNN as inference backend")
-        print(f"Using weight: {model_path}")
+        print('Using MNN as inference backend')
+        print(f'Using weight: {model_path}')
 
         # load model
         self.model_path = model_path
@@ -682,9 +682,9 @@ class NanoDetMNN(NanoDetABC):
         self.input_tensor.copyFrom(tmp_input)
         self.interpreter.runSession(self.session)
         score_out_name = [
-            "cls_pred_stride_8",
-            "cls_pred_stride_16",
-            "cls_pred_stride_32",
+            'cls_pred_stride_8',
+            'cls_pred_stride_16',
+            'cls_pred_stride_32',
         ]
         scores = [
             self.interpreter.getSessionOutput(self.session, x).getData()
@@ -692,9 +692,9 @@ class NanoDetMNN(NanoDetABC):
         ]
         scores = [np.reshape(x, (-1, 80)) for x in scores]
         boxes_out_name = [
-            "dis_pred_stride_8",
-            "dis_pred_stride_16",
-            "dis_pred_stride_32",
+            'dis_pred_stride_8',
+            'dis_pred_stride_16',
+            'dis_pred_stride_32',
         ]
         raw_boxes = [
             self.interpreter.getSessionOutput(self.session, x).getData()
@@ -709,8 +709,8 @@ class NanoDetONNX(NanoDetABC):
 
     def __init__(self, model_path, *args, **kwargs):
         super(NanoDetONNX, self).__init__(*args, **kwargs)
-        print("Using ONNX as inference backend")
-        print(f"Using weight: {model_path}")
+        print('Using ONNX as inference backend')
+        print(f'Using weight: {model_path}')
 
         # load model
         self.model_path = model_path
@@ -732,8 +732,8 @@ class NanoDetTorch(NanoDetABC):
         from nanodet.util import Logger, cfg, load_config, load_model_weight
 
         super(NanoDetTorch, self).__init__(*args, **kwargs)
-        print("Using PyTorch as inference backend")
-        print(f"Using weight: {model_path}")
+        print('Using PyTorch as inference backend')
+        print(f'Using weight: {model_path}')
 
         # load model
         self.model_path = model_path
@@ -764,29 +764,29 @@ class NanoDetTorch(NanoDetABC):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--model_path", dest="model_path", type=str, default="../model/nanodet-320.mnn"
+        '--model_path', dest='model_path', type=str, default='../model/nanodet-320.mnn'
     )
     parser.add_argument(
-        "--cfg_path", dest="cfg_path", type=str, default="config/nanodet-m.yml"
+        '--cfg_path', dest='cfg_path', type=str, default='config/nanodet-m.yml'
     )
-    parser.add_argument("--img_fold", dest="img_fold", type=str, default="../imgs")
+    parser.add_argument('--img_fold', dest='img_fold', type=str, default='../imgs')
     parser.add_argument(
-        "--result_fold", dest="result_fold", type=str, default="../results"
+        '--result_fold', dest='result_fold', type=str, default='../results'
     )
     parser.add_argument(
-        "--input_shape", dest="input_shape", nargs=2, type=int, default=[320, 320]
+        '--input_shape', dest='input_shape', nargs=2, type=int, default=[320, 320]
     )
-    parser.add_argument("--backend", choices=["MNN", "ONNX", "torch"], default="MNN")
+    parser.add_argument('--backend', choices=['MNN', 'ONNX', 'torch'], default='MNN')
     args = parser.parse_args()
 
-    print(f"Detecting {args.img_fold}")
+    print(f'Detecting {args.img_fold}')
 
     # load detector
-    if args.backend == "MNN":
+    if args.backend == 'MNN':
         detector = NanoDetMNN(args.model_path, input_shape=args.input_shape)
-    elif args.backend == "ONNX":
+    elif args.backend == 'ONNX':
         detector = NanoDetONNX(args.model_path, input_shape=args.input_shape)
-    elif args.backend == "torch":
+    elif args.backend == 'torch':
         detector = NanoDetTorch(
             args.model_path, args.cfg_path, input_shape=args.input_shape
         )
@@ -798,14 +798,14 @@ def main():
 
 
 def test_one():
-    detector = NanoDetMNN("./weight/nanodet-320.mnn")
-    img = cv2.imread("./data/2.jpg")
+    detector = NanoDetMNN('./weight/nanodet-320.mnn')
+    img = cv2.imread('./data/2.jpg')
     bbox, label, score = detector.detect(img)
     img_draw = detector.draw_box(img, bbox, label, score)
     plt.imshow(img_draw[..., ::-1])
-    plt.axis("off")
+    plt.axis('off')
     plt.show()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

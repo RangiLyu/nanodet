@@ -25,20 +25,20 @@ from .shufflenetv2 import ShuffleNetV2
 
 def build_backbone(cfg):
     backbone_cfg = copy.deepcopy(cfg)
-    name = backbone_cfg.pop("name")
-    if name == "ResNet":
+    name = backbone_cfg.pop('name')
+    if name == 'ResNet':
         return ResNet(**backbone_cfg)
-    elif name == "ShuffleNetV2":
+    elif name == 'ShuffleNetV2':
         return ShuffleNetV2(**backbone_cfg)
-    elif name == "GhostNet":
+    elif name == 'GhostNet':
         return GhostNet(**backbone_cfg)
-    elif name == "MobileNetV2":
+    elif name == 'MobileNetV2':
         return MobileNetV2(**backbone_cfg)
-    elif name == "EfficientNetLite":
+    elif name == 'EfficientNetLite':
         return EfficientNetLite(**backbone_cfg)
-    elif name == "CustomCspNet":
+    elif name == 'CustomCspNet':
         return CustomCspNet(**backbone_cfg)
-    elif name == "RepVGG":
+    elif name == 'RepVGG':
         return RepVGG(**backbone_cfg)
     else:
         raise NotImplementedError

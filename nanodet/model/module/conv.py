@@ -45,12 +45,12 @@ class ConvModule(nn.Module):
         padding=0,
         dilation=1,
         groups=1,
-        bias="auto",
+        bias='auto',
         conv_cfg=None,
         norm_cfg=None,
-        activation="ReLU",
+        activation='ReLU',
         inplace=True,
-        order=("conv", "norm", "act"),
+        order=('conv', 'norm', 'act'),
     ):
         super(ConvModule, self).__init__()
         assert conv_cfg is None or isinstance(conv_cfg, dict)
@@ -62,16 +62,16 @@ class ConvModule(nn.Module):
         self.inplace = inplace
         self.order = order
         assert isinstance(self.order, tuple) and len(self.order) == 3
-        assert set(order) == set(["conv", "norm", "act"])
+        assert set(order) == set(['conv', 'norm', 'act'])
 
         self.with_norm = norm_cfg is not None
         # if the conv layer is before a norm layer, bias is unnecessary.
-        if bias == "auto":
+        if bias == 'auto':
             bias = False if self.with_norm else True
         self.with_bias = bias
 
         if self.with_norm and self.with_bias:
-            warnings.warn("ConvModule has norm and bias at the same time")
+            warnings.warn('ConvModule has norm and bias at the same time')
 
         # build convolution layer
         self.conv = nn.Conv2d(  #
@@ -98,7 +98,7 @@ class ConvModule(nn.Module):
         # build normalization layers
         if self.with_norm:
             # norm layer is after conv layer
-            if order.index("norm") > order.index("conv"):
+            if order.index('norm') > order.index('conv'):
                 norm_channels = out_channels
             else:
                 norm_channels = in_channels
@@ -122,21 +122,21 @@ class ConvModule(nn.Module):
             return None
 
     def init_weights(self):
-        if self.activation == "LeakyReLU":
-            nonlinearity = "leaky_relu"
+        if self.activation == 'LeakyReLU':
+            nonlinearity = 'leaky_relu'
         else:
-            nonlinearity = "relu"
+            nonlinearity = 'relu'
         kaiming_init(self.conv, nonlinearity=nonlinearity)
         if self.with_norm:
             constant_init(self.norm, 1, bias=0)
 
     def forward(self, x, norm=True):
         for layer in self.order:
-            if layer == "conv":
+            if layer == 'conv':
                 x = self.conv(x)
-            elif layer == "norm" and norm and self.with_norm:
+            elif layer == 'norm' and norm and self.with_norm:
                 x = self.norm(x)
-            elif layer == "act" and self.activation:
+            elif layer == 'act' and self.activation:
                 x = self.act(x)
         return x
 
@@ -150,11 +150,11 @@ class DepthwiseConvModule(nn.Module):
         stride=1,
         padding=0,
         dilation=1,
-        bias="auto",
-        norm_cfg=dict(type="BN"),
-        activation="ReLU",
+        bias='auto',
+        norm_cfg=dict(type='BN'),
+        activation='ReLU',
         inplace=True,
-        order=("depthwise", "dwnorm", "act", "pointwise", "pwnorm", "act"),
+        order=('depthwise', 'dwnorm', 'act', 'pointwise', 'pwnorm', 'act'),
     ):
         super(DepthwiseConvModule, self).__init__()
         assert activation is None or isinstance(activation, str)
@@ -163,17 +163,17 @@ class DepthwiseConvModule(nn.Module):
         self.order = order
         assert isinstance(self.order, tuple) and len(self.order) == 6
         assert set(order) == set(
-            ["depthwise", "dwnorm", "act", "pointwise", "pwnorm", "act"]
+            ['depthwise', 'dwnorm', 'act', 'pointwise', 'pwnorm', 'act']
         )
 
         self.with_norm = norm_cfg is not None
         # if the conv layer is before a norm layer, bias is unnecessary.
-        if bias == "auto":
+        if bias == 'auto':
             bias = False if self.with_norm else True
         self.with_bias = bias
 
         if self.with_norm and self.with_bias:
-            warnings.warn("ConvModule has norm and bias at the same time")
+            warnings.warn('ConvModule has norm and bias at the same time')
 
         # build convolution layer
         self.depthwise = nn.Conv2d(
@@ -214,10 +214,10 @@ class DepthwiseConvModule(nn.Module):
         self.init_weights()
 
     def init_weights(self):
-        if self.activation == "LeakyReLU":
-            nonlinearity = "leaky_relu"
+        if self.activation == 'LeakyReLU':
+            nonlinearity = 'leaky_relu'
         else:
-            nonlinearity = "relu"
+            nonlinearity = 'relu'
         kaiming_init(self.depthwise, nonlinearity=nonlinearity)
         kaiming_init(self.pointwise, nonlinearity=nonlinearity)
         if self.with_norm:
@@ -226,10 +226,10 @@ class DepthwiseConvModule(nn.Module):
 
     def forward(self, x, norm=True):
         for layer_name in self.order:
-            if layer_name != "act":
+            if layer_name != 'act':
                 layer = self.__getattr__(layer_name)
                 x = layer(x)
-            elif layer_name == "act" and self.activation:
+            elif layer_name == 'act' and self.activation:
                 x = self.act(x)
         return x
 
@@ -250,8 +250,8 @@ class RepVGGConvModule(nn.Module):
         padding=0,
         dilation=1,
         groups=1,
-        activation="ReLU",
-        padding_mode="zeros",
+        activation='ReLU',
+        padding_mode='zeros',
         deploy=False,
     ):
         super(RepVGGConvModule, self).__init__()
@@ -316,10 +316,10 @@ class RepVGGConvModule(nn.Module):
                 ),
                 nn.BatchNorm2d(num_features=out_channels),
             )
-            print("RepVGG Block, identity = ", self.rbr_identity)
+            print('RepVGG Block, identity = ', self.rbr_identity)
 
     def forward(self, inputs):
-        if hasattr(self, "rbr_reparam"):
+        if hasattr(self, 'rbr_reparam'):
             return self.act(self.rbr_reparam(inputs))
 
         if self.rbr_identity is None:
@@ -360,7 +360,7 @@ class RepVGGConvModule(nn.Module):
             eps = branch[1].eps
         else:
             assert isinstance(branch, nn.BatchNorm2d)
-            if not hasattr(self, "id_tensor"):
+            if not hasattr(self, 'id_tensor'):
                 input_dim = self.in_channels // self.groups
                 kernel_value = np.zeros(
                     (self.in_channels, input_dim, 3, 3), dtype=np.float32

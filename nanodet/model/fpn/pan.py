@@ -75,7 +75,7 @@ class PAN(FPN):
         used_backbone_levels = len(laterals)
         for i in range(used_backbone_levels - 1, 0, -1):
             laterals[i - 1] += F.interpolate(
-                laterals[i], scale_factor=2, mode="bilinear"
+                laterals[i], scale_factor=2, mode='bilinear'
             )
 
         # build outputs
@@ -85,7 +85,7 @@ class PAN(FPN):
         # part 2: add bottom-up path
         for i in range(0, used_backbone_levels - 1):
             inter_outs[i + 1] += F.interpolate(
-                inter_outs[i], scale_factor=0.5, mode="bilinear"
+                inter_outs[i], scale_factor=0.5, mode='bilinear'
             )
 
         outs = []

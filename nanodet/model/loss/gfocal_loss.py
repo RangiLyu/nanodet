@@ -35,7 +35,7 @@ def quality_focal_loss(pred, target, beta=2.0):
     scale_factor = pred_sigmoid
     zerolabel = scale_factor.new_zeros(pred.shape)
     loss = F.binary_cross_entropy_with_logits(
-        pred, zerolabel, reduction="none"
+        pred, zerolabel, reduction='none'
     ) * scale_factor.pow(beta)
 
     # FG cat_id: [0, num_classes -1], BG cat_id: num_classes
@@ -47,7 +47,7 @@ def quality_focal_loss(pred, target, beta=2.0):
     # positives are supervised by bbox quality (IoU) score
     scale_factor = score[pos] - pred_sigmoid[pos, pos_label]
     loss[pos, pos_label] = F.binary_cross_entropy_with_logits(
-        pred[pos, pos_label], score[pos], reduction="none"
+        pred[pos, pos_label], score[pos], reduction='none'
     ) * scale_factor.abs().pow(beta)
 
     loss = loss.sum(dim=1, keepdim=False)
@@ -75,8 +75,8 @@ def distribution_focal_loss(pred, label):
     weight_left = dis_right.float() - label
     weight_right = label - dis_left.float()
     loss = (
-        F.cross_entropy(pred, dis_left, reduction="none") * weight_left
-        + F.cross_entropy(pred, dis_right, reduction="none") * weight_right
+        F.cross_entropy(pred, dis_left, reduction='none') * weight_left
+        + F.cross_entropy(pred, dis_right, reduction='none') * weight_right
     )
     return loss
 
@@ -95,9 +95,9 @@ class QualityFocalLoss(nn.Module):
         loss_weight (float): Loss weight of current loss.
     """
 
-    def __init__(self, use_sigmoid=True, beta=2.0, reduction="mean", loss_weight=1.0):
+    def __init__(self, use_sigmoid=True, beta=2.0, reduction='mean', loss_weight=1.0):
         super(QualityFocalLoss, self).__init__()
-        assert use_sigmoid is True, "Only sigmoid in QFL supported now."
+        assert use_sigmoid is True, 'Only sigmoid in QFL supported now.'
         self.use_sigmoid = use_sigmoid
         self.beta = beta
         self.reduction = reduction
@@ -122,7 +122,7 @@ class QualityFocalLoss(nn.Module):
                 override the original reduction method of the loss.
                 Defaults to None.
         """
-        assert reduction_override in (None, "none", "mean", "sum")
+        assert reduction_override in (None, 'none', 'mean', 'sum')
         reduction = reduction_override if reduction_override else self.reduction
         if self.use_sigmoid:
             loss_cls = self.loss_weight * quality_focal_loss(
@@ -148,7 +148,7 @@ class DistributionFocalLoss(nn.Module):
         loss_weight (float): Loss weight of current loss.
     """
 
-    def __init__(self, reduction="mean", loss_weight=1.0):
+    def __init__(self, reduction='mean', loss_weight=1.0):
         super(DistributionFocalLoss, self).__init__()
         self.reduction = reduction
         self.loss_weight = loss_weight
@@ -172,7 +172,7 @@ class DistributionFocalLoss(nn.Module):
                 override the original reduction method of the loss.
                 Defaults to None.
         """
-        assert reduction_override in (None, "none", "mean", "sum")
+        assert reduction_override in (None, 'none', 'mean', 'sum')
         reduction = reduction_override if reduction_override else self.reduction
         loss_cls = self.loss_weight * distribution_focal_loss(
             pred, target, weight, reduction=reduction, avg_factor=avg_factor

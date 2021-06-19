@@ -1,7 +1,7 @@
 from .yacs import CfgNode
 
 cfg = CfgNode(new_allowed=True)
-cfg.save_dir = "./"
+cfg.save_dir = './'
 # common params for NETWORK
 cfg.model = CfgNode()
 cfg.model.arch = CfgNode(new_allowed=True)
@@ -32,8 +32,8 @@ def load_config(cfg, args_cfg):
     cfg.freeze()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     import sys
 
-    with open(sys.argv[1], "w") as f:
+    with open(sys.argv[1], 'w') as f:
         print(cfg, file=f)

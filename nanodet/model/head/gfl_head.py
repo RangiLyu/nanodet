@@ -5,8 +5,13 @@ import torch.distributed as dist
 import torch.nn as nn
 import torch.nn.functional as F
 
-from nanodet.util import (bbox2distance, distance2bbox, images_to_levels,
-                          multi_apply, overlay_bbox_cv)
+from nanodet.util import (
+    bbox2distance,
+    distance2bbox,
+    images_to_levels,
+    multi_apply,
+    overlay_bbox_cv,
+)
 
 from ...data.transform.warp import warp_boxes
 from ..loss.gfocal_loss import DistributionFocalLoss, QualityFocalLoss

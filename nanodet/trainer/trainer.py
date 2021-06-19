@@ -18,8 +18,14 @@ import warnings
 
 import torch
 
-from nanodet.util import (AverageMeter, DataParallel, MovingAverage,
-                          load_model_weight, mkdir, save_model)
+from nanodet.util import (
+    AverageMeter,
+    DataParallel,
+    MovingAverage,
+    load_model_weight,
+    mkdir,
+    save_model,
+)
 
 
 class Trainer:

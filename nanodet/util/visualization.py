@@ -131,27 +131,6 @@ def rand_cmap(
             "new_map", randRGBcolors, N=nlabels
         )
 
-    # Display colorbar
-    if verbose:
-        from matplotlib import colorbar, colors
-        from matplotlib import pyplot as plt
-
-        fig, ax = plt.subplots(1, 1, figsize=(15, 0.5))
-
-        bounds = np.linspace(0, nlabels, nlabels + 1)
-        norm = colors.BoundaryNorm(bounds, nlabels)
-
-        cb = colorbar.ColorbarBase(
-            ax,
-            cmap=random_colormap,
-            norm=norm,
-            spacing="proportional",
-            ticks=None,
-            boundaries=bounds,
-            format="%1i",
-            orientation=u"horizontal",
-        )
-
     return random_colormap
 
 

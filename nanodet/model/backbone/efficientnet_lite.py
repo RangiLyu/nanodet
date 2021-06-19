@@ -9,19 +9,19 @@ from ..module.activation import act_layers
 
 efficientnet_lite_params = {
     # width_coefficient, depth_coefficient, image_size, dropout_rate
-    'efficientnet_lite0': [1.0, 1.0, 224, 0.2],
-    'efficientnet_lite1': [1.0, 1.1, 240, 0.2],
-    'efficientnet_lite2': [1.1, 1.2, 260, 0.3],
-    'efficientnet_lite3': [1.2, 1.4, 280, 0.3],
-    'efficientnet_lite4': [1.4, 1.8, 300, 0.3],
+    "efficientnet_lite0": [1.0, 1.0, 224, 0.2],
+    "efficientnet_lite1": [1.0, 1.1, 240, 0.2],
+    "efficientnet_lite2": [1.1, 1.2, 260, 0.3],
+    "efficientnet_lite3": [1.2, 1.4, 280, 0.3],
+    "efficientnet_lite4": [1.4, 1.8, 300, 0.3],
 }
 
 model_urls = {
-    'efficientnet_lite0': 'https://github.com/RangiLyu/EfficientNet-Lite/releases/download/v1.0/efficientnet_lite0.pth',  # noqa: E501
-    'efficientnet_lite1': 'https://github.com/RangiLyu/EfficientNet-Lite/releases/download/v1.0/efficientnet_lite1.pth',  # noqa: E501
-    'efficientnet_lite2': 'https://github.com/RangiLyu/EfficientNet-Lite/releases/download/v1.0/efficientnet_lite2.pth',  # noqa: E501
-    'efficientnet_lite3': 'https://github.com/RangiLyu/EfficientNet-Lite/releases/download/v1.0/efficientnet_lite3.pth',  # noqa: E501
-    'efficientnet_lite4': 'https://github.com/RangiLyu/EfficientNet-Lite/releases/download/v1.0/efficientnet_lite4.pth',  # noqa: E501
+    "efficientnet_lite0": "https://github.com/RangiLyu/EfficientNet-Lite/releases/download/v1.0/efficientnet_lite0.pth",  # noqa: E501
+    "efficientnet_lite1": "https://github.com/RangiLyu/EfficientNet-Lite/releases/download/v1.0/efficientnet_lite1.pth",  # noqa: E501
+    "efficientnet_lite2": "https://github.com/RangiLyu/EfficientNet-Lite/releases/download/v1.0/efficientnet_lite2.pth",  # noqa: E501
+    "efficientnet_lite3": "https://github.com/RangiLyu/EfficientNet-Lite/releases/download/v1.0/efficientnet_lite3.pth",  # noqa: E501
+    "efficientnet_lite4": "https://github.com/RangiLyu/EfficientNet-Lite/releases/download/v1.0/efficientnet_lite4.pth",  # noqa: E501
 }
 
 
@@ -67,7 +67,7 @@ class MBConvBlock(nn.Module):
         expand_ratio,
         se_ratio,
         has_se=False,
-        activation='ReLU6',
+        activation="ReLU6",
     ):
         super(MBConvBlock, self).__init__()
 
@@ -158,7 +158,7 @@ class MBConvBlock(nn.Module):
 
 class EfficientNetLite(nn.Module):
     def __init__(
-        self, model_name, out_stages=(2, 4, 6), activation='ReLU6', pretrain=True
+        self, model_name, out_stages=(2, 4, 6), activation="ReLU6", pretrain=True
     ):
         super(EfficientNetLite, self).__init__()
 
@@ -281,7 +281,7 @@ class EfficientNetLite(nn.Module):
             url = model_urls[self.model_name]
             if url is not None:
                 pretrained_state_dict = model_zoo.load_url(url)
-                print('=> loading pretrained model {}'.format(url))
+                print("=> loading pretrained model {}".format(url))
                 self.load_state_dict(pretrained_state_dict, strict=False)
 
     def load_pretrain(self, path):
@@ -289,9 +289,9 @@ class EfficientNetLite(nn.Module):
         self.load_state_dict(state_dict, strict=True)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     model = EfficientNetLite(
-        model_name='efficientnet_lite0',
+        model_name="efficientnet_lite0",
     )
     print(model)
     test_data = torch.rand(5, 3, 320, 320)

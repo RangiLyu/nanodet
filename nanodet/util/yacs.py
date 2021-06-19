@@ -33,8 +33,8 @@ import yaml
 _PY2 = sys.version_info.major == 2
 
 # Filename extensions for loading configs from files
-_YAML_EXTS = {'', '.yaml', '.yml'}
-_PY_EXTS = {'.py'}
+_YAML_EXTS = {"", ".yaml", ".yml"}
+_PY_EXTS = {".py"}
 
 _FILE_TYPES = (io.IOBase,)
 
@@ -60,10 +60,10 @@ class CfgNode(dict):
     dict-like container that allows for attribute-based access to keys.
     """
 
-    IMMUTABLE = '__immutable__'
-    DEPRECATED_KEYS = '__deprecated_keys__'
-    RENAMED_KEYS = '__renamed_keys__'
-    NEW_ALLOWED = '__new_allowed__'
+    IMMUTABLE = "__immutable__"
+    DEPRECATED_KEYS = "__deprecated_keys__"
+    RENAMED_KEYS = "__renamed_keys__"
+    NEW_ALLOWED = "__new_allowed__"
 
     def __init__(self, init_dict=None, key_list=None, new_allowed=False):
         """
@@ -124,8 +124,8 @@ class CfgNode(dict):
                 # Check for valid leaf type or nested CfgNode
                 _assert_with_logging(
                     _valid_type(v, allow_cfg_node=False),
-                    'Key {} with value {} is not a valid type; valid types: {}'.format(
-                        '.'.join(key_list + [k]), type(v), _VALID_TYPES
+                    "Key {} with value {} is not a valid type; valid types: {}".format(
+                        ".".join(key_list + [k]), type(v), _VALID_TYPES
                     ),
                 )
         return dic
@@ -139,18 +139,18 @@ class CfgNode(dict):
     def __setattr__(self, name, value):
         if self.is_frozen():
             raise AttributeError(
-                'Attempted to set {} to {}, but CfgNode is immutable'.format(
+                "Attempted to set {} to {}, but CfgNode is immutable".format(
                     name, value
                 )
             )
 
         _assert_with_logging(
             name not in self.__dict__,
-            'Invalid attempt to modify internal CfgNode state: {}'.format(name),
+            "Invalid attempt to modify internal CfgNode state: {}".format(name),
         )
         _assert_with_logging(
             _valid_type(value, allow_cfg_node=True),
-            'Invalid type {} for key {}; valid types = {}'.format(
+            "Invalid type {} for key {}; valid types = {}".format(
                 type(value), name, _VALID_TYPES
             ),
         )
@@ -159,27 +159,27 @@ class CfgNode(dict):
 
     def __str__(self):
         def _indent(s_, num_spaces):
-            s = s_.split('\n')
+            s = s_.split("\n")
             if len(s) == 1:
                 return s_
             first = s.pop(0)
-            s = [(num_spaces * ' ') + line for line in s]
-            s = '\n'.join(s)
-            s = first + '\n' + s
+            s = [(num_spaces * " ") + line for line in s]
+            s = "\n".join(s)
+            s = first + "\n" + s
             return s
 
-        r = ''
+        r = ""
         s = []
         for k, v in sorted(self.items()):
-            seperator = '\n' if isinstance(v, CfgNode) else ' '
-            attr_str = '{}:{}{}'.format(str(k), seperator, str(v))
+            seperator = "\n" if isinstance(v, CfgNode) else " "
+            attr_str = "{}:{}{}".format(str(k), seperator, str(v))
             attr_str = _indent(attr_str, 2)
             s.append(attr_str)
-        r += '\n'.join(s)
+        r += "\n".join(s)
         return r
 
     def __repr__(self):
-        return '{}({})'.format(self.__class__.__name__, super(CfgNode, self).__repr__())
+        return "{}({})".format(self.__class__.__name__, super(CfgNode, self).__repr__())
 
     def dump(self, **kwargs):
         """Dump to a string."""
@@ -188,8 +188,8 @@ class CfgNode(dict):
             if not isinstance(cfg_node, CfgNode):
                 _assert_with_logging(
                     _valid_type(cfg_node),
-                    'Key {} with value {} is not a valid type; valid types: {}'.format(
-                        '.'.join(key_list), type(cfg_node), _VALID_TYPES
+                    "Key {} with value {} is not a valid type; valid types: {}".format(
+                        ".".join(key_list), type(cfg_node), _VALID_TYPES
                     ),
                 )
                 return cfg_node
@@ -204,7 +204,7 @@ class CfgNode(dict):
 
     def merge_from_file(self, cfg_filename):
         """Load a yaml config file and merge it this CfgNode."""
-        with open(cfg_filename, 'r', encoding='utf-8') as f:
+        with open(cfg_filename, "r", encoding="utf-8") as f:
             cfg = self.load_cfg(f)
         self.merge_from_other_cfg(cfg)
 
@@ -218,7 +218,7 @@ class CfgNode(dict):
         """
         _assert_with_logging(
             len(cfg_list) % 2 == 0,
-            'Override list has odd length: {}; it must be a list of pairs'.format(
+            "Override list has odd length: {}; it must be a list of pairs".format(
                 cfg_list
             ),
         )
@@ -228,15 +228,15 @@ class CfgNode(dict):
                 continue
             if root.key_is_renamed(full_key):
                 root.raise_key_rename_error(full_key)
-            key_list = full_key.split('.')
+            key_list = full_key.split(".")
             d = self
             for subkey in key_list[:-1]:
                 _assert_with_logging(
-                    subkey in d, 'Non-existent key: {}'.format(full_key)
+                    subkey in d, "Non-existent key: {}".format(full_key)
                 )
                 d = d[subkey]
             subkey = key_list[-1]
-            _assert_with_logging(subkey in d, 'Non-existent key: {}'.format(full_key))
+            _assert_with_logging(subkey in d, "Non-existent key: {}".format(full_key))
             value = self._decode_cfg_value(v)
             value = _check_and_coerce_cfg_value_type(value, d[subkey], subkey, full_key)
             d[subkey] = value
@@ -276,7 +276,7 @@ class CfgNode(dict):
         """
         _assert_with_logging(
             key not in self.__dict__[CfgNode.DEPRECATED_KEYS],
-            'key {} is already registered as a deprecated key'.format(key),
+            "key {} is already registered as a deprecated key".format(key),
         )
         self.__dict__[CfgNode.DEPRECATED_KEYS].add(key)
 
@@ -287,7 +287,7 @@ class CfgNode(dict):
         """
         _assert_with_logging(
             old_name not in self.__dict__[CfgNode.RENAMED_KEYS],
-            'key {} is already registered as a renamed cfg key'.format(old_name),
+            "key {} is already registered as a renamed cfg key".format(old_name),
         )
         value = new_name
         if message:
@@ -297,7 +297,7 @@ class CfgNode(dict):
     def key_is_deprecated(self, full_key):
         """Test if a key is deprecated."""
         if full_key in self.__dict__[CfgNode.DEPRECATED_KEYS]:
-            logger.warning('Deprecated config key (ignoring): {}'.format(full_key))
+            logger.warning("Deprecated config key (ignoring): {}".format(full_key))
             return True
         return False
 
@@ -308,12 +308,12 @@ class CfgNode(dict):
     def raise_key_rename_error(self, full_key):
         new_key = self.__dict__[CfgNode.RENAMED_KEYS][full_key]
         if isinstance(new_key, tuple):
-            msg = ' Note: ' + new_key[1]
+            msg = " Note: " + new_key[1]
             new_key = new_key[0]
         else:
-            msg = ''
+            msg = ""
         raise KeyError(
-            'Key {} was renamed to {}; please update your config.{}'.format(
+            "Key {} was renamed to {}; please update your config.{}".format(
                 full_key, new_key, msg
             )
         )
@@ -335,7 +335,7 @@ class CfgNode(dict):
         """
         _assert_with_logging(
             isinstance(cfg_file_obj_or_str, _FILE_TYPES + (str,)),
-            'Expected first argument to be of type {} or {}, but it was {}'.format(
+            "Expected first argument to be of type {} or {}, but it was {}".format(
                 _FILE_TYPES, str, type(cfg_file_obj_or_str)
             ),
         )
@@ -356,8 +356,8 @@ class CfgNode(dict):
             return cls._load_cfg_py_source(file_obj.name)
         else:
             raise Exception(
-                'Attempt to load from an unsupported file type {}; '
-                'only {} are supported'.format(file_obj, _YAML_EXTS.union(_PY_EXTS))
+                "Attempt to load from an unsupported file type {}; "
+                "only {} are supported".format(file_obj, _YAML_EXTS.union(_PY_EXTS))
             )
 
     @classmethod
@@ -369,9 +369,9 @@ class CfgNode(dict):
     @classmethod
     def _load_cfg_py_source(cls, filename):
         """Load a config from a Python source file."""
-        module = _load_module_from_file('yacs.config.override', filename)
+        module = _load_module_from_file("yacs.config.override", filename)
         _assert_with_logging(
-            hasattr(module, 'cfg'),
+            hasattr(module, "cfg"),
             "Python module from file {} must have 'cfg' attr".format(filename),
         )
         VALID_ATTR_TYPES = {dict, CfgNode}
@@ -439,15 +439,15 @@ def _merge_a_into_b(a, b, root, key_list):
     """
     _assert_with_logging(
         isinstance(a, CfgNode),
-        '`a` (cur type {}) must be an instance of {}'.format(type(a), CfgNode),
+        "`a` (cur type {}) must be an instance of {}".format(type(a), CfgNode),
     )
     _assert_with_logging(
         isinstance(b, CfgNode),
-        '`b` (cur type {}) must be an instance of {}'.format(type(b), CfgNode),
+        "`b` (cur type {}) must be an instance of {}".format(type(b), CfgNode),
     )
 
     for k, v_ in a.items():
-        full_key = '.'.join(key_list + [k])
+        full_key = ".".join(key_list + [k])
 
         v = copy.deepcopy(v_)
         v = b._decode_cfg_value(v)
@@ -470,7 +470,7 @@ def _merge_a_into_b(a, b, root, key_list):
             elif root.key_is_renamed(full_key):
                 root.raise_key_rename_error(full_key)
             else:
-                raise KeyError('Non-existent config key: {}'.format(full_key))
+                raise KeyError("Non-existent config key: {}".format(full_key))
 
 
 def _check_and_coerce_cfg_value_type(replacement, original, key, full_key):
@@ -508,8 +508,8 @@ def _check_and_coerce_cfg_value_type(replacement, original, key, full_key):
             return converted_value
 
     raise ValueError(
-        'Type mismatch ({} vs. {}) with values ({} vs. {}) for config '
-        'key: {}'.format(
+        "Type mismatch ({} vs. {}) with values ({} vs. {}) for config "
+        "key: {}".format(
             original_type, replacement_type, original, replacement, full_key
         )
     )

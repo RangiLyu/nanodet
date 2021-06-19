@@ -36,12 +36,12 @@ def random_saturation(img, alpha_low, alpha_up):
 
 
 def normalize(meta, mean, std):
-    img = meta['img'].astype(np.float32)
+    img = meta["img"].astype(np.float32)
     mean = np.array(mean, dtype=np.float64).reshape(1, -1)
     stdinv = 1 / np.array(std, dtype=np.float64).reshape(1, -1)
     cv2.subtract(img, mean, img)
     cv2.multiply(img, stdinv, img)
-    meta['img'] = img
+    meta["img"] = img
     return meta
 
 
@@ -53,18 +53,18 @@ def _normalize(img, mean, std):
 
 
 def color_aug_and_norm(meta, kwargs):
-    img = meta['img'].astype(np.float32) / 255
+    img = meta["img"].astype(np.float32) / 255
 
-    if 'brightness' in kwargs and random.randint(0, 1):
-        img = random_brightness(img, kwargs['brightness'])
+    if "brightness" in kwargs and random.randint(0, 1):
+        img = random_brightness(img, kwargs["brightness"])
 
-    if 'contrast' in kwargs and random.randint(0, 1):
-        img = random_contrast(img, *kwargs['contrast'])
+    if "contrast" in kwargs and random.randint(0, 1):
+        img = random_contrast(img, *kwargs["contrast"])
 
-    if 'saturation' in kwargs and random.randint(0, 1):
-        img = random_saturation(img, *kwargs['saturation'])
+    if "saturation" in kwargs and random.randint(0, 1):
+        img = random_saturation(img, *kwargs["saturation"])
     # cv2.imshow('trans', img)
     # cv2.waitKey(0)
-    img = _normalize(img, *kwargs['normalize'])
-    meta['img'] = img
+    img = _normalize(img, *kwargs["normalize"])
+    meta["img"] = img
     return meta

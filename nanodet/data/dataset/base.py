@@ -53,7 +53,7 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
         use_seg_mask=False,
         use_keypoint=False,
         load_mosaic=False,
-        mode='train',
+        mode="train",
     ):
 
         self.img_path = img_path
@@ -73,7 +73,7 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
         return len(self.data_info)
 
     def __getitem__(self, idx):
-        if self.mode == 'val' or self.mode == 'test':
+        if self.mode == "val" or self.mode == "test":
             return self.get_val_data(idx)
         else:
             while True:

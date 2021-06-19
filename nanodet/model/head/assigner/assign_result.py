@@ -81,11 +81,11 @@ class AssignResult(util_mixins.NiceRepr):
     def info(self):
         """dict: a dictionary of info about the object"""
         basic_info = {
-            'num_gts': self.num_gts,
-            'num_preds': self.num_preds,
-            'gt_inds': self.gt_inds,
-            'max_overlaps': self.max_overlaps,
-            'labels': self.labels,
+            "num_gts": self.num_gts,
+            "num_preds": self.num_preds,
+            "gt_inds": self.gt_inds,
+            "max_overlaps": self.max_overlaps,
+            "labels": self.labels,
         }
         basic_info.update(self._extra_properties)
         return basic_info
@@ -93,20 +93,20 @@ class AssignResult(util_mixins.NiceRepr):
     def __nice__(self):
         """str: a "nice" summary string describing this assign result"""
         parts = []
-        parts.append(f'num_gts={self.num_gts!r}')
+        parts.append(f"num_gts={self.num_gts!r}")
         if self.gt_inds is None:
-            parts.append(f'gt_inds={self.gt_inds!r}')
+            parts.append(f"gt_inds={self.gt_inds!r}")
         else:
-            parts.append(f'gt_inds.shape={tuple(self.gt_inds.shape)!r}')
+            parts.append(f"gt_inds.shape={tuple(self.gt_inds.shape)!r}")
         if self.max_overlaps is None:
-            parts.append(f'max_overlaps={self.max_overlaps!r}')
+            parts.append(f"max_overlaps={self.max_overlaps!r}")
         else:
-            parts.append('max_overlaps.shape=' f'{tuple(self.max_overlaps.shape)!r}')
+            parts.append("max_overlaps.shape=" f"{tuple(self.max_overlaps.shape)!r}")
         if self.labels is None:
-            parts.append(f'labels={self.labels!r}')
+            parts.append(f"labels={self.labels!r}")
         else:
-            parts.append(f'labels.shape={tuple(self.labels.shape)!r}')
-        return ', '.join(parts)
+            parts.append(f"labels.shape={tuple(self.labels.shape)!r}")
+        return ", ".join(parts)
 
     @classmethod
     def random(cls, **kwargs):
@@ -130,13 +130,13 @@ class AssignResult(util_mixins.NiceRepr):
             >>> self = AssignResult.random()
             >>> print(self.info)
         """
-        rng = kwargs.get('rng', None)
-        num_gts = kwargs.get('num_gts', None)
-        num_preds = kwargs.get('num_preds', None)
-        p_ignore = kwargs.get('p_ignore', 0.3)
-        p_assigned = kwargs.get('p_assigned', 0.7)
-        p_use_label = kwargs.get('p_use_label', 0.5)
-        num_classes = kwargs.get('p_use_label', 3)
+        rng = kwargs.get("rng", None)
+        num_gts = kwargs.get("num_gts", None)
+        num_preds = kwargs.get("num_preds", None)
+        p_ignore = kwargs.get("p_ignore", 0.3)
+        p_assigned = kwargs.get("p_assigned", 0.7)
+        p_use_label = kwargs.get("p_use_label", 0.5)
+        num_classes = kwargs.get("p_use_label", 3)
 
         import numpy as np
 

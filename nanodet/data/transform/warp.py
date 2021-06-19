@@ -137,7 +137,7 @@ def get_resize_matrix(raw_shape, dst_shape, keep_ratio):
 
 def warp_and_resize(meta, warp_kwargs, dst_shape, keep_ratio=True):
     # TODO: background, type
-    raw_img = meta['img']
+    raw_img = meta["img"]
     height = raw_img.shape[0]  # shape(h,w,c)
     width = raw_img.shape[1]
 
@@ -147,26 +147,26 @@ def warp_and_resize(meta, warp_kwargs, dst_shape, keep_ratio=True):
     C[1, 2] = -height / 2
 
     # do not change the order of mat mul
-    if 'perspective' in warp_kwargs and random.randint(0, 1):
-        P = get_perspective_matrix(warp_kwargs['perspective'])
+    if "perspective" in warp_kwargs and random.randint(0, 1):
+        P = get_perspective_matrix(warp_kwargs["perspective"])
         C = P @ C
-    if 'scale' in warp_kwargs and random.randint(0, 1):
-        Scl = get_scale_matrix(warp_kwargs['scale'])
+    if "scale" in warp_kwargs and random.randint(0, 1):
+        Scl = get_scale_matrix(warp_kwargs["scale"])
         C = Scl @ C
-    if 'stretch' in warp_kwargs and random.randint(0, 1):
-        Str = get_stretch_matrix(*warp_kwargs['stretch'])
+    if "stretch" in warp_kwargs and random.randint(0, 1):
+        Str = get_stretch_matrix(*warp_kwargs["stretch"])
         C = Str @ C
-    if 'rotation' in warp_kwargs and random.randint(0, 1):
-        R = get_rotation_matrix(warp_kwargs['rotation'])
+    if "rotation" in warp_kwargs and random.randint(0, 1):
+        R = get_rotation_matrix(warp_kwargs["rotation"])
         C = R @ C
-    if 'shear' in warp_kwargs and random.randint(0, 1):
-        Sh = get_shear_matrix(warp_kwargs['shear'])
+    if "shear" in warp_kwargs and random.randint(0, 1):
+        Sh = get_shear_matrix(warp_kwargs["shear"])
         C = Sh @ C
-    if 'flip' in warp_kwargs:
-        F = get_flip_matrix(warp_kwargs['flip'])
+    if "flip" in warp_kwargs:
+        F = get_flip_matrix(warp_kwargs["flip"])
         C = F @ C
-    if 'translate' in warp_kwargs and random.randint(0, 1):
-        T = get_translate_matrix(warp_kwargs['translate'], width, height)
+    if "translate" in warp_kwargs and random.randint(0, 1):
+        T = get_translate_matrix(warp_kwargs["translate"], width, height)
     else:
         T = get_translate_matrix(0, width, height)
     M = T @ C
@@ -174,14 +174,14 @@ def warp_and_resize(meta, warp_kwargs, dst_shape, keep_ratio=True):
     ResizeM = get_resize_matrix((width, height), dst_shape, keep_ratio)
     M = ResizeM @ M
     img = cv2.warpPerspective(raw_img, M, dsize=tuple(dst_shape))
-    meta['img'] = img
-    meta['warp_matrix'] = M
-    if 'gt_bboxes' in meta:
-        boxes = meta['gt_bboxes']
-        meta['gt_bboxes'] = warp_boxes(boxes, M, dst_shape[0], dst_shape[1])
-    if 'gt_masks' in meta:
-        for i, mask in enumerate(meta['gt_masks']):
-            meta['gt_masks'][i] = cv2.warpPerspective(mask, M, dsize=tuple(dst_shape))
+    meta["img"] = img
+    meta["warp_matrix"] = M
+    if "gt_bboxes" in meta:
+        boxes = meta["gt_bboxes"]
+        meta["gt_bboxes"] = warp_boxes(boxes, M, dst_shape[0], dst_shape[1])
+    if "gt_masks" in meta:
+        for i, mask in enumerate(meta["gt_masks"]):
+            meta["gt_masks"][i] = cv2.warpPerspective(mask, M, dsize=tuple(dst_shape))
 
     # TODO: keypoints
     # if 'gt_keypoints' in meta:

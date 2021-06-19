@@ -20,7 +20,7 @@ from nanodet.model.module.conv import ConvModule
 
 class MLP(nn.Module):
     def __init__(
-        self, in_dim, hidden_dim=None, out_dim=None, drop=0.0, activation='GELU'
+        self, in_dim, hidden_dim=None, out_dim=None, drop=0.0, activation="GELU"
     ):
         super(MLP, self).__init__()
         out_dim = out_dim or in_dim
@@ -56,7 +56,7 @@ class TransformerEncoder(nn.Module):
         num_heads,
         mlp_ratio,
         dropout_ratio=0.0,
-        activation='GELU',
+        activation="GELU",
         kv_bias=False,
     ):
         super(TransformerEncoder, self).__init__()
@@ -104,7 +104,7 @@ class TransformerBlock(nn.Module):
         mlp_ratio=1,
         dropout_ratio=0.0,
         kv_bias=False,
-        activation='GELU',
+        activation="GELU",
     ):
         super(TransformerBlock, self).__init__()
         self.conv = (

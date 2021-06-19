@@ -46,7 +46,7 @@ class Integral(nn.Module):
         super(Integral, self).__init__()
         self.reg_max = reg_max
         self.register_buffer(
-            'project', torch.linspace(0, self.reg_max, self.reg_max + 1)
+            "project", torch.linspace(0, self.reg_max, self.reg_max + 1)
         )
 
     def forward(self, x):
@@ -100,7 +100,7 @@ class GFLHead(nn.Module):
         octave_base_scale=4,
         strides=[8, 16, 32],
         conv_cfg=None,
-        norm_cfg=dict(type='GN', num_groups=32, requires_grad=True),
+        norm_cfg=dict(type="GN", num_groups=32, requires_grad=True),
         reg_max=16,
         **kwargs
     ):
@@ -200,8 +200,8 @@ class GFLHead(nn.Module):
         cls_scores, bbox_preds = preds
         batch_size = cls_scores[0].shape[0]
         device = cls_scores[0].device
-        gt_bboxes = gt_meta['gt_bboxes']
-        gt_labels = gt_meta['gt_labels']
+        gt_bboxes = gt_meta["gt_bboxes"]
+        gt_labels = gt_meta["gt_labels"]
         gt_bboxes_ignore = None
 
         featmap_sizes = [featmap.size()[-2:] for featmap in cls_scores]
@@ -512,24 +512,24 @@ class GFLHead(nn.Module):
         result_list = self.get_bboxes(cls_scores, bbox_preds, meta)
         det_results = {}
         warp_matrixes = (
-            meta['warp_matrix']
-            if isinstance(meta['warp_matrix'], list)
-            else [meta['warp_matrix']]
+            meta["warp_matrix"]
+            if isinstance(meta["warp_matrix"], list)
+            else [meta["warp_matrix"]]
         )
         img_heights = (
-            meta['img_info']['height'].cpu().numpy()
-            if isinstance(meta['img_info']['height'], torch.Tensor)
-            else [meta['img_info']['height']]
+            meta["img_info"]["height"].cpu().numpy()
+            if isinstance(meta["img_info"]["height"], torch.Tensor)
+            else [meta["img_info"]["height"]]
         )
         img_widths = (
-            meta['img_info']['width'].cpu().numpy()
-            if isinstance(meta['img_info']['width'], torch.Tensor)
-            else [meta['img_info']['width']]
+            meta["img_info"]["width"].cpu().numpy()
+            if isinstance(meta["img_info"]["width"], torch.Tensor)
+            else [meta["img_info"]["width"]]
         )
         img_ids = (
-            meta['img_info']['id'].cpu().numpy()
-            if isinstance(meta['img_info']['id'], torch.Tensor)
-            else [meta['img_info']['id']]
+            meta["img_info"]["id"].cpu().numpy()
+            if isinstance(meta["img_info"]["id"], torch.Tensor)
+            else [meta["img_info"]["id"]]
         )
 
         for result, img_width, img_height, img_id, warp_matrix in zip(
@@ -559,7 +559,7 @@ class GFLHead(nn.Module):
     ):
         result = overlay_bbox_cv(img, dets, class_names, score_thresh=score_thres)
         if show:
-            cv2.imshow('det', result)
+            cv2.imshow("det", result)
         return result
 
     def get_bboxes(self, cls_scores, bbox_preds, img_metas, rescale=False):
@@ -568,7 +568,7 @@ class GFLHead(nn.Module):
         num_levels = len(cls_scores)
         device = cls_scores[0].device
 
-        input_height, input_width = img_metas['img'].shape[2:]
+        input_height, input_width = img_metas["img"].shape[2:]
         input_shape = [input_height, input_width]
 
         result_list = []
@@ -642,7 +642,7 @@ class GFLHead(nn.Module):
             mlvl_bboxes,
             mlvl_scores,
             score_thr=0.05,
-            nms_cfg=dict(type='nms', iou_threshold=0.6),
+            nms_cfg=dict(type="nms", iou_threshold=0.6),
             max_num=100,
         )
         return det_bboxes, det_labels

@@ -20,9 +20,9 @@ from ..module.activation import act_layers
 
 def get_url(width_mult=1.0):
     if width_mult == 1.0:
-        return 'https://github.com/huawei-noah/ghostnet/raw/master/pytorch/models/state_dict_93.98.pth'  # noqa E501
+        return "https://github.com/huawei-noah/ghostnet/raw/master/pytorch/models/state_dict_93.98.pth"  # noqa E501
     else:
-        logging.info('GhostNet only has 1.0 pretrain model. ')
+        logging.info("GhostNet only has 1.0 pretrain model. ")
         return None
 
 
@@ -55,7 +55,7 @@ class SqueezeExcite(nn.Module):
         in_chs,
         se_ratio=0.25,
         reduced_base_chs=None,
-        act='ReLU',
+        act="ReLU",
         gate_fn=hard_sigmoid,
         divisor=4,
         **_
@@ -78,7 +78,7 @@ class SqueezeExcite(nn.Module):
 
 
 class ConvBnAct(nn.Module):
-    def __init__(self, in_chs, out_chs, kernel_size, stride=1, act='ReLU'):
+    def __init__(self, in_chs, out_chs, kernel_size, stride=1, act="ReLU"):
         super(ConvBnAct, self).__init__()
         self.conv = nn.Conv2d(
             in_chs, out_chs, kernel_size, stride, kernel_size // 2, bias=False
@@ -95,7 +95,7 @@ class ConvBnAct(nn.Module):
 
 class GhostModule(nn.Module):
     def __init__(
-        self, inp, oup, kernel_size=1, ratio=2, dw_size=3, stride=1, act='ReLU'
+        self, inp, oup, kernel_size=1, ratio=2, dw_size=3, stride=1, act="ReLU"
     ):
         super(GhostModule, self).__init__()
         self.oup = oup
@@ -141,7 +141,7 @@ class GhostBottleneck(nn.Module):
         out_chs,
         dw_kernel_size=3,
         stride=1,
-        act='ReLU',
+        act="ReLU",
         se_ratio=0.0,
     ):
         super(GhostBottleneck, self).__init__()
@@ -215,7 +215,7 @@ class GhostBottleneck(nn.Module):
 
 
 class GhostNet(nn.Module):
-    def __init__(self, width_mult=1.0, out_stages=(4, 6, 9), act='ReLU', pretrain=True):
+    def __init__(self, width_mult=1.0, out_stages=(4, 6, 9), act="ReLU", pretrain=True):
         super(GhostNet, self).__init__()
         self.width_mult = width_mult
         self.out_stages = out_stages
@@ -300,10 +300,10 @@ class GhostNet(nn.Module):
         return tuple(output)
 
     def _initialize_weights(self, pretrain=True):
-        print('init weights...')
+        print("init weights...")
         for name, m in self.named_modules():
             if isinstance(m, nn.Conv2d):
-                if 'conv_stem' in name:
+                if "conv_stem" in name:
                     nn.init.normal_(m.weight, 0, 0.01)
                 else:
                     nn.init.normal_(m.weight, 0, 1.0 / m.weight.shape[1])

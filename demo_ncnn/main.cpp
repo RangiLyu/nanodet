@@ -195,7 +195,7 @@ void draw_bboxes(const cv::Mat& bgr, const std::vector<BoxInfo>& bboxes, object_
         //fprintf(stderr, "%d = %.5f at %.2f %.2f %.2f %.2f\n", bbox.label, bbox.score,
         //    bbox.x1, bbox.y1, bbox.x2, bbox.y2);
 
-        cv::rectangle(image, cv::Rect(cv::Point((bbox.x1 - effect_roi.x) * width_ratio, (bbox.y1 - effect_roi.y) * height_ratio), 
+        cv::rectangle(image, cv::Rect(cv::Point((bbox.x1 - effect_roi.x) * width_ratio, (bbox.y1 - effect_roi.y) * height_ratio),
                                       cv::Point((bbox.x2 - effect_roi.x) * width_ratio, (bbox.y2 - effect_roi.y) * height_ratio)), color);
 
         char text[256];
@@ -304,12 +304,12 @@ int benchmark(NanoDet& detector)
             ncnn::Mat dis_pred;
             ncnn::Mat cls_pred;
             ex.extract(head_info.dis_layer.c_str(), dis_pred);
-            ex.extract(head_info.cls_layer.c_str(), cls_pred); 
+            ex.extract(head_info.cls_layer.c_str(), cls_pred);
         }
         double end = ncnn::get_current_time();
 
         double time = end - start;
-        if (i >= warm_up) 
+        if (i >= warm_up)
         {
             time_min = (std::min)(time_min, time);
             time_max = (std::max)(time_max, time);
@@ -358,4 +358,3 @@ int main(int argc, char** argv)
         }
     }
 }
-

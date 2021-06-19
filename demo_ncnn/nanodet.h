@@ -16,7 +16,7 @@ typedef struct HeadInfo
     int stride;
 };
 
-typedef struct BoxInfo 
+typedef struct BoxInfo
 {
     float x1;
     float y1;

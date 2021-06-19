@@ -44,8 +44,8 @@ Model          |Resolution|COCO mAP |Latency(ARM 4 Threads) | FLOPS      |   Par
 :-------------:|:--------:|:-------:|:--------------------:|:----------:|:---------:|:-------:
 NanoDet-m      | 320*320 |   20.6   | **10.23ms**          | **0.72G**  | **0.95M** | **1.8MB(FP16)** &#124; **980KB(INT8)**
 NanoDet-m      | 416*416 |   23.5   | 16.44ms              | 1.2G       | **0.95M** | **1.8MB(FP16)** &#124; **980KB(INT8)**
-NanoDet-m-1.5x | 320*320 |   23.5   | 13.53ms              | 1.44G      | 2.08M     |   3.9MB(FP16) &#124; 2MB(INT8) 
-NanoDet-m-1.5x | 416*416 | **26.8** | 21.53ms              | 2.42G      | 2.08M     |   3.9MB(FP16) &#124; 2MB(INT8) 
+NanoDet-m-1.5x | 320*320 |   23.5   | 13.53ms              | 1.44G      | 2.08M     |   3.9MB(FP16) &#124; 2MB(INT8)
+NanoDet-m-1.5x | 416*416 | **26.8** | 21.53ms              | 2.42G      | 2.08M     |   3.9MB(FP16) &#124; 2MB(INT8)
 NanoDet-g      | 416*416 |   22.9   | Not Designed For ARM | 4.2G       | 3.81M     |   7.7MB(FP16) &#124; 3.6MB(INT8)
 YoloV3-Tiny    | 416*416 |   16.6   | 37.6ms               | 5.62G      | 8.86M     |   33.7MB
 YoloV4-Tiny    | 416*416 |   21.7   | 32.81ms              | 6.96G      | 6.06M     |   23.0MB
@@ -222,15 +222,15 @@ NanoDet-RepVGG        | RepVGG-A0          | 416*416  |  27.8  | 11.3G | 6.75M |
 3. **Start training**
 
    NanoDet is now using [pytorch lightning](https://github.com/PyTorchLightning/pytorch-lightning) for training.
-   
+
    For both single-GPU or multiple-GPUs, run:
-   
+
    ```shell script
    python tools/train.py CONFIG_FILE_PATH
    ```
-   
+
    For **Windows users**, if you have problems with the new lightning trainer, try to use tools/deprecated/train.py
-   
+
    <details>
    <summary>follow this...</summary>
 
@@ -245,7 +245,7 @@ NanoDet-RepVGG        | RepVGG-A0          | 416*416  |  27.8  | 11.3G | 6.75M |
     ```shell script
     python -m torch.distributed.launch --nproc_per_node=GPU_NUM --master_port 29501 tools/deprecated/train.py CONFIG_FILE_PATH
     ```
-   
+
    </details>
 
 

@@ -49,7 +49,7 @@ fpn:
 
 NanoDet using modified [PAN](http://arxiv.org/abs/1803.01534) (replace downsample convs with interpolation to reduce amount of computations).
 
-`in_channels` : a list of feature map channels extracted from backbone. 
+`in_channels` : a list of feature map channels extracted from backbone.
 
 `out_channels` : out put feature map channel.
 
@@ -162,7 +162,7 @@ Set training schedule.
 
 `load_model`: path to trained weight
 
-`optimizer`: Support all optimizer provided by pytorch. 
+`optimizer`: Support all optimizer provided by pytorch.
 
 You should adjust the lr with batch_size. Following linear scaling rule in paper *[Accurate, Large Minibatch SGD: Training ImageNet in 1 Hour](https://research.fb.com/wp-content/uploads/2017/06/imagenet1kin1h5.pdf)*
 

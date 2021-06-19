@@ -69,4 +69,3 @@ YoloV4::decode_infer(ncnn::Mat &data, const yolocv::YoloSize &frame_size, int ne
     }
     return result;
 }
-

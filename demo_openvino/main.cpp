@@ -193,7 +193,7 @@ void draw_bboxes(const cv::Mat& bgr, const std::vector<BoxInfo>& bboxes, object_
         //fprintf(stderr, "%d = %.5f at %.2f %.2f %.2f %.2f\n", bbox.label, bbox.score,
         //    bbox.x1, bbox.y1, bbox.x2, bbox.y2);
 
-        cv::rectangle(image, cv::Rect(cv::Point((bbox.x1 - effect_roi.x) * width_ratio, (bbox.y1 - effect_roi.y) * height_ratio), 
+        cv::rectangle(image, cv::Rect(cv::Point((bbox.x1 - effect_roi.x) * width_ratio, (bbox.y1 - effect_roi.y) * height_ratio),
                                       cv::Point((bbox.x2 - effect_roi.x) * width_ratio, (bbox.y2 - effect_roi.y) * height_ratio)), color);
 
         char text[256];
@@ -291,7 +291,7 @@ int benchmark(NanoDet& detector)
     double time_max = -DBL_MAX;
     double time_avg = 0;
     cv::Mat image(320, 320, CV_8UC3, cv::Scalar(1, 1, 1));
-    
+
     for (int i = 0; i < warm_up + loop_num; i++)
     {
         auto start = std::chrono::steady_clock::now();
@@ -299,7 +299,7 @@ int benchmark(NanoDet& detector)
         results = detector.detect(image, 0.4, 0.5);
         auto end = std::chrono::steady_clock::now();
         double time = std::chrono::duration<double, std::milli>(end - start).count();
-        if (i >= warm_up) 
+        if (i >= warm_up)
         {
             time_min = (std::min)(time_min, time);
             time_max = (std::max)(time_max, time);

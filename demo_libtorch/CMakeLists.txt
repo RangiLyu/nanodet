@@ -16,9 +16,9 @@ include_directories(
 add_executable(nanodet_demo main.cpp nanodet_libtorch.cpp)
 
 target_link_libraries(
-    nanodet_demo 
+    nanodet_demo
     ${TORCH_LIBRARIES}
-    ${OpenCV_LIBS} 
+    ${OpenCV_LIBS}
 )
 
 if (MSVC)

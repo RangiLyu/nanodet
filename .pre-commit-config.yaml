@@ -11,16 +11,16 @@ repos:
       - id: name-tests-test
       - id: requirements-txt-fixer
 
-  - repo: https://github.com/psf/black
-    rev: 21.6b0
-    hooks:
-      - id: black
-
   - repo: https://github.com/pycqa/isort
     rev: 5.8.0
     hooks:
       - id: isort
         args: ["--profile", "black"]
+
+  - repo: https://github.com/psf/black
+    rev: 21.6b0
+    hooks:
+      - id: black
 
   - repo: https://gitlab.com/pycqa/flake8
     rev: 3.9.2

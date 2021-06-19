@@ -3,7 +3,7 @@
 #include "nanodet_libtorch.h"
 
 
-inline float fast_exp(float x) 
+inline float fast_exp(float x)
 {
     union {
         uint32_t i;
@@ -13,7 +13,7 @@ inline float fast_exp(float x)
     return v.f;
 }
 
-inline float sigmoid(float x) 
+inline float sigmoid(float x)
 {
     return 1.0f / (1.0f + fast_exp(-x));
 }
@@ -24,13 +24,13 @@ int activation_function_softmax(const _Tp* src, _Tp* dst, int length)
     const _Tp alpha = *std::max_element(src, src + length);
     _Tp denominator{ 0 };
 
-    for (int i = 0; i < length; ++i) 
+    for (int i = 0; i < length; ++i)
     {
         dst[i] = fast_exp(src[i] - alpha);
         denominator += dst[i];
     }
 
-    for (int i = 0; i < length; ++i) 
+    for (int i = 0; i < length; ++i)
     {
         dst[i] /= denominator;
     }
@@ -85,7 +85,7 @@ std::vector<BoxInfo> NanoDet::detect(cv::Mat image, float score_threshold, float
     for (int i = 0; i < (int)results.size(); i++)
     {
         this->nms(results[i], nms_threshold);
-        
+
         for (auto box : results[i])
         {
             dets.push_back(box);
@@ -161,14 +161,14 @@ void NanoDet::nms(std::vector<BoxInfo>& input_boxes, float NMS_THRESH)
 {
     std::sort(input_boxes.begin(), input_boxes.end(), [](BoxInfo a, BoxInfo b) { return a.score > b.score; });
     std::vector<float> vArea(input_boxes.size());
-    for (int i = 0; i < int(input_boxes.size()); ++i) 
+    for (int i = 0; i < int(input_boxes.size()); ++i)
     {
         vArea[i] = (input_boxes.at(i).x2 - input_boxes.at(i).x1 + 1)
             * (input_boxes.at(i).y2 - input_boxes.at(i).y1 + 1);
     }
-    for (int i = 0; i < int(input_boxes.size()); ++i) 
+    for (int i = 0; i < int(input_boxes.size()); ++i)
     {
-        for (int j = i + 1; j < int(input_boxes.size());) 
+        for (int j = i + 1; j < int(input_boxes.size());)
         {
             float xx1 = (std::max)(input_boxes[i].x1, input_boxes[j].x1);
             float yy1 = (std::max)(input_boxes[i].y1, input_boxes[j].y1);
@@ -178,12 +178,12 @@ void NanoDet::nms(std::vector<BoxInfo>& input_boxes, float NMS_THRESH)
             float h = (std::max)(float(0), yy2 - yy1 + 1);
             float inter = w * h;
             float ovr = inter / (vArea[i] + vArea[j] - inter);
-            if (ovr >= NMS_THRESH) 
+            if (ovr >= NMS_THRESH)
             {
                 input_boxes.erase(input_boxes.begin() + j);
                 vArea.erase(vArea.begin() + j);
             }
-            else 
+            else
             {
                 j++;
             }

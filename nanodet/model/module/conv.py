@@ -250,14 +250,15 @@ class RepVGGConvModule(nn.Module):
         self,
         in_channels,
         out_channels,
-        kernel_size,
+        kernel_size=3,
         stride=1,
-        padding=0,
+        padding=1,
         dilation=1,
         groups=1,
         activation="ReLU",
         padding_mode="zeros",
         deploy=False,
+        **kwargs
     ):
         super(RepVGGConvModule, self).__init__()
         assert activation is None or isinstance(activation, str)

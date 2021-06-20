@@ -44,13 +44,6 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.6
-      - name: Cache dependencies
-        uses: actions/cache@v2
-        with:
-          path: |
-            ${{ env.pythonLocation }}/lib/python3.6/site-packages
-            ~/.torch
-          key: ${{ runner.os }}-torch${{ matrix.torch }}-${{ hashFiles('setup.py') }}-20210620
       - name: Install dependencies
         run: |
           python -m pip install -U pip
@@ -101,13 +94,6 @@ jobs:
           export CUDA_HOME=/usr/local/cuda-${CUDA_SHORT}
           export LD_LIBRARY_PATH=${CUDA_HOME}/lib64:${CUDA_HOME}/include:${LD_LIBRARY_PATH}
           export PATH=${CUDA_HOME}/bin:${PATH}
-      - name: Cache dependencies
-        uses: actions/cache@v2
-        with:
-          path: |
-            ${{ env.pythonLocation }}/lib/python3.6/site-packages
-            ~/.torch
-          key: ${{ runner.os }}-torch${{ matrix.torch }}-${{ hashFiles('setup.py') }}-20210620
       - name: Install dependencies
         run: |
           python -m pip install -U pip

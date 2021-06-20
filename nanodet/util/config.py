@@ -6,7 +6,7 @@ cfg.save_dir = "./"
 cfg.model = CfgNode()
 cfg.model.arch = CfgNode(new_allowed=True)
 cfg.model.arch.backbone = CfgNode(new_allowed=True)
-cfg.model.arch.neck = CfgNode(new_allowed=True)
+cfg.model.arch.fpn = CfgNode(new_allowed=True)
 cfg.model.arch.head = CfgNode(new_allowed=True)
 
 # DATASET related params

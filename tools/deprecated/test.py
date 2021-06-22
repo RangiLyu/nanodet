@@ -44,7 +44,7 @@ def main(args):
     val_dataset = build_dataset(cfg.data.val, args.task)
     val_dataloader = torch.utils.data.DataLoader(val_dataset, batch_size=cfg.device.batchsize_per_gpu,
                                                  shuffle=False, num_workers=cfg.device.workers_per_gpu,
-                                                 pin_memory=True, collate_fn=collate_function, drop_last=True)
+                                                 pin_memory=True, collate_fn=collate_function, drop_last=False)
     trainer = build_trainer(local_rank, cfg, model, logger)
     cfg.schedule.update({'load_model': args.model})
     trainer.load_model(cfg)

@@ -161,6 +161,8 @@ class EfficientNetLite(nn.Module):
         self, model_name, out_stages=(2, 4, 6), activation="ReLU6", pretrain=True
     ):
         super(EfficientNetLite, self).__init__()
+        assert set(out_stages).issubset({i for i in range(0, 7)})
+        assert model_name in efficientnet_lite_params
 
         self.model_name = model_name
         # Batch norm parameters
@@ -287,14 +289,3 @@ class EfficientNetLite(nn.Module):
     def load_pretrain(self, path):
         state_dict = torch.load(path)
         self.load_state_dict(state_dict, strict=True)
-
-
-if __name__ == "__main__":
-    model = EfficientNetLite(
-        model_name="efficientnet_lite0",
-    )
-    print(model)
-    test_data = torch.rand(5, 3, 320, 320)
-    test_outputs = model(test_data)
-    for out in test_outputs:
-        print(out.size())

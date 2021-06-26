@@ -112,6 +112,9 @@ class ShuffleNetV2(nn.Module):
         pretrain=True,
     ):
         super(ShuffleNetV2, self).__init__()
+        # out_stages can only be a subset of (2, 3, 4)
+        assert set(out_stages).issubset((2, 3, 4))
+
         print("model size is ", model_size)
 
         self.stage_repeats = [4, 8, 4]
@@ -211,14 +214,3 @@ class ShuffleNetV2(nn.Module):
                 pretrained_state_dict = model_zoo.load_url(url)
                 print("=> loading pretrained model {}".format(url))
                 self.load_state_dict(pretrained_state_dict, strict=False)
-
-
-if __name__ == "__main__":
-    model = ShuffleNetV2(
-        model_size="1.0x",
-    )
-    print(model)
-    test_data = torch.rand(5, 3, 320, 320)
-    test_outputs = model(test_data)
-    for out in test_outputs:
-        print(out.size())

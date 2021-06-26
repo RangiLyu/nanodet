@@ -161,7 +161,7 @@ class EfficientNetLite(nn.Module):
         self, model_name, out_stages=(2, 4, 6), activation="ReLU6", pretrain=True
     ):
         super(EfficientNetLite, self).__init__()
-        assert set(out_stages).issubset({i for i in range(0, 7)})
+        assert set(out_stages).issubset(i for i in range(0, 7))
         assert model_name in efficientnet_lite_params
 
         self.model_name = model_name

@@ -18,5 +18,12 @@ def test_iou_type_loss_zeros_weight(loss_class):
     target = torch.rand((10, 4))
     weight = torch.zeros(10)
 
+    with pytest.raises(AssertionError):
+        loss_class()(pred, target, reduction_override="2333")
+
     loss = loss_class()(pred, target, weight)
     assert loss == 0.0
+
+    weight = torch.rand(10)
+    loss = loss_class()(pred, target, weight)
+    assert loss != 0.0

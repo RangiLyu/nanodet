@@ -199,15 +199,6 @@ class ShuffleNetV2(nn.Module):
                 if m.bias is not None:
                     nn.init.constant_(m.bias, 0.0001)
                 nn.init.constant_(m.running_mean, 0)
-            elif isinstance(m, nn.BatchNorm1d):
-                nn.init.constant_(m.weight, 1)
-                if m.bias is not None:
-                    nn.init.constant_(m.bias, 0.0001)
-                nn.init.constant_(m.running_mean, 0)
-            elif isinstance(m, nn.Linear):
-                nn.init.normal_(m.weight, 0, 0.01)
-                if m.bias is not None:
-                    nn.init.constant_(m.bias, 0)
         if pretrain:
             url = model_urls["shufflenetv2_{}".format(self.model_size)]
             if url is not None:

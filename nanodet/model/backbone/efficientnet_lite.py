@@ -275,10 +275,6 @@ class EfficientNetLite(nn.Module):
             elif isinstance(m, nn.BatchNorm2d):
                 m.weight.data.fill_(1)
                 m.bias.data.zero_()
-            elif isinstance(m, nn.Linear):
-                n = m.weight.size(1)
-                m.weight.data.normal_(0, 1.0 / float(n))
-                m.bias.data.zero_()
         if pretrain:
             url = model_urls[self.model_name]
             if url is not None:

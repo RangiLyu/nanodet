@@ -79,8 +79,6 @@ def test_efficientnet_lite():
         pretrain=False,
     )
     output = model(input)
-    for o in output:
-        print(o.shape)
     assert output[0].shape == (1, 24, 32, 32)
     assert output[1].shape == (1, 32, 16, 16)
     assert output[2].shape == (1, 56, 8, 8)

@@ -55,7 +55,7 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
         load_mosaic=False,
         mode="train",
     ):
-
+        assert mode in ["train", "val", "test"]
         self.img_path = img_path
         self.ann_path = ann_path
         self.input_size = input_size

@@ -84,7 +84,7 @@ class CocoDataset(BaseDataset):
             if ann["category_id"] not in self.cat_ids:
                 continue
             bbox = [x1, y1, x1 + w, y1 + h]
-            if ann["iscrowd"]:
+            if ann.get("iscrowd", False):
                 gt_bboxes_ignore.append(bbox)
             else:
                 gt_bboxes.append(bbox)

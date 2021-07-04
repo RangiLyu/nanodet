@@ -4,7 +4,7 @@ import torch
 from nanodet.model.backbone import CustomCspNet, build_backbone
 
 
-def test_mobilenetv2():
+def test_custom_csp():
     with pytest.raises(AssertionError):
         cfg = dict(
             name="CustomCspNet", net_cfg=[["Conv", 3, 32, 3, 2]], out_stages=(8, 9)

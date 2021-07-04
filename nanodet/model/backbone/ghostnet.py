@@ -10,6 +10,7 @@ and https://github.com/rwightman/pytorch-image-models
 """
 import logging
 import math
+import warnings
 
 import torch
 import torch.nn as nn
@@ -20,7 +21,7 @@ from ..module.activation import act_layers
 
 def get_url(width_mult=1.0):
     if width_mult == 1.0:
-        return "https://github.com/huawei-noah/ghostnet/raw/master/pytorch/models/state_dict_93.98.pth"  # noqa E501
+        return "https://raw.githubusercontent.com/huawei-noah/CV-Backbones/master/ghostnet_pytorch/models/state_dict_73.98.pth"  # noqa E501
     else:
         logging.info("GhostNet only has 1.0 pretrain model. ")
         return None
@@ -55,7 +56,7 @@ class SqueezeExcite(nn.Module):
         in_chs,
         se_ratio=0.25,
         reduced_base_chs=None,
-        act="ReLU",
+        activation="ReLU",
         gate_fn=hard_sigmoid,
         divisor=4,
         **_
@@ -65,7 +66,7 @@ class SqueezeExcite(nn.Module):
         reduced_chs = _make_divisible((reduced_base_chs or in_chs) * se_ratio, divisor)
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
         self.conv_reduce = nn.Conv2d(in_chs, reduced_chs, 1, bias=True)
-        self.act1 = act_layers(act)
+        self.act1 = act_layers(activation)
         self.conv_expand = nn.Conv2d(reduced_chs, in_chs, 1, bias=True)
 
     def forward(self, x):
@@ -78,13 +79,13 @@ class SqueezeExcite(nn.Module):
 
 
 class ConvBnAct(nn.Module):
-    def __init__(self, in_chs, out_chs, kernel_size, stride=1, act="ReLU"):
+    def __init__(self, in_chs, out_chs, kernel_size, stride=1, activation="ReLU"):
         super(ConvBnAct, self).__init__()
         self.conv = nn.Conv2d(
             in_chs, out_chs, kernel_size, stride, kernel_size // 2, bias=False
         )
         self.bn1 = nn.BatchNorm2d(out_chs)
-        self.act1 = act_layers(act)
+        self.act1 = act_layers(activation)
 
     def forward(self, x):
         x = self.conv(x)
@@ -95,7 +96,7 @@ class ConvBnAct(nn.Module):
 
 class GhostModule(nn.Module):
     def __init__(
-        self, inp, oup, kernel_size=1, ratio=2, dw_size=3, stride=1, act="ReLU"
+        self, inp, oup, kernel_size=1, ratio=2, dw_size=3, stride=1, activation="ReLU"
     ):
         super(GhostModule, self).__init__()
         self.oup = oup
@@ -107,7 +108,7 @@ class GhostModule(nn.Module):
                 inp, init_channels, kernel_size, stride, kernel_size // 2, bias=False
             ),
             nn.BatchNorm2d(init_channels),
-            act_layers(act) if act else nn.Sequential(),
+            act_layers(activation) if activation else nn.Sequential(),
         )
 
         self.cheap_operation = nn.Sequential(
@@ -121,7 +122,7 @@ class GhostModule(nn.Module):
                 bias=False,
             ),
             nn.BatchNorm2d(new_channels),
-            act_layers(act) if act else nn.Sequential(),
+            act_layers(activation) if activation else nn.Sequential(),
         )
 
     def forward(self, x):
@@ -141,7 +142,7 @@ class GhostBottleneck(nn.Module):
         out_chs,
         dw_kernel_size=3,
         stride=1,
-        act="ReLU",
+        activation="ReLU",
         se_ratio=0.0,
     ):
         super(GhostBottleneck, self).__init__()
@@ -149,7 +150,7 @@ class GhostBottleneck(nn.Module):
         self.stride = stride
 
         # Point-wise expansion
-        self.ghost1 = GhostModule(in_chs, mid_chs, act=act)
+        self.ghost1 = GhostModule(in_chs, mid_chs, activation=activation)
 
         # Depth-wise convolution
         if self.stride > 1:
@@ -171,7 +172,7 @@ class GhostBottleneck(nn.Module):
             self.se = None
 
         # Point-wise linear projection
-        self.ghost2 = GhostModule(mid_chs, out_chs, act=None)
+        self.ghost2 = GhostModule(mid_chs, out_chs, activation=None)
 
         # shortcut
         if in_chs == out_chs and self.stride == 1:
@@ -215,8 +216,16 @@ class GhostBottleneck(nn.Module):
 
 
 class GhostNet(nn.Module):
-    def __init__(self, width_mult=1.0, out_stages=(4, 6, 9), act="ReLU", pretrain=True):
+    def __init__(
+        self,
+        width_mult=1.0,
+        out_stages=(4, 6, 9),
+        activation="ReLU",
+        pretrain=True,
+        act=None,
+    ):
         super(GhostNet, self).__init__()
+        assert set(out_stages).issubset(i for i in range(10))
         self.width_mult = width_mult
         self.out_stages = out_stages
         # setting of inverted residual blocks
@@ -250,11 +259,18 @@ class GhostNet(nn.Module):
         ]
         #  ------conv+bn+act----------# 9  1/32
 
+        self.activation = activation
+        if act is not None:
+            warnings.warn(
+                "Warning! act argument has been deprecated, " "use activation instead!"
+            )
+            self.activation = act
+
         # building first layer
         output_channel = _make_divisible(16 * width_mult, 4)
         self.conv_stem = nn.Conv2d(3, output_channel, 3, 2, 1, bias=False)
         self.bn1 = nn.BatchNorm2d(output_channel)
-        self.act1 = act_layers(act)
+        self.act1 = act_layers(self.activation)
         input_channel = output_channel
 
         # building inverted residual blocks
@@ -272,7 +288,7 @@ class GhostNet(nn.Module):
                         output_channel,
                         k,
                         s,
-                        act=act,
+                        activation=self.activation,
                         se_ratio=se_ratio,
                     )
                 )
@@ -281,7 +297,9 @@ class GhostNet(nn.Module):
 
         output_channel = _make_divisible(exp_size * width_mult, 4)
         stages.append(
-            nn.Sequential(ConvBnAct(input_channel, output_channel, 1, act=act))
+            nn.Sequential(
+                ConvBnAct(input_channel, output_channel, 1, activation=self.activation)
+            )
         )  # 9
 
         self.blocks = nn.Sequential(*stages)

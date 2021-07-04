@@ -41,8 +41,10 @@ class DummyRunner:
                 "id": torch.from_numpy(np.array([0, 1])),
             },
             "gt_bboxes": [
-                np.array([[1.0, 2.0, 3.0, 4.0]]),
-                np.array([[1.0, 2.0, 3.0, 4.0], [1.0, 2.0, 3.0, 4.0]]),
+                np.array([[1.0, 2.0, 3.0, 4.0]], dtype=np.float32),
+                np.array(
+                    [[1.0, 2.0, 3.0, 4.0], [1.0, 2.0, 3.0, 4.0]], dtype=np.float32
+                ),
             ],
             "gt_labels": [np.array([1]), np.array([1, 2])],
             "warp_matrix": [np.eye(3), np.eye(3)],

@@ -40,12 +40,15 @@ class DummyEvaluator:
 
 
 def test_trainer():
+    tmp_dir = tempfile.TemporaryDirectory()
+
     load_config(cfg, "./config/nanodet-m.yml")
     cfg.defrost()
     cfg.model.arch.backbone.pretrain = False
     cfg.schedule.total_epochs = 4
     cfg.schedule.val_intervals = 1
     cfg.schedule.warmup.steps = 2
+    cfg.save_dir = tmp_dir.name
     dummy_dataset = DummyDataset()
     train_loader = DataLoader(
         dummy_dataset,
@@ -66,7 +69,6 @@ def test_trainer():
     )
 
     model = build_model(cfg.model)
-    tmp_dir = tempfile.TemporaryDirectory()
     logger = Logger(-1, tmp_dir.name)
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 

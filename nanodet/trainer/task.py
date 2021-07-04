@@ -56,7 +56,8 @@ class TrainingTask(LightningModule):
         return results
 
     def on_train_start(self) -> None:
-        self.lr_scheduler.last_epoch = self.current_epoch - 1
+        if self.current_epoch > 0:
+            self.lr_scheduler.last_epoch = self.current_epoch - 1
 
     def training_step(self, batch, batch_idx):
         preds, loss, loss_states = self.model.forward_train(batch)
@@ -161,7 +162,7 @@ class TrainingTask(LightningModule):
         results = {}
         for res in validation_step_outputs:
             results.update(res)
-        all_results = gather_results(results)
+        all_results = gather_results(results) if self.trainer.use_ddp else results
         if all_results:
             eval_results = self.evaluator.evaluate(
                 all_results, self.cfg.save_dir, rank=self.local_rank
@@ -211,7 +212,7 @@ class TrainingTask(LightningModule):
         results = {}
         for res in test_step_outputs:
             results.update(res)
-        all_results = gather_results(results)
+        all_results = gather_results(results) if self.trainer.use_ddp else results
         if all_results:
             res_json = self.evaluator.results2json(all_results)
             json_path = os.path.join(self.cfg.save_dir, "results.json")

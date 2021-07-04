@@ -114,7 +114,7 @@ class CustomCspNet(nn.Module):
     ):
         super(CustomCspNet, self).__init__()
         assert isinstance(net_cfg, list)
-        assert set(out_stages).issubset(i for i in range(len(out_stages)))
+        assert set(out_stages).issubset(i for i in range(len(net_cfg)))
         self.out_stages = out_stages
         self.activation = activation
         self.stages = nn.ModuleList()

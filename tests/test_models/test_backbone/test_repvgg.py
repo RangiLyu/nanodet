@@ -5,7 +5,7 @@ from nanodet.model.backbone import RepVGG, build_backbone
 from nanodet.model.backbone.repvgg import repvgg_model_convert
 
 
-def test_resnet():
+def test_repvgg():
     with pytest.raises(AssertionError):
         cfg = dict(name="RepVGG", arch="A3")
         build_backbone(cfg)

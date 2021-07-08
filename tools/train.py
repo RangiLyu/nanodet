@@ -68,13 +68,30 @@ def main(args):
 
     logger.log('Creating model...')
     task = TrainingTask(cfg, evaluator)
-
     if 'load_model' in cfg.schedule:
         ckpt = torch.load(cfg.schedule.load_model)
         if 'pytorch-lightning_version' not in ckpt:
             warnings.warn('Warning! Old .pth checkpoint is deprecated. '
                           'Convert the checkpoint with tools/convert_old_checkpoint.py ')
             ckpt = convert_old_model(ckpt)
+
+        #Check that loaded model has the same number of strides as the new model
+        strides_in_ckpt = len([key for key in ckpt['state_dict'].keys() if 'model.head.gfl_cls' in str(key) and 'weight' in str(key)])
+        if strides_in_ckpt != len(cfg.model.arch.head.strides):
+            raise ValueError('cfg.model.arch.head.strides must equal strides of loaded ckpt at cfg.schedule.load_model'
+                         ' but got {} and {}'.format(len(cfg.model.arch.head.strides), strides_in_ckpt))
+                         
+        #Check that loaded model has the same shaped head as the new model                         
+        for iter,_ in enumerate(cfg.model.arch.head.strides):
+            if ckpt['state_dict']['model.head.gfl_cls.'+str(iter)+'.weight'].shape[0] != task.model.head.gfl_cls[iter].out_channels:  
+                logger.log('Skip loading parameter head.gfl_cls.'+str(iter)+'.weight, required {}, loaded {}'\
+                  .format(task.model.head.gfl_cls[iter], ckpt['state_dict']['model.head.gfl_cls.'+str(iter)+'.weight'].shape))
+                logger.log('Skip loading parameter head.gfl_cls.'+str(iter)+'.bias, required {}, loaded {}'\
+                  .format(task.model.head.gfl_cls[iter].out_channels, ckpt['state_dict']['model.head.gfl_cls.'+str(iter)+'.bias'].shape))
+                del ckpt['state_dict']['model.head.gfl_cls.'+str(iter)+'.weight']
+                del ckpt['state_dict']['model.head.gfl_cls.'+str(iter)+'.bias']                
+                
+
         task.load_state_dict(ckpt['state_dict'], strict=False)
         logger.log('Loaded model weight from {}'.format(cfg.schedule.load_model))
 

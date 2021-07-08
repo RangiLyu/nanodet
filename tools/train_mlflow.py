@@ -19,6 +19,10 @@ import numpy as np
 import warnings
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ProgressBar
+from pytorch_lightning.loggers import MLFlowLogger
+from mlflow.tracking import MlflowClient
+from mlflow.tracking.context import registry as context_registry
+from mlflow.utils.mlflow_tags import MLFLOW_RUN_NAME
 
 from nanodet.util import mkdir, Logger, cfg, load_config, convert_old_model
 from nanodet.data.collate import collate_function
@@ -26,7 +30,7 @@ from nanodet.data.dataset import build_dataset
 from nanodet.trainer.task import TrainingTask
 from nanodet.evaluator import build_evaluator
 from nanodet.util import load_model_weight
-
+    
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('config', help='train config file path')
@@ -34,6 +38,10 @@ def parse_args():
                         help='node rank for distributed training')
     parser.add_argument('--seed', type=int, default=None,
                         help='random seed')
+    parser.add_argument('--use_mlflow', action='store_true')
+    parser.add_argument('--mlflow_uri', type=str, default='file:./ml-runs', help='mlflow tracking_uri')
+    parser.add_argument('--mlflow_run', type=str, default='default', help='mlflow run name')
+    parser.add_argument('--mlflow_experiment', type=str, default='default', help='mlflow experiment name')
     args = parser.parse_args()
     return args
 
@@ -67,19 +75,41 @@ def main(args):
                                                  pin_memory=True, collate_fn=collate_function, drop_last=False)
 
     logger.log('Creating model...')
-    task = TrainingTask(cfg, evaluator)
+    
+    if args.use_mlflow:
+        log_style='Lightning'
+    else:
+        log_style='NanoDet'        
+    task = TrainingTask(cfg, evaluator, log_style=log_style)
+    
     if 'load_model' in cfg.schedule:
         ckpt = torch.load(cfg.schedule.load_model)
         if 'pytorch-lightning_version' not in ckpt:
             warnings.warn('Warning! Old .pth checkpoint is deprecated. '
                           'Convert the checkpoint with tools/convert_old_checkpoint.py ')
             ckpt = convert_old_model(ckpt)
-     
-        
+
         load_model_weight(task.model, ckpt, logger)
         logger.log('Loaded model weight from {}'.format(cfg.schedule.load_model))
 
     model_resume_path = os.path.join(cfg.save_dir, 'model_last.ckpt') if 'resume' in cfg.schedule else None
+
+
+
+    if args.use_mlflow:
+        user_specified_tags = {}  # your own tags here
+        user_specified_tags[MLFLOW_RUN_NAME] = args.mlflow_run
+        tags = context_registry.resolve_tags(user_specified_tags)
+        mlf_logger = MLFlowLogger(
+            experiment_name=args.mlflow_experiment,
+            tags=tags,
+            tracking_uri=args.mlflow_uri
+        )
+        used_logger = mlf_logger
+        bar_refresh=1
+    else:
+        used_logger = True    
+        bar_refresh=0
 
     trainer = pl.Trainer(default_root_dir=cfg.save_dir,
                          max_epochs=cfg.schedule.total_epochs,
@@ -89,10 +119,12 @@ def main(args):
                          log_every_n_steps=cfg.log.interval,
                          num_sanity_val_steps=0,
                          resume_from_checkpoint=model_resume_path,
-                         callbacks=[ProgressBar(refresh_rate=0)],  # disable tqdm bar
+                         callbacks=[ProgressBar(refresh_rate=bar_refresh)],  # disable tqdm bar with rate=0
                          benchmark=True,
+                         logger=used_logger,
                          )
-
+   
+    # Train the model
     trainer.fit(task, train_dataloader, val_dataloader)
 
 

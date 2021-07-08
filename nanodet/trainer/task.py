@@ -35,13 +35,13 @@ class TrainingTask(LightningModule):
         evaluator: Evaluator for evaluating the model performance.
     """
 
-    def __init__(self, cfg, evaluator=None):
+    def __init__(self, cfg, evaluator=None, log_style='Lightning'):
         super(TrainingTask, self).__init__()
         self.cfg = cfg
         self.model = build_model(cfg.model)
         self.evaluator = evaluator
         self.save_flag = -10
-        self.log_style = 'NanoDet'  # Log style. Choose between 'NanoDet' or 'Lightning'
+        self.log_style = log_style  # Log style. Choose between 'NanoDet' or 'Lightning'
         # TODO: use callback to log
 
     def forward(self, x):

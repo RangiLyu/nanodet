@@ -78,7 +78,7 @@ def main(args):
     trainer = build_trainer(local_rank, cfg, model, logger)
     cfg.schedule.update({"load_model": args.model})
     trainer.load_model(cfg)
-    evaluator = build_evaluator(cfg, val_dataset)
+    evaluator = build_evaluator(cfg.evaluator, val_dataset)
     logger.log("Starting testing...")
     with torch.no_grad():
         results, val_loss_dict = trainer.run_epoch(0, val_dataloader, mode=args.task)

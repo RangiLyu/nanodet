@@ -61,7 +61,7 @@ def main(args):
     train_dataset = build_dataset(cfg.data.train, "train")
     val_dataset = build_dataset(cfg.data.val, "test")
 
-    evaluator = build_evaluator(cfg, val_dataset)
+    evaluator = build_evaluator(cfg.evaluator, val_dataset)
 
     train_dataloader = torch.utils.data.DataLoader(
         train_dataset,

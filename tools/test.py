@@ -63,7 +63,7 @@ def main(args):
         collate_fn=collate_function,
         drop_last=True,
     )
-    evaluator = build_evaluator(cfg, val_dataset)
+    evaluator = build_evaluator(cfg.evaluator, val_dataset)
 
     logger.log("Creating model...")
     task = TrainingTask(cfg, evaluator)

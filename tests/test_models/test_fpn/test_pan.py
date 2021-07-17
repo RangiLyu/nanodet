@@ -4,8 +4,8 @@ import torch
 from nanodet.model.fpn.pan import PAN
 
 
-def test_fpn():
-    """Tests fpn."""
+def test_pan():
+    """Tests PAN."""
     s = 64
     in_channels = [8, 16, 32, 64]
     feat_sizes = [s // 2 ** i for i in range(4)]  # [64, 32, 16, 8]

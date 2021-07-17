@@ -10,6 +10,7 @@ def test_cocodataset():
         ann_path="./tests/data/dummy_coco.json",
         input_size=[320, 320],  # [w,h]
         keep_ratio=True,
+        use_instance_mask=True,
         pipeline=dict(normalize=[[103.53, 116.28, 123.675], [57.375, 57.12, 58.395]]),
     )
     dataset = build_dataset(cfg, "train")
@@ -17,10 +18,14 @@ def test_cocodataset():
 
     for i, data in enumerate(dataset):
         assert data["img"].shape == (3, 320, 320)
+        for mask in data["gt_masks"]:
+            assert mask.shape == (320, 320)
 
     dataset = build_dataset(cfg, "val")
     for i, data in enumerate(dataset):
         assert data["img"].shape == (3, 320, 320)
+        for mask in data["gt_masks"]:
+            assert mask.shape == (320, 320)
 
     with pytest.raises(AssertionError):
         build_dataset(cfg, "2333")

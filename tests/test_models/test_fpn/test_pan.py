@@ -51,5 +51,5 @@ def test_pan():
     outs = pan_model(feats)
     assert len(outs) == pan_model.num_outs
     for i in range(pan_model.num_outs):
-        outs[i].shape[1] == out_channels
-        outs[i].shape[2] == outs[i].shape[3] == s // (2 ** i)
+        assert outs[i].shape[1] == out_channels
+        assert outs[i].shape[2] == outs[i].shape[3] == s // (2 ** (i + 1))

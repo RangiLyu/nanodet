@@ -40,5 +40,5 @@ def test_tan():
     outs = pan_model(feats)
     assert len(outs) == 3
     for i in range(3):
-        outs[i].shape[1] == out_channels
-        outs[i].shape[2] == outs[i].shape[3] == s // (2 ** i)
+        assert outs[i].shape[1] == out_channels
+        assert outs[i].shape[2] == outs[i].shape[3] == s // (2 ** i)

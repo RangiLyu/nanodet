@@ -73,7 +73,7 @@ def main(args):
         num_workers=cfg.device.workers_per_gpu,
         pin_memory=True,
         collate_fn=collate_function,
-        drop_last=True,
+        drop_last=False,
     )
     trainer = build_trainer(local_rank, cfg, model, logger)
     cfg.schedule.update({"load_model": args.model})

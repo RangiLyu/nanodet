@@ -1,9 +1,11 @@
 ![](docs/imgs/Title.jpg)
 
 # NanoDet
-[![GitHub license](https://img.shields.io/github/license/RangiLyu/nanodet?style=flat-square)](https://github.com/RangiLyu/nanodet/blob/main/LICENSE)
-[![Github downloads](https://img.shields.io/github/downloads/RangiLyu/nanodet/total?color=yellow&label=downloads&logo=github&logoColor=lightgrey&style=flat-square)](https://img.shields.io/github/downloads/RangiLyu/nanodet/total?color=yellow&label=Downloads&logo=github&logoColor=lightgrey&style=flat-square)
-[![GitHub release (latest by date)](https://img.shields.io/github/v/release/RangiLyu/nanodet?style=flat-square)](https://img.shields.io/github/v/release/RangiLyu/nanodet?style=flat-square)
+[![CI testing](https://img.shields.io/github/checks-status/RangiLyu/nanodet/main?label=CI&style=flat)](https://img.shields.io/github/checks-status/RangiLyu/nanodet/main?label=CI&style=flat)
+![Codecov](https://img.shields.io/codecov/c/github/RangiLyu/nanodet?color=hotpink)
+[![GitHub license](https://img.shields.io/github/license/RangiLyu/nanodet?color=turquoise&style=flat)](https://github.com/RangiLyu/nanodet/blob/main/LICENSE)
+[![Github downloads](https://img.shields.io/github/downloads/RangiLyu/nanodet/total?color=orange&label=downloads&logo=github&logoColor=lightgrey&style=flat)](https://img.shields.io/github/downloads/RangiLyu/nanodet/total?color=yellow&label=Downloads&logo=github&logoColor=lightgrey&style=flat)
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/RangiLyu/nanodet?style=flat)](https://img.shields.io/github/v/release/RangiLyu/nanodet?style=flat)
 
 ### Super fast and lightweight anchor-free object detection model. Real-time on mobile devices.
 

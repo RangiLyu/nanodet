@@ -49,6 +49,7 @@ class DistTrainer(Trainer):
         :param rank: distributed training process rank
         :param device: cuda
         """
+        assert device == "cuda"
         self.rank = rank
         self.model = DDP(
             batch_per_gpu,
@@ -56,3 +57,4 @@ class DistTrainer(Trainer):
             device_ids=[rank],
             output_device=rank,
         )
+        self.device = device

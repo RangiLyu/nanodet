@@ -211,7 +211,7 @@ def bounded_iou_loss(pred, target, beta=0.2, eps=1e-3):
 
     loss = torch.where(
         loss_comb < beta, 0.5 * loss_comb * loss_comb / beta, loss_comb - 0.5 * beta
-    )
+    ).sum(dim=-1)
     return loss
 
 
@@ -395,13 +395,9 @@ class IoULoss(nn.Module):
             and (not torch.any(weight > 0))
             and (reduction != "none")
         ):
+            if pred.dim() == weight.dim() + 1:
+                weight = weight.unsqueeze(1)
             return (pred * weight).sum()  # 0
-        if weight is not None and weight.dim() > 1:
-            # TODO: remove this in the future
-            # reduce the weight of shape (n, 4) to (n,) to match the
-            # iou_loss of shape (n,)
-            assert weight.shape == pred.shape
-            weight = weight.mean(-1)
         loss = self.loss_weight * iou_loss(
             pred,
             target,
@@ -432,6 +428,8 @@ class BoundedIoULoss(nn.Module):
         **kwargs,
     ):
         if weight is not None and not torch.any(weight > 0):
+            if pred.dim() == weight.dim() + 1:
+                weight = weight.unsqueeze(1)
             return (pred * weight).sum()  # 0
         assert reduction_override in (None, "none", "mean", "sum")
         reduction = reduction_override if reduction_override else self.reduction
@@ -465,16 +463,11 @@ class GIoULoss(nn.Module):
         **kwargs,
     ):
         if weight is not None and not torch.any(weight > 0):
-            # return (pred * weight).sum()  # 0 #TODO: fix bug
-            return pred.sum() * 0.0  # 0
+            if pred.dim() == weight.dim() + 1:
+                weight = weight.unsqueeze(1)
+            return (pred * weight).sum()  # 0
         assert reduction_override in (None, "none", "mean", "sum")
         reduction = reduction_override if reduction_override else self.reduction
-        if weight is not None and weight.dim() > 1:
-            # TODO: remove this in the future
-            # reduce the weight of shape (n, 4) to (n,) to match the
-            # giou_loss of shape (n,)
-            assert weight.shape == pred.shape
-            weight = weight.mean(-1)
         loss = self.loss_weight * giou_loss(
             pred,
             target,
@@ -504,15 +497,11 @@ class DIoULoss(nn.Module):
         **kwargs,
     ):
         if weight is not None and not torch.any(weight > 0):
+            if pred.dim() == weight.dim() + 1:
+                weight = weight.unsqueeze(1)
             return (pred * weight).sum()  # 0
         assert reduction_override in (None, "none", "mean", "sum")
         reduction = reduction_override if reduction_override else self.reduction
-        if weight is not None and weight.dim() > 1:
-            # TODO: remove this in the future
-            # reduce the weight of shape (n, 4) to (n,) to match the
-            # giou_loss of shape (n,)
-            assert weight.shape == pred.shape
-            weight = weight.mean(-1)
         loss = self.loss_weight * diou_loss(
             pred,
             target,
@@ -542,15 +531,11 @@ class CIoULoss(nn.Module):
         **kwargs,
     ):
         if weight is not None and not torch.any(weight > 0):
+            if pred.dim() == weight.dim() + 1:
+                weight = weight.unsqueeze(1)
             return (pred * weight).sum()  # 0
         assert reduction_override in (None, "none", "mean", "sum")
         reduction = reduction_override if reduction_override else self.reduction
-        if weight is not None and weight.dim() > 1:
-            # TODO: remove this in the future
-            # reduce the weight of shape (n, 4) to (n,) to match the
-            # giou_loss of shape (n,)
-            assert weight.shape == pred.shape
-            weight = weight.mean(-1)
         loss = self.loss_weight * ciou_loss(
             pred,
             target,

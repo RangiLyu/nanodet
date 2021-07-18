@@ -61,6 +61,9 @@ class TransformerEncoder(nn.Module):
     ):
         super(TransformerEncoder, self).__init__()
         self.norm1 = nn.LayerNorm(dim)
+
+        # embed_dim must be divisible by num_heads
+        assert dim // num_heads * num_heads == dim
         self.attn = nn.MultiheadAttention(
             embed_dim=dim,
             num_heads=num_heads,
@@ -70,7 +73,7 @@ class TransformerEncoder(nn.Module):
         self.norm2 = nn.LayerNorm(dim)
         self.mlp = MLP(
             in_dim=dim,
-            hidden_dim=dim * mlp_ratio,
+            hidden_dim=int(dim * mlp_ratio),
             drop=dropout_ratio,
             activation=activation,
         )
@@ -107,6 +110,10 @@ class TransformerBlock(nn.Module):
         activation="GELU",
     ):
         super(TransformerBlock, self).__init__()
+
+        # out_channels must be divisible by num_heads
+        assert out_channels // num_heads * num_heads == out_channels
+
         self.conv = (
             nn.Identity()
             if in_channels == out_channels

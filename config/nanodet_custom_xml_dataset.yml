@@ -43,7 +43,7 @@ model:
 class_names: &class_names ['NAME1', 'NAME2', 'NAME3', 'NAME4', '...']  #Please fill in the category names (not include background category)
 data:
   train:
-    name: xml_dataset
+    name: XMLDataset
     class_names: *class_names
     img_path: TRAIN_IMAGE_FOLDER  #Please fill in train image path
     ann_path: TRAIN_XML_FOLDER  #Please fill in train xml path
@@ -62,7 +62,7 @@ data:
       saturation: [0.8, 1.2]
       normalize: [[103.53, 116.28, 123.675], [57.375, 57.12, 58.395]]
   val:
-    name: xml_dataset
+    name: XMLDataset
     class_names: *class_names
     img_path: VAL_IMAGE_FOLDER #Please fill in val image path
     ann_path: VAL_XML_FOLDER #Please fill in val xml path

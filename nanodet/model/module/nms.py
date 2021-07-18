@@ -101,7 +101,7 @@ def batched_nms(boxes, scores, idxs, nms_cfg, class_agnostic=False):
         max_coordinate = boxes.max()
         offsets = idxs.to(boxes) * (max_coordinate + 1)
         boxes_for_nms = boxes + offsets[:, None]
-
+    nms_cfg_.pop("type", "nms")
     split_thr = nms_cfg_.pop("split_thr", 10000)
     if len(boxes_for_nms) < split_thr:
         keep = nms(boxes_for_nms, scores, **nms_cfg_)

@@ -11,12 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import copy
 
 from .coco_detection import CocoDetectionEvaluator
 
 
 def build_evaluator(cfg, dataset):
-    if cfg.evaluator.name == "CocoDetectionEvaluator":
+    evaluator_cfg = copy.deepcopy(cfg)
+    name = evaluator_cfg.pop("name")
+    if name == "CocoDetectionEvaluator":
         return CocoDetectionEvaluator(dataset)
     else:
         raise NotImplementedError

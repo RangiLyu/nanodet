@@ -24,7 +24,14 @@ from nanodet.data.collate import collate_function
 from nanodet.data.dataset import build_dataset
 from nanodet.evaluator import build_evaluator
 from nanodet.trainer.task import TrainingTask
-from nanodet.util import Logger, cfg, convert_old_model, load_config, mkdir
+from nanodet.util import (
+    Logger,
+    cfg,
+    convert_old_model,
+    load_config,
+    load_model_weight,
+    mkdir,
+)
 
 
 def parse_args():
@@ -61,7 +68,7 @@ def main(args):
     train_dataset = build_dataset(cfg.data.train, "train")
     val_dataset = build_dataset(cfg.data.val, "test")
 
-    evaluator = build_evaluator(cfg, val_dataset)
+    evaluator = build_evaluator(cfg.evaluator, val_dataset)
 
     train_dataloader = torch.utils.data.DataLoader(
         train_dataset,
@@ -79,7 +86,7 @@ def main(args):
         num_workers=cfg.device.workers_per_gpu,
         pin_memory=True,
         collate_fn=collate_function,
-        drop_last=True,
+        drop_last=False,
     )
 
     logger.log("Creating model...")
@@ -93,7 +100,7 @@ def main(args):
                 "Convert the checkpoint with tools/convert_old_checkpoint.py "
             )
             ckpt = convert_old_model(ckpt)
-        task.load_state_dict(ckpt["state_dict"], strict=False)
+        load_model_weight(task.model, ckpt, logger)
         logger.log("Loaded model weight from {}".format(cfg.schedule.load_model))
 
     model_resume_path = (

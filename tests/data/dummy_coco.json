@@ -1,0 +1,89 @@
+{
+    "images": [
+        {
+            "file_name": "test_img.jpg",
+            "height": 404,
+            "width": 360,
+            "id": 0
+        },
+        {
+            "file_name": "test_img.jpg",
+            "height": 404,
+            "width": 360,
+            "id": 1
+        },
+        {
+            "file_name": "test_img.jpg",
+            "height": 404,
+            "width": 360,
+            "id": 2
+        }
+    ],
+    "annotations": [
+        {
+            "segmentation": [
+                [0,0,0,20,20,20,20,0]
+            ],
+            "bbox": [
+                0,
+                0,
+                20,
+                20
+            ],
+            "area": 400.00,
+            "score": 1.0,
+            "category_id": 1,
+            "id": 1,
+            "iscrowd": 0,
+            "image_id": 0
+        },
+        {
+            "segmentation": [
+                [0,0,0,20,20,20,20,0]
+            ],
+            "bbox": [
+                0,
+                0,
+                20,
+                20
+            ],
+            "area": 400.00,
+            "score": 1.0,
+            "category_id": 2,
+            "id": 2,
+            "iscrowd": 0,
+            "image_id": 0
+        },
+        {
+            "segmentation": [
+                [0,0,0,20,20,20,20,0]
+            ],
+            "bbox": [
+                0,
+                0,
+                20,
+                20
+            ],
+            "area": 400.00,
+            "score": 1.0,
+            "category_id": 1,
+            "id": 3,
+            "iscrowd": 0,
+            "image_id": 1
+        }
+    ],
+    "categories": [
+        {
+            "id": 1,
+            "name": "bus",
+            "supercategory": "none"
+        },
+        {
+            "id": 2,
+            "name": "car",
+            "supercategory": "none"
+        }
+    ],
+    "licenses": [],
+    "info": null
+}

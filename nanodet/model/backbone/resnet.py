@@ -120,6 +120,7 @@ class ResNet(nn.Module):
         super(ResNet, self).__init__()
         if depth not in self.resnet_spec:
             raise KeyError("invalid resnet depth {}".format(depth))
+        assert set(out_stages).issubset((1, 2, 3, 4))
         self.activation = activation
         block, layers = self.resnet_spec[depth]
         self.depth = depth

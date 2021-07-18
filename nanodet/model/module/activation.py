@@ -21,6 +21,7 @@ activations = {
     "SELU": nn.SELU,
     "ELU": nn.ELU,
     "GELU": nn.GELU,
+    "PReLU": nn.PReLU,
     None: nn.Identity,
 }
 
@@ -31,5 +32,7 @@ def act_layers(name):
         return nn.LeakyReLU(negative_slope=0.1, inplace=True)
     elif name == "GELU":
         return nn.GELU()
+    elif name == "PReLU":
+        return nn.PReLU()
     else:
         return activations[name](inplace=True)

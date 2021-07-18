@@ -107,7 +107,7 @@ def main(args):
         num_workers=cfg.device.workers_per_gpu,
         pin_memory=True,
         collate_fn=collate_function,
-        drop_last=True,
+        drop_last=False,
     )
 
     trainer = build_trainer(local_rank, cfg, model, logger)
@@ -117,7 +117,7 @@ def main(args):
     if "resume" in cfg.schedule:
         trainer.resume(cfg)
 
-    evaluator = build_evaluator(cfg, val_dataset)
+    evaluator = build_evaluator(cfg.evaluator, val_dataset)
 
     logger.log("Starting training...")
     trainer.run(train_dataloader, val_dataloader, evaluator)

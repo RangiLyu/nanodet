@@ -56,6 +56,7 @@ class Trainer:
         self.model = DataParallel(self.model, gpu_ids, chunk_sizes=batch_sizes).to(
             device
         )
+        self.device = device
 
     def _init_optimizer(self):
         optimizer_cfg = copy.deepcopy(self.cfg.schedule.optimizer)
@@ -110,7 +111,7 @@ class Trainer:
         for iter_id, meta in enumerate(data_loader):
             if iter_id >= num_iters:
                 break
-            meta["img"] = meta["img"].to(device=torch.device("cuda"), non_blocking=True)
+            meta["img"] = meta["img"].to(device=self.device, non_blocking=True)
             output, loss, loss_stats = self.run_step(model, meta, mode)
             if mode == "val" or mode == "test":
                 batch_dets = model.module.head.post_process(output, meta)
@@ -267,9 +268,7 @@ class Trainer:
                 lr = self.get_warmup_lr(cur_iter)
                 for param_group in self.optimizer.param_groups:
                     param_group["lr"] = lr
-                batch["img"] = batch["img"].to(
-                    device=torch.device("cuda"), non_blocking=True
-                )
+                batch["img"] = batch["img"].to(device=self.device, non_blocking=True)
                 output, loss, loss_stats = self.run_step(model, batch)
 
                 # TODO: simplify code

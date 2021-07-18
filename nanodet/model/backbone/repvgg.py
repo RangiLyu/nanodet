@@ -115,7 +115,10 @@ class RepVGG(nn.Module):
         last_channel=None,
     ):
         super(RepVGG, self).__init__()
+        # TODO: Update code to Xiaohan's repo
         model_name = "RepVGG-" + arch
+        assert model_name in model_param
+        assert set(out_stages).issubset((1, 2, 3, 4))
         num_blocks = model_param[model_name]["num_blocks"]
         width_multiplier = model_param[model_name]["width_multiplier"]
         assert len(width_multiplier) == 4

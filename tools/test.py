@@ -61,9 +61,9 @@ def main(args):
         num_workers=cfg.device.workers_per_gpu,
         pin_memory=True,
         collate_fn=collate_function,
-        drop_last=True,
+        drop_last=False,
     )
-    evaluator = build_evaluator(cfg, val_dataset)
+    evaluator = build_evaluator(cfg.evaluator, val_dataset)
 
     logger.log("Creating model...")
     task = TrainingTask(cfg, evaluator)

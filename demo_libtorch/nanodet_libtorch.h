@@ -2,7 +2,7 @@
 #include <opencv2/core/core.hpp>
 
 
-typedef struct BoxInfo 
+typedef struct BoxInfo
 {
     float x1;
     float y1;

@@ -47,7 +47,7 @@ model:
           loss_weight: 2.0
 data:
   train:
-    name: coco
+    name: CocoDataset
     img_path: coco/train2017
     ann_path: coco/annotations/instances_train2017.json
     input_size: [320,320] #[w,h]
@@ -65,7 +65,7 @@ data:
       saturation: [0.5, 1.2]
       normalize: [[103.53, 116.28, 123.675], [57.375, 57.12, 58.395]]
   val:
-    name: coco
+    name: CocoDataset
     img_path: coco/val2017
     ann_path: coco/annotations/instances_val2017.json
     input_size: [320,320] #[w,h]

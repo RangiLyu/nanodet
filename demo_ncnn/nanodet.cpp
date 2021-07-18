@@ -7,7 +7,7 @@
 #include <benchmark.h>
 // #include <iostream>
 
-inline float fast_exp(float x) 
+inline float fast_exp(float x)
 {
     union {
         uint32_t i;
@@ -17,7 +17,7 @@ inline float fast_exp(float x)
     return v.f;
 }
 
-inline float sigmoid(float x) 
+inline float sigmoid(float x)
 {
     return 1.0f / (1.0f + fast_exp(-x));
 }
@@ -46,7 +46,7 @@ NanoDet* NanoDet::detector = nullptr;
 NanoDet::NanoDet(const char* param, const char* bin, bool useGPU)
 {
     this->Net = new ncnn::Net();
-    // opt 
+    // opt
 #if NCNN_VULKAN
     this->hasGPU = ncnn::get_gpu_count() > 0;
 #endif
@@ -97,7 +97,7 @@ std::vector<BoxInfo> NanoDet::detect(cv::Mat image, float score_threshold, float
         ncnn::Mat dis_pred;
         ncnn::Mat cls_pred;
         ex.extract(head_info.dis_layer.c_str(), dis_pred);
-        ex.extract(head_info.cls_layer.c_str(), cls_pred); 
+        ex.extract(head_info.cls_layer.c_str(), cls_pred);
         // std::cout << "c:" << cls_pred.c << " h:" << cls_pred.h <<" w:" <<cls_pred.w <<std::endl;
 
         this->decode_infer(cls_pred, dis_pred, head_info.stride, score_threshold, results);
@@ -107,7 +107,7 @@ std::vector<BoxInfo> NanoDet::detect(cv::Mat image, float score_threshold, float
     for (int i = 0; i < (int)results.size(); i++)
     {
         this->nms(results[i], nms_threshold);
-        
+
         for (auto box : results[i])
         {
             dets.push_back(box);

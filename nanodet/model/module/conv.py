@@ -2,13 +2,15 @@
 ConvModule refers from MMDetection
 RepVGGConvModule refers from RepVGG: Making VGG-style ConvNets Great Again
 """
+import warnings
+
+import numpy as np
 import torch
 import torch.nn as nn
-import numpy as np
-import warnings
-from .init_weights import kaiming_init, normal_init, xavier_init, constant_init
-from .norm import build_norm_layer
+
 from .activation import act_layers
+from .init_weights import constant_init, kaiming_init
+from .norm import build_norm_layer
 
 
 class ConvModule(nn.Module):
@@ -34,20 +36,22 @@ class ConvModule(nn.Module):
             ("conv", "norm", "act") and ("act", "conv", "norm").
     """
 
-    def __init__(self,
-                 in_channels,
-                 out_channels,
-                 kernel_size,
-                 stride=1,
-                 padding=0,
-                 dilation=1,
-                 groups=1,
-                 bias='auto',
-                 conv_cfg=None,
-                 norm_cfg=None,
-                 activation='ReLU',
-                 inplace=True,
-                 order=('conv', 'norm', 'act')):
+    def __init__(
+        self,
+        in_channels,
+        out_channels,
+        kernel_size,
+        stride=1,
+        padding=0,
+        dilation=1,
+        groups=1,
+        bias="auto",
+        conv_cfg=None,
+        norm_cfg=None,
+        activation="ReLU",
+        inplace=True,
+        order=("conv", "norm", "act"),
+    ):
         super(ConvModule, self).__init__()
         assert conv_cfg is None or isinstance(conv_cfg, dict)
         assert norm_cfg is None or isinstance(norm_cfg, dict)
@@ -58,16 +62,16 @@ class ConvModule(nn.Module):
         self.inplace = inplace
         self.order = order
         assert isinstance(self.order, tuple) and len(self.order) == 3
-        assert set(order) == set(['conv', 'norm', 'act'])
+        assert set(order) == {"conv", "norm", "act"}
 
         self.with_norm = norm_cfg is not None
         # if the conv layer is before a norm layer, bias is unnecessary.
-        if bias == 'auto':
+        if bias == "auto":
             bias = False if self.with_norm else True
         self.with_bias = bias
 
         if self.with_norm and self.with_bias:
-            warnings.warn('ConvModule has norm and bias at the same time')
+            warnings.warn("ConvModule has norm and bias at the same time")
 
         # build convolution layer
         self.conv = nn.Conv2d(  #
@@ -78,7 +82,8 @@ class ConvModule(nn.Module):
             padding=padding,
             dilation=dilation,
             groups=groups,
-            bias=bias)
+            bias=bias,
+        )
         # export the attributes of self.conv to a higher level for convenience
         self.in_channels = self.conv.in_channels
         self.out_channels = self.conv.out_channels
@@ -93,7 +98,7 @@ class ConvModule(nn.Module):
         # build normalization layers
         if self.with_norm:
             # norm layer is after conv layer
-            if order.index('norm') > order.index('conv'):
+            if order.index("norm") > order.index("conv"):
                 norm_channels = out_channels
             else:
                 norm_channels = in_channels
@@ -117,71 +122,78 @@ class ConvModule(nn.Module):
             return None
 
     def init_weights(self):
-        if self.activation == 'LeakyReLU':
-            nonlinearity = 'leaky_relu'
+        if self.activation == "LeakyReLU":
+            nonlinearity = "leaky_relu"
         else:
-            nonlinearity = 'relu'
+            nonlinearity = "relu"
         kaiming_init(self.conv, nonlinearity=nonlinearity)
         if self.with_norm:
             constant_init(self.norm, 1, bias=0)
 
     def forward(self, x, norm=True):
         for layer in self.order:
-            if layer == 'conv':
+            if layer == "conv":
                 x = self.conv(x)
-            elif layer == 'norm' and norm and self.with_norm:
+            elif layer == "norm" and norm and self.with_norm:
                 x = self.norm(x)
-            elif layer == 'act' and self.activation:
+            elif layer == "act" and self.activation:
                 x = self.act(x)
         return x
 
 
 class DepthwiseConvModule(nn.Module):
-
-    def __init__(self,
-                 in_channels,
-                 out_channels,
-                 kernel_size,
-                 stride=1,
-                 padding=0,
-                 dilation=1,
-                 bias='auto',
-                 norm_cfg=dict(type='BN'),
-                 activation='ReLU',
-                 inplace=True,
-                 order=('depthwise', 'dwnorm', 'act', 'pointwise', 'pwnorm', 'act')):
+    def __init__(
+        self,
+        in_channels,
+        out_channels,
+        kernel_size,
+        stride=1,
+        padding=0,
+        dilation=1,
+        bias="auto",
+        norm_cfg=dict(type="BN"),
+        activation="ReLU",
+        inplace=True,
+        order=("depthwise", "dwnorm", "act", "pointwise", "pwnorm", "act"),
+    ):
         super(DepthwiseConvModule, self).__init__()
         assert activation is None or isinstance(activation, str)
         self.activation = activation
         self.inplace = inplace
         self.order = order
         assert isinstance(self.order, tuple) and len(self.order) == 6
-        assert set(order) == set(['depthwise', 'dwnorm', 'act', 'pointwise', 'pwnorm', 'act'])
+        assert set(order) == {
+            "depthwise",
+            "dwnorm",
+            "act",
+            "pointwise",
+            "pwnorm",
+            "act",
+        }
 
         self.with_norm = norm_cfg is not None
         # if the conv layer is before a norm layer, bias is unnecessary.
-        if bias == 'auto':
+        if bias == "auto":
             bias = False if self.with_norm else True
         self.with_bias = bias
 
         if self.with_norm and self.with_bias:
-            warnings.warn('ConvModule has norm and bias at the same time')
+            warnings.warn("ConvModule has norm and bias at the same time")
 
         # build convolution layer
-        self.depthwise = nn.Conv2d(in_channels,
-                                   in_channels,
-                                   kernel_size,
-                                   stride=stride,
-                                   padding=padding,
-                                   dilation=dilation,
-                                   groups=in_channels,
-                                   bias=bias)
-        self.pointwise = nn.Conv2d(in_channels,
-                                   out_channels,
-                                   kernel_size=1,
-                                   stride=1,
-                                   padding=0,
-                                   bias=bias)
+        self.depthwise = nn.Conv2d(
+            in_channels,
+            in_channels,
+            kernel_size,
+            stride=stride,
+            padding=padding,
+            dilation=dilation,
+            groups=in_channels,
+            bias=bias,
+        )
+        self.pointwise = nn.Conv2d(
+            in_channels, out_channels, kernel_size=1, stride=1, padding=0, bias=bias
+        )
 
         # export the attributes of self.conv to a higher level for convenience
         self.in_channels = self.depthwise.in_channels
@@ -207,10 +219,10 @@ class DepthwiseConvModule(nn.Module):
         self.init_weights()
 
     def init_weights(self):
-        if self.activation == 'LeakyReLU':
-            nonlinearity = 'leaky_relu'
+        if self.activation == "LeakyReLU":
+            nonlinearity = "leaky_relu"
         else:
-            nonlinearity = 'relu'
+            nonlinearity = "relu"
         kaiming_init(self.depthwise, nonlinearity=nonlinearity)
         kaiming_init(self.pointwise, nonlinearity=nonlinearity)
         if self.with_norm:
@@ -219,10 +231,10 @@ class DepthwiseConvModule(nn.Module):
 
     def forward(self, x, norm=True):
         for layer_name in self.order:
-            if layer_name != 'act':
+            if layer_name != "act":
                 layer = self.__getattr__(layer_name)
                 x = layer(x)
-            elif layer_name == 'act' and self.activation:
+            elif layer_name == "act" and self.activation:
                 x = self.act(x)
         return x
 
@@ -234,17 +246,20 @@ class RepVGGConvModule(nn.Module):
     https://github.com/DingXiaoH/RepVGG
     """
 
-    def __init__(self,
-                 in_channels,
-                 out_channels,
-                 kernel_size,
-                 stride=1,
-                 padding=0,
-                 dilation=1,
-                 groups=1,
-                 activation='ReLU',
-                 padding_mode='zeros',
-                 deploy=False):
+    def __init__(
+        self,
+        in_channels,
+        out_channels,
+        kernel_size=3,
+        stride=1,
+        padding=1,
+        dilation=1,
+        groups=1,
+        activation="ReLU",
+        padding_mode="zeros",
+        deploy=False,
+        **kwargs
+    ):
         super(RepVGGConvModule, self).__init__()
         assert activation is None or isinstance(activation, str)
         self.activation = activation
@@ -263,28 +278,54 @@ class RepVGGConvModule(nn.Module):
             self.act = act_layers(self.activation)
 
         if deploy:
-            self.rbr_reparam = nn.Conv2d(in_channels=in_channels, out_channels=out_channels,
-                                         kernel_size=kernel_size, stride=stride,
-                                         padding=padding, dilation=dilation, groups=groups, bias=True,
-                                         padding_mode=padding_mode)
+            self.rbr_reparam = nn.Conv2d(
+                in_channels=in_channels,
+                out_channels=out_channels,
+                kernel_size=kernel_size,
+                stride=stride,
+                padding=padding,
+                dilation=dilation,
+                groups=groups,
+                bias=True,
+                padding_mode=padding_mode,
+            )
 
         else:
-            self.rbr_identity = nn.BatchNorm2d(
-                num_features=in_channels) if out_channels == in_channels and stride == 1 else None
+            self.rbr_identity = (
+                nn.BatchNorm2d(num_features=in_channels)
+                if out_channels == in_channels and stride == 1
+                else None
+            )
 
-            self.rbr_dense = nn.Sequential(nn.Conv2d(in_channels=in_channels, out_channels=out_channels,
-                                                     kernel_size=kernel_size, stride=stride, padding=padding,
-                                                     groups=groups, bias=False),
-                                           nn.BatchNorm2d(num_features=out_channels))
+            self.rbr_dense = nn.Sequential(
+                nn.Conv2d(
+                    in_channels=in_channels,
+                    out_channels=out_channels,
+                    kernel_size=kernel_size,
+                    stride=stride,
+                    padding=padding,
+                    groups=groups,
+                    bias=False,
+                ),
+                nn.BatchNorm2d(num_features=out_channels),
+            )
 
-            self.rbr_1x1 = nn.Sequential(nn.Conv2d(in_channels=in_channels, out_channels=out_channels,
-                                                   kernel_size=1, stride=stride, padding=padding_11,
-                                                   groups=groups, bias=False),
-                                         nn.BatchNorm2d(num_features=out_channels))
-            print('RepVGG Block, identity = ', self.rbr_identity)
+            self.rbr_1x1 = nn.Sequential(
+                nn.Conv2d(
+                    in_channels=in_channels,
+                    out_channels=out_channels,
+                    kernel_size=1,
+                    stride=stride,
+                    padding=padding_11,
+                    groups=groups,
+                    bias=False,
+                ),
+                nn.BatchNorm2d(num_features=out_channels),
+            )
+            print("RepVGG Block, identity = ", self.rbr_identity)
 
     def forward(self, inputs):
-        if hasattr(self, 'rbr_reparam'):
+        if hasattr(self, "rbr_reparam"):
             return self.act(self.rbr_reparam(inputs))
 
         if self.rbr_identity is None:
@@ -296,13 +337,16 @@ class RepVGGConvModule(nn.Module):
 
     #   This func derives the equivalent kernel and bias in a DIFFERENTIABLE way.
     #   You can get the equivalent kernel and bias at any time and do whatever you want,
-    #   for example, apply some penalties or constraints during training, just like you do to the other models.
-    #   May be useful for quantization or pruning.
+    #   for example, apply some penalties or constraints during training, just like you
+    #   do to the other models.  May be useful for quantization or pruning.
     def get_equivalent_kernel_bias(self):
         kernel3x3, bias3x3 = self._fuse_bn_tensor(self.rbr_dense)
         kernel1x1, bias1x1 = self._fuse_bn_tensor(self.rbr_1x1)
         kernelid, biasid = self._fuse_bn_tensor(self.rbr_identity)
-        return kernel3x3 + self._pad_1x1_to_3x3_tensor(kernel1x1) + kernelid, bias3x3 + bias1x1 + biasid
+        return (
+            kernel3x3 + self._pad_1x1_to_3x3_tensor(kernel1x1) + kernelid,
+            bias3x3 + bias1x1 + biasid,
+        )
 
     def _pad_1x1_to_3x3_tensor(self, kernel1x1):
         if kernel1x1 is None:
@@ -322,9 +366,11 @@ class RepVGGConvModule(nn.Module):
             eps = branch[1].eps
         else:
             assert isinstance(branch, nn.BatchNorm2d)
-            if not hasattr(self, 'id_tensor'):
+            if not hasattr(self, "id_tensor"):
                 input_dim = self.in_channels // self.groups
-                kernel_value = np.zeros((self.in_channels, input_dim, 3, 3), dtype=np.float32)
+                kernel_value = np.zeros(
+                    (self.in_channels, input_dim, 3, 3), dtype=np.float32
+                )
                 for i in range(self.in_channels):
                     kernel_value[i, i % input_dim, 1, 1] = 1
                 self.id_tensor = torch.from_numpy(kernel_value).to(branch.weight.device)
@@ -340,4 +386,7 @@ class RepVGGConvModule(nn.Module):
 
     def repvgg_convert(self):
         kernel, bias = self.get_equivalent_kernel_bias()
-        return kernel.detach().cpu().numpy(), bias.detach().cpu().numpy(),
+        return (
+            kernel.detach().cpu().numpy(),
+            bias.detach().cpu().numpy(),
+        )

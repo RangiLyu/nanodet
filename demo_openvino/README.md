@@ -18,7 +18,7 @@ Follow the official Get Started Guides: https://docs.openvinotoolkit.org/latest/
 Run this command in cmd. (Every time before using OpenVINO)
 ```cmd
 <INSTSLL_DIR>\openvino_2021\bin\setupvars.bat
-``` 
+```
 
 
 Or set the system environment variables once for all:
@@ -70,7 +70,7 @@ source /opt/intel/openvino_2021/bin/setupvars.sh
    python -m onnxsim ${INPUT_ONNX_MODEL} ${OUTPUT_ONNX_MODEL}
    ```
 
-3. Convert to OpenVINO 
+3. Convert to OpenVINO
 
    ``` shell
    cd <INSTSLL_DIR>/openvino_2021/deployment_tools/model_optimizer

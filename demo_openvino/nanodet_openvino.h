@@ -18,7 +18,7 @@ typedef struct HeadInfo
     int stride;
 } HeadInfo;
 
-typedef struct BoxInfo 
+typedef struct BoxInfo
 {
     float x1;
     float y1;
@@ -34,7 +34,7 @@ public:
     NanoDet(const char* param);
 
     ~NanoDet();
-    
+
     InferenceEngine::ExecutableNetwork network_;
     InferenceEngine::InferRequest infer_request_;
     // static bool hasGPU;

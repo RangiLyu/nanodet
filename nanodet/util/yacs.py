@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 ##############################################################################
-
 """YACS -- Yet Another Configuration System is designed to be a simple
 configuration management system for academic and industrial research
 projects.
@@ -37,12 +36,7 @@ _PY2 = sys.version_info.major == 2
 _YAML_EXTS = {"", ".yaml", ".yml"}
 _PY_EXTS = {".py"}
 
-# py2 and py3 compatibility for checking file object type
-# We simply use this to infer py2 vs py3
-if _PY2:
-    _FILE_TYPES = (file, io.IOBase)
-else:
-    _FILE_TYPES = (io.IOBase,)
+_FILE_TYPES = (io.IOBase,)
 
 # CfgNodes can only contain a limited set of valid types
 _VALID_TYPES = {tuple, list, str, int, float, bool, type(None)}
@@ -74,8 +68,10 @@ class CfgNode(dict):
     def __init__(self, init_dict=None, key_list=None, new_allowed=False):
         """
         Args:
-            init_dict (dict): the possibly-nested dictionary to initailize the CfgNode.
-            key_list (list[str]): a list of names which index this CfgNode from the root.
+            init_dict (dict): the possibly-nested dictionary to initailize the
+                CfgNode.
+            key_list (list[str]): a list of names which index this CfgNode from
+                the root.
                 Currently only used for logging purposes.
             new_allowed (bool): whether adding new key is allowed when merging with
                 other configs.
@@ -92,9 +88,9 @@ class CfgNode(dict):
         # yaml configs, you can add the full config key as a string to the set below.
         self.__dict__[CfgNode.DEPRECATED_KEYS] = set()
         # Renamed options
-        # If you rename a config option, record the mapping from the old name to the new
-        # name in the dictionary below. Optionally, if the type also changed, you can
-        # make the value a tuple that specifies first the renamed key and then
+        # If you rename a config option, record the mapping from the old name to the
+        # new name in the dictionary below. Optionally, if the type also changed, you
+        # can make the value a tuple that specifies first the renamed key and then
         # instructions for how to edit the config file.
         self.__dict__[CfgNode.RENAMED_KEYS] = {
             # 'EXAMPLE.OLD.KEY': 'EXAMPLE.NEW.KEY',  # Dummy example to follow
@@ -116,8 +112,8 @@ class CfgNode(dict):
 
         Args:
             dic (dict):
-            key_list (list[str]): a list of names which index this CfgNode from the root.
-                Currently only used for logging purposes.
+            key_list (list[str]): a list of names which index this CfgNode from
+                the root. Currently only used for logging purposes.
         """
         dic = copy.deepcopy(dic)
         for k, v in dic.items():
@@ -208,7 +204,7 @@ class CfgNode(dict):
 
     def merge_from_file(self, cfg_filename):
         """Load a yaml config file and merge it this CfgNode."""
-        with open(cfg_filename, "r", encoding='utf-8') as f:
+        with open(cfg_filename, "r", encoding="utf-8") as f:
             cfg = self.load_cfg(f)
         self.merge_from_other_cfg(cfg)
 

@@ -1,22 +1,42 @@
-import os
+# Copyright 2021 RangiLyu.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import logging
-import torch
+import os
+
 import numpy as np
 from termcolor import colored
-from .rank_filter import rank_filter
+
 from .path import mkdir
 
 
 class Logger:
-    def __init__(self, local_rank, save_dir='./', use_tensorboard=True):
+    def __init__(self, local_rank, save_dir="./", use_tensorboard=True):
         mkdir(local_rank, save_dir)
         self.rank = local_rank
-        fmt = colored('[%(name)s]', 'magenta', attrs=['bold']) + colored('[%(asctime)s]', 'blue') + \
-              colored('%(levelname)s:', 'green') + colored('%(message)s', 'white')
-        logging.basicConfig(level=logging.INFO,
-                            filename=os.path.join(save_dir, 'logs.txt'),
-                            filemode='w')
-        self.log_dir = os.path.join(save_dir, 'logs')
+        fmt = (
+            colored("[%(name)s]", "magenta", attrs=["bold"])
+            + colored("[%(asctime)s]", "blue")
+            + colored("%(levelname)s:", "green")
+            + colored("%(message)s", "white")
+        )
+        logging.basicConfig(
+            level=logging.INFO,
+            filename=os.path.join(save_dir, "logs.txt"),
+            filemode="w",
+        )
+        self.log_dir = os.path.join(save_dir, "logs")
         console = logging.StreamHandler()
         console.setLevel(logging.INFO)
         formatter = logging.Formatter(fmt, datefmt="%m-%d %H:%M:%S")
@@ -28,10 +48,13 @@ class Logger:
             except ImportError:
                 raise ImportError(
                     'Please run "pip install future tensorboard" to install '
-                    'the dependencies to use torch.utils.tensorboard '
-                    '(applicable to PyTorch 1.1 or higher)')
+                    "the dependencies to use torch.utils.tensorboard "
+                    "(applicable to PyTorch 1.1 or higher)"
+                )
             if self.rank < 1:
-                logging.info('Using Tensorboard, logs will be saved in {}'.format(self.log_dir))
+                logging.info(
+                    "Using Tensorboard, logs will be saved in {}".format(self.log_dir)
+                )
                 self.writer = SummaryWriter(log_dir=self.log_dir)
 
     def log(self, string):

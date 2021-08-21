@@ -16,7 +16,7 @@ class DummyDataset(Dataset):
 
     def __getitem__(self, idx):
         data = {
-            "img": torch.randn((3, 320, 320)),
+            "img": torch.randn((3, 32, 32)),
             "img_info": {
                 "file_name": "dummy_data.jpg",
                 "height": 500,

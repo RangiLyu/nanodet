@@ -34,7 +34,7 @@ class DummyRunner:
         assert self.task.lr_scheduler.last_epoch == 0
 
         dummy_batch = {
-            "img": torch.randn((2, 3, 320, 320)),
+            "img": torch.randn((2, 3, 32, 32)),
             "img_info": {
                 "height": torch.randn(2),
                 "width": torch.randn(2),

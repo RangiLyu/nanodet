@@ -68,16 +68,16 @@ jobs:
       UBUNTU_VERSION: ubuntu1804
     strategy:
       matrix:
-        torch: [1.6.0+cu102, 1.7.0+cu102, 1.8.0+cu102, 1.9.0+cu102]
+        torch: [1.6.0, 1.7.0, 1.8.0, 1.9.0]
         include:
-          - torch: 1.6.0+cu102
-            torchvision: 0.7.0+cu102
-          - torch: 1.7.0+cu102
-            torchvision: 0.8.1+cu102
-          - torch: 1.8.0+cu102
-            torchvision: 0.9.0+cu102
-          - torch: 1.9.0+cu102
-            torchvision: 0.10.0+cu102
+          - torch: 1.6.0
+            torchvision: 0.7.0
+          - torch: 1.7.0
+            torchvision: 0.8.1
+          - torch: 1.8.0
+            torchvision: 0.9.0
+          - torch: 1.9.0
+            torchvision: 0.10.0
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -116,7 +116,7 @@ jobs:
           coverage report -m
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1.0.10
-        if: matrix.torch == '1.9.0+cu102'
+        if: matrix.torch == '1.9.0'
         with:
           file: ./coverage.xml
           flags: unittests

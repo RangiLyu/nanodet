@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import collections
 import re
 
 import torch
-from torch._six import container_abcs, int_classes, string_classes
+from torch._six import string_classes
 
 np_str_obj_array_pattern = re.compile(r"[SaUO]")
 
@@ -32,13 +33,12 @@ def collate_function(batch):
     elem_type = type(elem)
     if isinstance(elem, torch.Tensor):
         out = None
-        # TODO: support pytorch < 1.3
-        # if torch.utils.data.get_worker_info() is not None:
-        #     # If we're in a background process, concatenate directly into a
-        #     # shared memory tensor to avoid an extra copy
-        #     numel = sum([x.numel() for x in batch])
-        #     storage = elem.storage()._new_shared(numel)
-        #     out = elem.new(storage)
+        if torch.utils.data.get_worker_info() is not None:
+            # If we're in a background process, concatenate directly into a
+            # shared memory tensor to avoid an extra copy
+            numel = sum([x.numel() for x in batch])
+            storage = elem.storage()._new_shared(numel)
+            out = elem.new(storage)
         return torch.stack(batch, 0, out=out)
     elif (
         elem_type.__module__ == "numpy"
@@ -51,22 +51,20 @@ def collate_function(batch):
             if np_str_obj_array_pattern.search(elem.dtype.str) is not None:
                 raise TypeError(default_collate_err_msg_format.format(elem.dtype))
 
-            # return collate_function([torch.as_tensor(b) for b in batch])
             return batch
         elif elem.shape == ():  # scalars
-            # return torch.as_tensor(batch)
             return batch
     elif isinstance(elem, float):
         return torch.tensor(batch, dtype=torch.float64)
-    elif isinstance(elem, int_classes):
+    elif isinstance(elem, int):
         return torch.tensor(batch)
     elif isinstance(elem, string_classes):
         return batch
-    elif isinstance(elem, container_abcs.Mapping):
+    elif isinstance(elem, collections.abc.Mapping):
         return {key: collate_function([d[key] for d in batch]) for key in elem}
     elif isinstance(elem, tuple) and hasattr(elem, "_fields"):  # namedtuple
         return elem_type(*(collate_function(samples) for samples in zip(*batch)))
-    elif isinstance(elem, container_abcs.Sequence):
+    elif isinstance(elem, collections.abc.Sequence):
         transposed = zip(*batch)
         return [collate_function(samples) for samples in transposed]
 

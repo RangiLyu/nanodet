@@ -26,3 +26,8 @@ def test_collate():
     batch = [np.array([1, 2, 3]), np.array([4, 6, 8])]
     out = collate_function(batch)
     assert out == batch
+
+    batch = [torch.randn((3, 20, 20)), torch.randn((3, 20, 20))]
+    out = collate_function(batch)
+    assert isinstance(out, torch.Tensor)
+    assert out.shape == (2, 3, 20, 20)

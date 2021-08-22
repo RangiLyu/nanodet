@@ -217,7 +217,11 @@ class TrainingTask(LightningModule):
         results = {}
         for res in test_step_outputs:
             results.update(res)
-        all_results = gather_results(results) if self.trainer.use_ddp else results
+        all_results = (
+            gather_results(results)
+            if dist.is_available() and dist.is_initialized()
+            else results
+        )
         if all_results:
             res_json = self.evaluator.results2json(all_results)
             json_path = os.path.join(self.cfg.save_dir, "results.json")

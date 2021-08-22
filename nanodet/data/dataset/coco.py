@@ -141,11 +141,7 @@ class CocoDataset(BaseDataset):
         if self.multi_scale:
             input_size = self.get_random_size(self.multi_scale, input_size)
 
-        meta = self.pipeline(meta, input_size)
-
-        # print("shape:", meta["img"].shape)
-        # cv2.imshow("img", meta["img"])
-        # cv2.waitKey(0)
+        meta = self.pipeline(self, meta, input_size)
 
         meta["img"] = torch.from_numpy(meta["img"].transpose(2, 0, 1))
         return meta

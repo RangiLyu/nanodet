@@ -14,6 +14,7 @@
 
 import math
 import random
+from typing import Dict, Optional, Tuple
 
 import cv2
 import numpy as np
@@ -26,7 +27,7 @@ def get_flip_matrix(prob=0.5):
     return F
 
 
-def get_perspective_matrix(perspective=0):
+def get_perspective_matrix(perspective=0.0):
     """
 
     :param perspective:
@@ -38,7 +39,7 @@ def get_perspective_matrix(perspective=0):
     return P
 
 
-def get_rotation_matrix(degree=0):
+def get_rotation_matrix(degree=0.0):
     """
 
     :param degree:
@@ -135,7 +136,12 @@ def get_resize_matrix(raw_shape, dst_shape, keep_ratio):
         return Rs
 
 
-def warp_and_resize(meta, warp_kwargs, dst_shape, keep_ratio=True):
+def warp_and_resize(
+    meta: Dict,
+    warp_kwargs: Dict,
+    dst_shape: Tuple[int, int],
+    keep_ratio: bool = True,
+):
     # TODO: background, type
     raw_img = meta["img"]
     height = raw_img.shape[0]  # shape(h,w,c)
@@ -228,3 +234,119 @@ def warp_boxes(boxes, M, width, height):
 #         xy[:, [0, 2]] = xy[:, [0, 2]].clip(0, width)
 #         xy[:, [1, 3]] = xy[:, [1, 3]].clip(0, height)
 #         return xy
+
+
+def get_minimum_dst_shape(
+    src_shape: Tuple[int, int],
+    dst_shape: Tuple[int, int],
+    divisible: Optional[int] = None,
+) -> Tuple[int, int]:
+    """Calculate minimum dst shape"""
+    src_w, src_h = src_shape
+    dst_w, dst_h = dst_shape
+
+    if src_w / src_h < dst_w / dst_h:
+        ratio = dst_h / src_h
+    else:
+        ratio = dst_w / src_w
+
+    dst_w = int(ratio * src_w)
+    dst_h = int(ratio * src_h)
+
+    if divisible and divisible > 0:
+        dst_w = max(divisible, int((dst_w + divisible - 1) // divisible * divisible))
+        dst_h = max(divisible, int((dst_h + divisible - 1) // divisible * divisible))
+    return dst_w, dst_h
+
+
+class ShapeTransform:
+    """Shape transforms including resize, random perspective, random scale,
+    random stretch, random rotation, random shear, random translate,
+    and random flip.
+
+    Args:
+        keep_ratio: Whether to keep aspect ratio of the image.
+        divisible: Make image height and width is divisible by a number.
+        perspective: Random perspective factor.
+        scale: Random scale ratio.
+        stretch: Width and height stretch ratio range.
+        rotation: Random rotate degree.
+        shear: Random shear degree.
+        translate: Random translate ratio.
+        flip: Random flip probability.
+    """
+
+    def __init__(
+        self,
+        keep_ratio: bool,
+        divisible: int = 0,
+        perspective: float = 0.0,
+        scale: Tuple[int, int] = (1, 1),
+        stretch: Tuple = ((1, 1), (1, 1)),
+        rotation: float = 0.0,
+        shear: float = 0.0,
+        translate: float = 0.0,
+        flip: float = 0.0,
+        **kwargs
+    ):
+        self.keep_ratio = keep_ratio
+        self.divisible = divisible
+        self.perspective = perspective
+        self.scale_ratio = scale
+        self.stretch_ratio = stretch
+        self.rotation_degree = rotation
+        self.shear_degree = shear
+        self.flip_prob = flip
+        self.translate_ratio = translate
+
+    def __call__(self, meta_data, dst_shape):
+        raw_img = meta_data["img"]
+        height = raw_img.shape[0]  # shape(h,w,c)
+        width = raw_img.shape[1]
+
+        # center
+        C = np.eye(3)
+        C[0, 2] = -width / 2
+        C[1, 2] = -height / 2
+
+        P = get_perspective_matrix(self.perspective)
+        C = P @ C
+
+        Scl = get_scale_matrix(self.scale_ratio)
+        C = Scl @ C
+
+        Str = get_stretch_matrix(*self.stretch_ratio)
+        C = Str @ C
+
+        R = get_rotation_matrix(self.rotation_degree)
+        C = R @ C
+
+        Sh = get_shear_matrix(self.shear_degree)
+        C = Sh @ C
+
+        F = get_flip_matrix(self.flip_prob)
+        C = F @ C
+
+        T = get_translate_matrix(self.translate_ratio, width, height)
+        M = T @ C
+
+        if self.keep_ratio:
+            dst_shape = get_minimum_dst_shape(
+                (width, height), dst_shape, self.divisible
+            )
+
+        ResizeM = get_resize_matrix((width, height), dst_shape, self.keep_ratio)
+        M = ResizeM @ M
+        img = cv2.warpPerspective(raw_img, M, dsize=tuple(dst_shape))
+        meta_data["img"] = img
+        meta_data["warp_matrix"] = M
+        if "gt_bboxes" in meta_data:
+            boxes = meta_data["gt_bboxes"]
+            meta_data["gt_bboxes"] = warp_boxes(boxes, M, dst_shape[0], dst_shape[1])
+        if "gt_masks" in meta_data:
+            for i, mask in enumerate(meta_data["gt_masks"]):
+                meta_data["gt_masks"][i] = cv2.warpPerspective(
+                    mask, M, dsize=tuple(dst_shape)
+                )
+
+        return meta_data

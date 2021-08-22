@@ -23,6 +23,7 @@ import torch
 import torch.distributed as dist
 from pytorch_lightning import LightningModule
 
+from nanodet.data.batch_process import stack_batch_img
 from nanodet.util import gather_results, mkdir
 
 from ..model.arch import build_model
@@ -46,12 +47,21 @@ class TrainingTask(LightningModule):
         self.log_style = "NanoDet"  # Log style. Choose between 'NanoDet' or 'Lightning'
         # TODO: use callback to log
 
+    def _preprocess_batch_input(self, batch):
+        batch_imgs = batch["img"]
+        if isinstance(batch_imgs, list):
+            batch_imgs = [img.to(self.device) for img in batch_imgs]
+            batch_img_tensor = stack_batch_img(batch_imgs, divisible=32)
+            batch["img"] = batch_img_tensor
+        return batch
+
     def forward(self, x):
         x = self.model(x)
         return x
 
     @torch.no_grad()
     def predict(self, batch, batch_idx=None, dataloader_idx=None):
+        batch = self._preprocess_batch_input(batch)
         preds = self.forward(batch["img"])
         results = self.model.head.post_process(preds, batch)
         return results
@@ -61,6 +71,7 @@ class TrainingTask(LightningModule):
             self.lr_scheduler.last_epoch = self.current_epoch - 1
 
     def training_step(self, batch, batch_idx):
+        batch = self._preprocess_batch_input(batch)
         preds, loss, loss_states = self.model.forward_train(batch)
 
         # log train losses
@@ -113,6 +124,7 @@ class TrainingTask(LightningModule):
         self.lr_scheduler.step()
 
     def validation_step(self, batch, batch_idx):
+        batch = self._preprocess_batch_input(batch)
         preds, loss, loss_states = self.model.forward_train(batch)
 
         if self.log_style == "Lightning":

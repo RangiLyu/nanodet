@@ -5,6 +5,7 @@ import time
 import cv2
 import torch
 
+from nanodet.data.collate import naive_collate
 from nanodet.data.transform import Pipeline
 from nanodet.model.arch import build_model
 from nanodet.util import Logger, cfg, load_config, load_model_weight
@@ -67,6 +68,8 @@ class Predictor(object):
             .unsqueeze(0)
             .to(self.device)
         )
+        meta = naive_collate([meta])
+        meta["img"] = meta["img"][0]
         with torch.no_grad():
             results = self.model.inference(meta)
         return meta, results
@@ -74,7 +77,7 @@ class Predictor(object):
     def visualize(self, dets, meta, class_names, score_thres, wait=0):
         time1 = time.time()
         result_img = self.model.head.show_result(
-            meta["raw_img"], dets, class_names, score_thres=score_thres, show=True
+            meta["raw_img"][0], dets, class_names, score_thres=score_thres, show=True
         )
         print("viz time: {:.3f}s".format(time.time() - time1))
         return result_img

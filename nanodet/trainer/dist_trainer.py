@@ -33,6 +33,7 @@ class DistTrainer(Trainer):
     """
 
     def run_step(self, model, batch, mode="train"):
+        batch = self._preprocess_batch_input(batch)
         output, loss, loss_stats = model.module.forward_train(batch)
         loss = loss.mean()
         if mode == "train":

@@ -137,7 +137,12 @@ class CocoDataset(BaseDataset):
         if self.use_keypoint:
             meta["gt_keypoints"] = ann["keypoints"]
 
-        meta = self.pipeline(meta, self.input_size)
+        input_size = self.input_size
+        if self.multi_scale:
+            input_size = self.get_random_size(self.multi_scale, input_size)
+
+        meta = self.pipeline(self, meta, input_size)
+
         meta["img"] = torch.from_numpy(meta["img"].transpose(2, 0, 1))
         return meta
 

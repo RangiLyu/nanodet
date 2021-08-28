@@ -18,6 +18,7 @@ import warnings
 
 import torch
 
+from nanodet.data.batch_process import stack_batch_img
 from nanodet.util import (
     AverageMeter,
     DataParallel,
@@ -78,6 +79,7 @@ class Trainer:
         :param mode: train or val or test
         :return: result, total loss and a dict of all losses
         """
+        meta = self._preprocess_batch_input(meta)
         output, loss, loss_dict = model.module.forward_train(meta)
         loss = loss.mean()
         if mode == "train":
@@ -111,7 +113,6 @@ class Trainer:
         for iter_id, meta in enumerate(data_loader):
             if iter_id >= num_iters:
                 break
-            meta["img"] = meta["img"].to(device=self.device, non_blocking=True)
             output, loss, loss_stats = self.run_step(model, meta, mode)
             if mode == "val" or mode == "test":
                 batch_dets = model.module.head.post_process(output, meta)
@@ -268,7 +269,6 @@ class Trainer:
                 lr = self.get_warmup_lr(cur_iter)
                 for param_group in self.optimizer.param_groups:
                     param_group["lr"] = lr
-                batch["img"] = batch["img"].to(device=self.device, non_blocking=True)
                 output, loss, loss_stats = self.run_step(model, batch)
 
                 # TODO: simplify code
@@ -326,3 +326,11 @@ class Trainer:
                 self.logger.log("resumed at steps: {}".format(self._iter))
         else:
             self.logger.log("No optimizer parameters in checkpoint.")
+
+    def _preprocess_batch_input(self, batch):
+        batch_imgs = batch["img"]
+        if isinstance(batch_imgs, list):
+            batch_imgs = [img.to(self.device) for img in batch_imgs]
+            batch_img_tensor = stack_batch_img(batch_imgs, divisible=32)
+            batch["img"] = batch_img_tensor
+        return batch

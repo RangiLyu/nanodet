@@ -101,11 +101,12 @@ head:
 ```yaml
 data:
     train:
-        name: coco
+        name: CocoDataset
         img_path: coco/train2017
         ann_path: coco/annotations/instances_train2017.json
         input_size: [320,320]
         keep_ratio: True
+        multi_scale: [0.6, 1.4]
         pipeline:
     val:
     .....
@@ -116,6 +117,7 @@ In `data` you need to set your train and validate dataset.
 `name`: Dataset format name. You can create your own dataset format in `nanodet/data/dataset`.
 `input_size`: [width, height]
 `keep_ratio`: whether to maintain the original image ratio when resizing to input size
+`multi_scale`: Scaling range for multi-scale training. Set to None to turn off.
 `pipeline`: data preprocessing and augmentation pipeline
 
 ## Device

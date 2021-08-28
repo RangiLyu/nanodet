@@ -20,7 +20,7 @@ import warnings
 
 import torch
 
-from nanodet.data.collate import collate_function
+from nanodet.data.collate import naive_collate
 from nanodet.data.dataset import build_dataset
 from nanodet.evaluator import build_evaluator
 from nanodet.model.arch import build_model
@@ -72,7 +72,7 @@ def main(args):
         shuffle=False,
         num_workers=cfg.device.workers_per_gpu,
         pin_memory=True,
-        collate_fn=collate_function,
+        collate_fn=naive_collate,
         drop_last=False,
     )
     trainer = build_trainer(local_rank, cfg, model, logger)

@@ -20,7 +20,7 @@ import pytorch_lightning as pl
 import torch
 from pytorch_lightning.callbacks import ProgressBar
 
-from nanodet.data.collate import collate_function
+from nanodet.data.collate import naive_collate
 from nanodet.data.dataset import build_dataset
 from nanodet.evaluator import build_evaluator
 from nanodet.trainer.task import TrainingTask
@@ -76,7 +76,7 @@ def main(args):
         shuffle=True,
         num_workers=cfg.device.workers_per_gpu,
         pin_memory=True,
-        collate_fn=collate_function,
+        collate_fn=naive_collate,
         drop_last=True,
     )
     val_dataloader = torch.utils.data.DataLoader(
@@ -85,7 +85,7 @@ def main(args):
         shuffle=False,
         num_workers=cfg.device.workers_per_gpu,
         pin_memory=True,
-        collate_fn=collate_function,
+        collate_fn=naive_collate,
         drop_last=False,
     )
 

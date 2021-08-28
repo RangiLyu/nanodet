@@ -5,6 +5,8 @@ import time
 import cv2
 import torch
 
+from nanodet.data.batch_process import stack_batch_img
+from nanodet.data.collate import naive_collate
 from nanodet.data.transform import Pipeline
 from nanodet.model.arch import build_model
 from nanodet.util import Logger, cfg, load_config, load_model_weight
@@ -61,12 +63,10 @@ class Predictor(object):
         img_info["height"] = height
         img_info["width"] = width
         meta = dict(img_info=img_info, raw_img=img, img=img)
-        meta = self.pipeline(meta, self.cfg.data.val.input_size)
-        meta["img"] = (
-            torch.from_numpy(meta["img"].transpose(2, 0, 1))
-            .unsqueeze(0)
-            .to(self.device)
-        )
+        meta = self.pipeline(None, meta, self.cfg.data.val.input_size)
+        meta["img"] = torch.from_numpy(meta["img"].transpose(2, 0, 1)).to(self.device)
+        meta = naive_collate([meta])
+        meta["img"] = stack_batch_img(meta["img"], divisible=32)
         with torch.no_grad():
             results = self.model.inference(meta)
         return meta, results
@@ -74,7 +74,7 @@ class Predictor(object):
     def visualize(self, dets, meta, class_names, score_thres, wait=0):
         time1 = time.time()
         result_img = self.model.head.show_result(
-            meta["raw_img"], dets, class_names, score_thres=score_thres, show=True
+            meta["raw_img"][0], dets, class_names, score_thres=score_thres, show=True
         )
         print("viz time: {:.3f}s".format(time.time() - time1))
         return result_img

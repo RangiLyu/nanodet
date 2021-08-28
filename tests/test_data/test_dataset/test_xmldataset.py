@@ -3,7 +3,7 @@ import pytest
 from nanodet.data.dataset import XMLDataset, build_dataset
 
 
-def test_cocodataset():
+def test_xmldataset():
     class_names = ["asuka", "head"]
     cfg = dict(
         name="XMLDataset",
@@ -18,11 +18,11 @@ def test_cocodataset():
     assert isinstance(dataset, XMLDataset)
 
     for i, data in enumerate(dataset):
-        assert data["img"].shape == (3, 320, 320)
+        assert data["img"].shape == (3, 320, 285)
 
     dataset = build_dataset(cfg, "val")
     for i, data in enumerate(dataset):
-        assert data["img"].shape == (3, 320, 320)
+        assert data["img"].shape == (3, 320, 285)
 
     with pytest.raises(AssertionError):
         build_dataset(cfg, "2333")

@@ -514,22 +514,22 @@ class GFLHead(nn.Module):
         warp_matrixes = (
             meta["warp_matrix"]
             if isinstance(meta["warp_matrix"], list)
-            else [meta["warp_matrix"]]
+            else meta["warp_matrix"]
         )
         img_heights = (
             meta["img_info"]["height"].cpu().numpy()
             if isinstance(meta["img_info"]["height"], torch.Tensor)
-            else [meta["img_info"]["height"]]
+            else meta["img_info"]["height"]
         )
         img_widths = (
             meta["img_info"]["width"].cpu().numpy()
             if isinstance(meta["img_info"]["width"], torch.Tensor)
-            else [meta["img_info"]["width"]]
+            else meta["img_info"]["width"]
         )
         img_ids = (
             meta["img_info"]["id"].cpu().numpy()
             if isinstance(meta["img_info"]["id"], torch.Tensor)
-            else [meta["img_info"]["id"]]
+            else meta["img_info"]["id"]
         )
 
         for result, img_width, img_height, img_id, warp_matrix in zip(

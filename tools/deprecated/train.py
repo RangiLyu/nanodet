@@ -19,7 +19,7 @@ import numpy as np
 import torch
 import torch.distributed as dist
 
-from nanodet.data.collate import collate_function
+from nanodet.data.collate import naive_collate
 from nanodet.data.dataset import build_dataset
 from nanodet.evaluator import build_evaluator
 from nanodet.model.arch import build_model
@@ -85,7 +85,7 @@ def main(args):
             batch_size=cfg.device.batchsize_per_gpu,
             num_workers=cfg.device.workers_per_gpu,
             pin_memory=True,
-            collate_fn=collate_function,
+            collate_fn=naive_collate,
             sampler=train_sampler,
             drop_last=True,
         )
@@ -96,7 +96,7 @@ def main(args):
             shuffle=True,
             num_workers=cfg.device.workers_per_gpu,
             pin_memory=True,
-            collate_fn=collate_function,
+            collate_fn=naive_collate,
             drop_last=True,
         )
 
@@ -106,7 +106,7 @@ def main(args):
         shuffle=False,
         num_workers=cfg.device.workers_per_gpu,
         pin_memory=True,
-        collate_fn=collate_function,
+        collate_fn=naive_collate,
         drop_last=False,
     )
 

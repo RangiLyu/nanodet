@@ -3,6 +3,7 @@ import copy
 import numpy as np
 
 from nanodet.data.transform.warp import (
+    ShapeTransform,
     get_flip_matrix,
     get_perspective_matrix,
     get_rotation_matrix,
@@ -77,3 +78,24 @@ def test_warp():
     assert np.array_equal(
         res["gt_bboxes"], np.array([[0, 75, 30, 105]], dtype=np.float32)
     )
+
+
+def test_shape_transform():
+    dummy_meta = dict(
+        img=np.random.randint(0, 255, size=(100, 200, 3), dtype=np.uint8),
+        gt_bboxes=np.array([[0, 0, 20, 20]]),
+        gt_masks=[np.zeros((100, 200), dtype=np.uint8)],
+    )
+    # keep ratio
+    transform = ShapeTransform(keep_ratio=True, divisible=32)
+    res = transform(dummy_meta, dst_shape=(50, 50))
+    assert np.array_equal(
+        res["gt_bboxes"], np.array([[0, 0, 6.4, 6.4]], dtype=np.float32)
+    )
+    assert res["img"].shape[0] % 32 == 0
+    assert res["img"].shape[1] % 32 == 0
+
+    # not keep ratio
+    transform = ShapeTransform(keep_ratio=False)
+    res = transform(dummy_meta, dst_shape=(50, 50))
+    assert np.array_equal(res["gt_bboxes"], np.array([[0, 0, 5, 10]], dtype=np.float32))

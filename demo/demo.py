@@ -5,6 +5,7 @@ import time
 import cv2
 import torch
 
+from nanodet.data.batch_process import stack_batch_img
 from nanodet.data.collate import naive_collate
 from nanodet.data.transform import Pipeline
 from nanodet.model.arch import build_model
@@ -62,14 +63,10 @@ class Predictor(object):
         img_info["height"] = height
         img_info["width"] = width
         meta = dict(img_info=img_info, raw_img=img, img=img)
-        meta = self.pipeline(meta, self.cfg.data.val.input_size)
-        meta["img"] = (
-            torch.from_numpy(meta["img"].transpose(2, 0, 1))
-            .unsqueeze(0)
-            .to(self.device)
-        )
+        meta = self.pipeline(None, meta, self.cfg.data.val.input_size)
+        meta["img"] = torch.from_numpy(meta["img"].transpose(2, 0, 1)).to(self.device)
         meta = naive_collate([meta])
-        meta["img"] = meta["img"][0]
+        meta["img"] = stack_batch_img(meta["img"], divisible=32)
         with torch.no_grad():
             results = self.model.inference(meta)
         return meta, results

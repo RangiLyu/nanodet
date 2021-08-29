@@ -24,14 +24,18 @@ class DummyRunner:
         optimizer = self.task.configure_optimizers()
 
         def optimizers():
-            return optimizer
+            return optimizer["optimizer"]
+
+        def lr_schedulers():
+            return optimizer["lr_scheduler"]["scheduler"]
 
         self.task.optimizers = optimizers
+        self.task.lr_schedulers = lr_schedulers
         # self.task.trainer = DummyModule()
 
         self.task.on_train_start()
         assert self.task.current_epoch == 0
-        assert self.task.lr_scheduler.last_epoch == 0
+        assert self.task.lr_schedulers().last_epoch == 0
 
         dummy_batch = {
             "img": torch.randn((2, 3, 32, 32)),
@@ -57,9 +61,8 @@ class DummyRunner:
         self.task.training_step(dummy_batch, 0)
 
         self.task.trainer = DummyModule()
-        self.task.optimizer_step(optimizer=optimizer)
+        self.task.optimizer_step(optimizer=optimizer["optimizer"])
         self.task.training_epoch_end([])
-        assert self.task.lr_scheduler.last_epoch == 1
 
         self.task.validation_step(dummy_batch, 0)
         self.task.validation_epoch_end([])

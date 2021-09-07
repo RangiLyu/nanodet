@@ -49,7 +49,7 @@ Download Vulkan SDK from https://vulkan.lunarg.com/sdk/home
 Clone NCNN repository
 
 ``` shell script
-git clone --recursive https://github.com/Tencent/ncnn.git 
+git clone --recursive https://github.com/Tencent/ncnn.git
 ```
 
 Build NCNN following this tutorial: [Build for Linux / NVIDIA Jetson / Raspberry Pi](https://github.com/Tencent/ncnn/wiki/how-to-build#build-for-linux)

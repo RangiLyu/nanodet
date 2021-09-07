@@ -1,6 +1,6 @@
 # NanoDet TorchScript / LibTorch Demo
 
-This folder provides NanoDet inference code using for LibTorch.  
+This folder provides NanoDet inference code using for LibTorch.
 
 ## Install dependencies
 

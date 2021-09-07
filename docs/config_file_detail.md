@@ -49,7 +49,7 @@ fpn:
 
 NanoDet using modified [PAN](http://arxiv.org/abs/1803.01534) (replace downsample convs with interpolation to reduce amount of computations).
 
-`in_channels` : a list of feature map channels extracted from backbone. 
+`in_channels` : a list of feature map channels extracted from backbone.
 
 `out_channels` : out put feature map channel.
 
@@ -101,11 +101,12 @@ head:
 ```yaml
 data:
     train:
-        name: coco
+        name: CocoDataset
         img_path: coco/train2017
         ann_path: coco/annotations/instances_train2017.json
         input_size: [320,320]
         keep_ratio: True
+        multi_scale: [0.6, 1.4]
         pipeline:
     val:
     .....
@@ -116,6 +117,7 @@ In `data` you need to set your train and validate dataset.
 `name`: Dataset format name. You can create your own dataset format in `nanodet/data/dataset`.
 `input_size`: [width, height]
 `keep_ratio`: whether to maintain the original image ratio when resizing to input size
+`multi_scale`: Scaling range for multi-scale training. Set to None to turn off.
 `pipeline`: data preprocessing and augmentation pipeline
 
 ## Device
@@ -162,7 +164,7 @@ Set training schedule.
 
 `load_model`: path to trained weight
 
-`optimizer`: Support all optimizer provided by pytorch. 
+`optimizer`: Support all optimizer provided by pytorch.
 
 You should adjust the lr with batch_size. Following linear scaling rule in paper *[Accurate, Large Minibatch SGD: Training ImageNet in 1 Hour](https://research.fb.com/wp-content/uploads/2017/06/imagenet1kin1h5.pdf)*
 

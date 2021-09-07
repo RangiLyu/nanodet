@@ -16,8 +16,8 @@ include_directories(
 add_executable(nanodet_demo main.cpp nanodet_openvino.cpp)
 
 target_link_libraries(
-    nanodet_demo 
+    nanodet_demo
     ${InferenceEngine_LIBRARIES}
     ${NGRAPH_LIBRARIES}
-    ${OpenCV_LIBS} 
+    ${OpenCV_LIBS}
 )

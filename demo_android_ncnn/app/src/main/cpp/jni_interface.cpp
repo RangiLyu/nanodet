@@ -107,6 +107,3 @@ Java_com_rangi_nanodet_YOLOv4_detect(JNIEnv *env, jclass, jobject image, jdouble
     }
     return ret;
 }
-
-
-

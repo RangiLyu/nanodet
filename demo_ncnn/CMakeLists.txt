@@ -30,7 +30,7 @@ include_directories(
 add_executable(nanodet_demo main.cpp nanodet.cpp)
 
 target_link_libraries(
-    nanodet_demo 
+    nanodet_demo
     ncnn
-    ${OpenCV_LIBS} 
+    ${OpenCV_LIBS}
 )

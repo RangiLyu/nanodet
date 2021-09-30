@@ -4,7 +4,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
-#define __SAVE_RESULT__ // if defined save drawed results to ../results, else show it in windows
+#define __SAVE_RESULT__ // if defined save drawn results to ../results, else show it in windows
 
 struct object_rect {
     int x;

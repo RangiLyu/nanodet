@@ -21,7 +21,7 @@ model:
         head: xxx
 ```
 
-Most detection model architecture can be devided into 3 parts: backbone, task head and connector between them(e.g. FPN, BiFPN, PAN...).
+Most detection model architecture can be divided into 3 parts: backbone, task head and connector between them(e.g. FPN, BiFPN, PAN...).
 
 ### Backbone
 

@@ -127,7 +127,7 @@ class CocoDataset(BaseDataset):
         img = cv2.imread(image_path)
         if img is None:
             print("image {} read failed.".format(image_path))
-            raise FileNotFoundError("Cant load image! Please check image path!")
+            raise FileNotFoundError("Can't load image! Please check image path!")
         ann = self.get_img_annotation(idx)
         meta = dict(
             img=img, img_info=img_info, gt_bboxes=ann["bboxes"], gt_labels=ann["labels"]

@@ -695,7 +695,7 @@ class GFLHead(nn.Module):
 
     def grid_cells_to_center(self, grid_cells):
         """
-        Get center location of each gird cell
+        Get center location of each grid cell
         :param grid_cells: grid cells of a feature map
         :return: center points
         """

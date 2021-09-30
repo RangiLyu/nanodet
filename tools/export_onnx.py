@@ -72,7 +72,7 @@ def parse_args():
         "--out_path", type=str, default="nanodet.onnx", help="Onnx model output path."
     )
     parser.add_argument(
-        "--input_shape", type=str, default=None, help="Model intput shape."
+        "--input_shape", type=str, default=None, help="Model input shape."
     )
     return parser.parse_args()
 

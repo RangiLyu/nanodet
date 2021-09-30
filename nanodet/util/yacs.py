@@ -68,7 +68,7 @@ class CfgNode(dict):
     def __init__(self, init_dict=None, key_list=None, new_allowed=False):
         """
         Args:
-            init_dict (dict): the possibly-nested dictionary to initailize the
+            init_dict (dict): the possibly-nested dictionary to initialize the
                 CfgNode.
             key_list (list[str]): a list of names which index this CfgNode from
                 the root.
@@ -171,8 +171,8 @@ class CfgNode(dict):
         r = ""
         s = []
         for k, v in sorted(self.items()):
-            seperator = "\n" if isinstance(v, CfgNode) else " "
-            attr_str = "{}:{}{}".format(str(k), seperator, str(v))
+            separator = "\n" if isinstance(v, CfgNode) else " "
+            attr_str = "{}:{}{}".format(str(k), separator, str(v))
             attr_str = _indent(attr_str, 2)
             s.append(attr_str)
         r += "\n".join(s)

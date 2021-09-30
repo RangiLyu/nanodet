@@ -63,7 +63,7 @@ make
 Note that a flag at `main.cpp` is used to control whether to show the detection result or save it into a fold.
 
 ``` c++
-#define __SAVE_RESULT__ // if defined save drawed results to ../results, else show it in windows
+#define __SAVE_RESULT__ // if defined save drawn results to ../results, else show it in windows
 ```
 
 ## Run

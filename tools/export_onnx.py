@@ -16,7 +16,8 @@ import argparse
 import os
 
 import torch
-
+import onnx
+import onnxsim
 from nanodet.model.arch import build_model
 from nanodet.util import Logger, cfg, load_config, load_model_weight
 
@@ -29,7 +30,7 @@ def generate_ouput_names(head_cfg):
     return cls_names + dis_names
 
 
-def main(config, model_path, output_path, input_shape=(320, 320)):
+def main(config, model_path, output_path, input_shape=(320, 320), do_simplify=True):
     logger = Logger(-1, config.save_dir, False)
     model = build_model(config.model)
     checkpoint = torch.load(model_path, map_location=lambda storage, loc: storage)
@@ -57,6 +58,15 @@ def main(config, model_path, output_path, input_shape=(320, 320)):
         output_names=output_names,
     )
     logger.log("finished exporting onnx ")
+    if do_simplify:
+        model_onnx = onnx.load(output_path)
+        onnx.checker.check_model(model_onnx)
+        print(onnx.helper.printable_graph(model_onnx.graph))
+        print(f'simplifying with onnx-simplifier {onnxsim.__version__}...')
+        model_onnx, check = onnxsim.simplify(model_onnx, check_n=3)
+        assert check, 'assert check failed'
+        onnx.save(model_onnx, output_path)
+        logger.log("finished simplify onnx ")
 
 
 def parse_args():
@@ -74,6 +84,9 @@ def parse_args():
     parser.add_argument(
         "--input_shape", type=str, default=None, help="Model intput shape."
     )
+    parser.add_argument(
+        "--do_simplify", action="store_true", help="Simplify ONNX file."
+    )
     return parser.parse_args()
 
 
@@ -83,6 +96,7 @@ if __name__ == "__main__":
     model_path = args.model_path
     out_path = args.out_path
     input_shape = args.input_shape
+    do_simplify = args.do_simplify
     load_config(cfg, cfg_path)
     if input_shape is None:
         input_shape = cfg.data.train.input_size
@@ -91,5 +105,5 @@ if __name__ == "__main__":
         assert len(input_shape) == 2
     if model_path is None:
         model_path = os.path.join(cfg.save_dir, "model_best/model_best.ckpt")
-    main(cfg, model_path, out_path, input_shape)
+    main(cfg, model_path, out_path, input_shape, do_simplify)
     print("Model saved to:", out_path)

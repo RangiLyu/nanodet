@@ -103,6 +103,30 @@ def get_translate_matrix(translate, width, height):
     return T
 
 
+def get_jitter_boxes(boxes, ratio=0.0):
+    """
+    :param boxes:
+    :param ratio: adjust each box boundary independently
+    :return:
+    """
+    x_min, y_min, x_max, y_max = (boxes[:, i] for i in range(4))
+    width = x_max - x_min
+    height = y_max - y_min
+    y_center = y_min + height / 2.
+    x_center = x_min + width / 2.
+
+    distortion = 1.0 + np.random.uniform(-ratio, ratio, boxes.shape)
+    y_min_jitter = height * distortion[:, 0]
+    x_min_jitter = width * distortion[:, 1]
+    y_max_jitter = height * distortion[:, 2]
+    x_max_jitter = width * distortion[:, 3]
+
+    y_min, y_max = y_center - (y_min_jitter / 2.0), y_center + (y_max_jitter / 2.0)
+    x_min, x_max = x_center - (x_min_jitter / 2.0), x_center + (x_max_jitter / 2.0)
+    jitter_boxes = np.vstack((x_min, y_min, x_max, y_max)).T
+    return jitter_boxes
+
+
 def get_resize_matrix(raw_shape, dst_shape, keep_ratio):
     """
     Get resize matrix for resizing raw img to input size
@@ -274,6 +298,7 @@ class ShapeTransform:
         shear: Random shear degree.
         translate: Random translate ratio.
         flip: Random flip probability.
+        jitter_box: Random adjust box width and height.
     """
 
     def __init__(
@@ -287,6 +312,7 @@ class ShapeTransform:
         shear: float = 0.0,
         translate: float = 0.0,
         flip: float = 0.0,
+        jitter_box: float = 0.0,
         **kwargs
     ):
         self.keep_ratio = keep_ratio
@@ -298,6 +324,7 @@ class ShapeTransform:
         self.shear_degree = shear
         self.flip_prob = flip
         self.translate_ratio = translate
+        self.jitter_box_ratio = jitter_box
 
     def __call__(self, meta_data, dst_shape):
         raw_img = meta_data["img"]
@@ -342,6 +369,7 @@ class ShapeTransform:
         meta_data["warp_matrix"] = M
         if "gt_bboxes" in meta_data:
             boxes = meta_data["gt_bboxes"]
+            boxes = get_jitter_boxes(boxes, self.jitter_box_ratio)
             meta_data["gt_bboxes"] = warp_boxes(boxes, M, dst_shape[0], dst_shape[1])
         if "gt_masks" in meta_data:
             for i, mask in enumerate(meta_data["gt_masks"]):

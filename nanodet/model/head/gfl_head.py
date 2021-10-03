@@ -46,14 +46,15 @@ class Integral(nn.Module):
         super(Integral, self).__init__()
         self.reg_max = reg_max
         self.register_buffer(
-            "project", torch.linspace(0, self.reg_max, self.reg_max + 1)
+            "project",
+            torch.arange(0, self.reg_max + 1).reshape(1, self.reg_max + 1)
         )
 
     def forward(self, x):
         """Forward feature from the regression head to get integral result of
         bounding box location.
         Args:
-            x (Tensor): Features of the regression head, shape (N, 4*(n+1)),
+            x (Tensor): Features of the regression head, shape (N, 4*(n+1))
                 n is self.reg_max.
         Returns:
             x (Tensor): Integral result of box locations, i.e., distance

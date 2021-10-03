@@ -172,4 +172,5 @@ class NanoDetHead(GFLHead):
             bbox_pred = bbox_pred.reshape(1, (self.reg_max + 1) * 4, -1).permute(
                 0, 2, 1
             )
+            bbox_pred = self.distribution_project(bbox_pred).unsqueeze(0)
         return cls_score, bbox_pred

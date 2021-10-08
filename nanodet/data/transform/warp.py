@@ -112,8 +112,8 @@ def get_jitter_boxes(boxes, ratio=0.0):
     x_min, y_min, x_max, y_max = (boxes[:, i] for i in range(4))
     width = x_max - x_min
     height = y_max - y_min
-    y_center = y_min + height / 2.
-    x_center = x_min + width / 2.
+    y_center = y_min + height / 2.0
+    x_center = x_min + width / 2.0
 
     distortion = 1.0 + np.random.uniform(-ratio, ratio, boxes.shape)
     y_min_jitter = height * distortion[:, 0]

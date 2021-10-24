@@ -14,6 +14,7 @@
 
 import logging
 import os
+import time
 
 import numpy as np
 from pytorch_lightning.loggers import LightningLoggerBase
@@ -112,7 +113,9 @@ class AverageMeter(object):
 class NanoDetLightningLogger(LightningLoggerBase):
     def __init__(self, save_dir="./", **kwargs):
         super().__init__()
-        self.log_dir = os.path.join(save_dir, "logs")
+        self._name = "NanoDet"
+        self._version = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
+        self.log_dir = os.path.join(save_dir, f"logs-{self._version}")
 
         self._fs = get_filesystem(save_dir)
         self._fs.makedirs(self.log_dir, exist_ok=True)
@@ -123,7 +126,7 @@ class NanoDetLightningLogger(LightningLoggerBase):
 
     @property
     def name(self):
-        return "NanoDet"
+        return self._name
 
     @property
     @rank_zero_experiment
@@ -142,9 +145,6 @@ class NanoDetLightningLogger(LightningLoggerBase):
 
         assert rank_zero_only.rank == 0, "tried to init log dirs in non global_rank=0"
 
-        # if self.root_dir:
-        #     self._fs.makedirs(self.root_dir, exist_ok=True)
-
         try:
             from torch.utils.tensorboard import SummaryWriter
         except ImportError:
@@ -152,15 +152,14 @@ class NanoDetLightningLogger(LightningLoggerBase):
                 'Please run "pip install future tensorboard" to install '
                 "the dependencies to use torch.utils.tensorboard "
                 "(applicable to PyTorch 1.1 or higher)"
-            )
+            ) from None
 
         self._experiment = SummaryWriter(log_dir=self.log_dir, **self._kwargs)
         return self._experiment
 
     @property
     def version(self):
-        # Return the experiment version, int or str.
-        return "0.1"
+        return self._version
 
     @rank_zero_only
     def _init_logger(self):
@@ -171,7 +170,7 @@ class NanoDetLightningLogger(LightningLoggerBase):
         fh = logging.FileHandler(os.path.join(self.log_dir, "logs.txt"))
         fh.setLevel(logging.INFO)
         # set file formatter
-        f_fmt = "[%(name)s] [%(asctime)s] %(levelname)s: %(message)s"
+        f_fmt = "[%(name)s][%(asctime)s]%(levelname)s: %(message)s"
         file_formatter = logging.Formatter(f_fmt, datefmt="%m-%d %H:%M:%S")
         fh.setFormatter(file_formatter)
 
@@ -197,16 +196,19 @@ class NanoDetLightningLogger(LightningLoggerBase):
         self.logger.info(string)
 
     @rank_zero_only
+    def dump_cfg(self, cfg_node):
+        with open(os.path.join(self.log_dir, "train_cfg.yml"), "w") as f:
+            cfg_node.dump(stream=f)
+
+    @rank_zero_only
     def log_hyperparams(self, params):
-        # params is an argparse.Namespace
-        # your code to record hyperparameters goes here
-        pass
+        self.logger.info(f"hyperparams: {params}")
 
     @rank_zero_only
     def log_metrics(self, metrics, step):
-        # metrics is a dictionary of metric names and values
-        # your code to record metrics goes here
-        pass
+        self.logger.info(f"Val_metrics: {metrics}")
+        for k, v in metrics.items():
+            self.experiment.add_scalars("Val_metrics/" + k, {"Val": v}, step)
 
     @rank_zero_only
     def save(self):
@@ -214,6 +216,6 @@ class NanoDetLightningLogger(LightningLoggerBase):
 
     @rank_zero_only
     def finalize(self, status):
-        # Optional. Any code that needs to be run after training
-        # finishes goes here
-        pass
+        self.experiment.flush()
+        self.experiment.close()
+        self.save()

@@ -25,7 +25,7 @@ from nanodet.data.dataset import build_dataset
 from nanodet.evaluator import build_evaluator
 from nanodet.trainer.task import TrainingTask
 from nanodet.util import (
-    Logger,
+    NanoDetLightningLogger,
     cfg,
     convert_old_model,
     load_config,
@@ -58,13 +58,15 @@ def main(args):
     torch.backends.cudnn.enabled = True
     torch.backends.cudnn.benchmark = True
     mkdir(local_rank, cfg.save_dir)
-    logger = Logger(local_rank, cfg.save_dir)
+
+    logger = NanoDetLightningLogger(cfg.save_dir)
+    logger.dump_cfg(cfg)
 
     if args.seed is not None:
-        logger.log("Set random seed to {}".format(args.seed))
+        logger.info("Set random seed to {}".format(args.seed))
         pl.seed_everything(args.seed)
 
-    logger.log("Setting up data...")
+    logger.info("Setting up data...")
     train_dataset = build_dataset(cfg.data.train, "train")
     val_dataset = build_dataset(cfg.data.val, "test")
 
@@ -89,7 +91,7 @@ def main(args):
         drop_last=False,
     )
 
-    logger.log("Creating model...")
+    logger.info("Creating model...")
     task = TrainingTask(cfg, evaluator)
 
     if "load_model" in cfg.schedule:
@@ -101,7 +103,7 @@ def main(args):
             )
             ckpt = convert_old_model(ckpt)
         load_model_weight(task.model, ckpt, logger)
-        logger.log("Loaded model weight from {}".format(cfg.schedule.load_model))
+        logger.info("Loaded model weight from {}".format(cfg.schedule.load_model))
 
     model_resume_path = (
         os.path.join(cfg.save_dir, "model_last.ckpt")
@@ -119,6 +121,7 @@ def main(args):
         num_sanity_val_steps=0,
         resume_from_checkpoint=model_resume_path,
         callbacks=[ProgressBar(refresh_rate=0)],  # disable tqdm bar
+        logger=logger,
         benchmark=True,
     )
 

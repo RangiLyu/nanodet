@@ -64,6 +64,7 @@ data:
       brightness: 0.2
       contrast: [0.6, 1.4]
       saturation: [0.5, 1.2]
+      jitter_box: 0.0
       normalize: [[127.0, 127.0, 127.0], [128.0, 128.0, 128.0]]
   val:
     name: CocoDataset

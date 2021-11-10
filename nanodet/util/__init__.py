@@ -4,7 +4,7 @@ from .config import cfg, load_config
 from .data_parallel import DataParallel
 from .distributed_data_parallel import DDP
 from .flops_counter import get_model_complexity_info
-from .logger import AverageMeter, Logger, MovingAverage
+from .logger import AverageMeter, Logger, MovingAverage, NanoDetLightningLogger
 from .misc import images_to_levels, multi_apply, unmap
 from .path import collect_files, mkdir
 from .rank_filter import rank_filter
@@ -37,4 +37,5 @@ __all__ = [
     "Visualizer",
     "overlay_bbox_cv",
     "collect_files",
+    "NanoDetLightningLogger",
 ]

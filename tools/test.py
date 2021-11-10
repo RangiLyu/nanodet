@@ -24,7 +24,13 @@ from nanodet.data.collate import naive_collate
 from nanodet.data.dataset import build_dataset
 from nanodet.evaluator import build_evaluator
 from nanodet.trainer.task import TrainingTask
-from nanodet.util import Logger, cfg, convert_old_model, load_config, mkdir
+from nanodet.util import (
+    NanoDetLightningLogger,
+    cfg,
+    convert_old_model,
+    load_config,
+    mkdir,
+)
 
 
 def parse_args():
@@ -47,12 +53,12 @@ def main(args):
     timestr = datetime.datetime.now().__format__("%Y%m%d%H%M%S")
     cfg.save_dir = os.path.join(cfg.save_dir, timestr)
     mkdir(local_rank, cfg.save_dir)
-    logger = Logger(local_rank, cfg.save_dir)
+    logger = NanoDetLightningLogger(cfg.save_dir)
 
     assert args.task in ["val", "test"]
     cfg.update({"test_mode": args.task})
 
-    logger.log("Setting up data...")
+    logger.info("Setting up data...")
     val_dataset = build_dataset(cfg.data.val, args.task)
     val_dataloader = torch.utils.data.DataLoader(
         val_dataset,
@@ -65,7 +71,7 @@ def main(args):
     )
     evaluator = build_evaluator(cfg.evaluator, val_dataset)
 
-    logger.log("Creating model...")
+    logger.info("Creating model...")
     task = TrainingTask(cfg, evaluator)
 
     ckpt = torch.load(args.model)
@@ -83,8 +89,9 @@ def main(args):
         accelerator="ddp",
         log_every_n_steps=cfg.log.interval,
         num_sanity_val_steps=0,
+        logger=logger,
     )
-    logger.log("Starting testing...")
+    logger.info("Starting testing...")
     trainer.test(task, val_dataloader)
 
 

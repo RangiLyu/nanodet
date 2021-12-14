@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from collections import OrderedDict
+from typing import Any, Dict
 
 import pytorch_lightning as pl
 import torch
@@ -88,3 +89,18 @@ def convert_old_model(old_model_dict):
         new_checkpoint["optimizer_states"] = optimizer_states
 
     return new_checkpoint
+
+
+def convert_avg_params(checkpoint: Dict[str, Any]) -> Dict[str, Any]:
+    """Converts average state dict to the format that can be loaded to a model.
+    Args:
+        checkpoint: model.
+    Returns:
+        Converted average state dict.
+    """
+    state_dict = checkpoint["state_dict"]
+    avg_weights = {}
+    for k, v in state_dict.items():
+        if "avg_model" in k:
+            avg_weights[k[10:]] = v
+    return avg_weights

@@ -318,6 +318,7 @@ class TrainingTask(LightningModule):
 
     def on_pretrain_routine_end(self) -> None:
         if "weight_averager" in self.cfg.model:
+            self.logger.info("Weight Averaging is enabled")
             if self.weight_averager and self.weight_averager.has_inited():
                 self.weight_averager.to(self.weight_averager.device)
                 return

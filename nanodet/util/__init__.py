@@ -6,8 +6,6 @@ from .check_point import (
     save_model,
 )
 from .config import cfg, load_config
-from .data_parallel import DataParallel
-from .distributed_data_parallel import DDP
 from .flops_counter import get_model_complexity_info
 from .logger import AverageMeter, Logger, MovingAverage, NanoDetLightningLogger
 from .misc import images_to_levels, multi_apply, unmap
@@ -25,8 +23,6 @@ __all__ = [
     "save_model",
     "cfg",
     "load_config",
-    "DataParallel",
-    "DDP",
     "get_model_complexity_info",
     "AverageMeter",
     "Logger",

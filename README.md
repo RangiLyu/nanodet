@@ -216,26 +216,6 @@ NanoDet-RepVGG        | RepVGG-A0          | 416*416  |  27.8  | 11.3G | 6.75M |
    python tools/train.py CONFIG_FILE_PATH
    ```
 
-   For **Windows users**, if you have problems with the new lightning trainer, try to use tools/deprecated/train.py
-
-   <details>
-   <summary>follow this...</summary>
-
-   For single GPU, run
-
-    ```shell script
-    python tools/deprecated/train.py CONFIG_FILE_PATH
-    ```
-
-    For multi-GPU, NanoDet using distributed training. (Notice: Windows not support distributed training before pytorch1.7) Please run
-
-    ```shell script
-    python -m torch.distributed.launch --nproc_per_node=GPU_NUM --master_port 29501 tools/deprecated/train.py CONFIG_FILE_PATH
-    ```
-
-   </details>
-
-
 4. **Visualize Logs**
 
     TensorBoard logs are saved in `save_dir` which you set in config file.

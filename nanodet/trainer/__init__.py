@@ -11,24 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from .task import TrainingTask
 
-import torch
-
-from .dist_trainer import DistTrainer
-from .trainer import Trainer
-
-
-def build_trainer(rank, cfg, model, logger, device="cuda"):
-    if len(cfg.device.gpu_ids) > 1:
-        trainer = DistTrainer(rank, cfg, model, logger)
-        trainer.set_device(
-            cfg.device.batchsize_per_gpu, rank, device=device
-        )  # TODO: device
-    else:
-        trainer = Trainer(rank, cfg, model, logger)
-        trainer.set_device(
-            cfg.device.batchsize_per_gpu,
-            cfg.device.gpu_ids,
-            device=device,
-        )
-    return trainer
+__all__ = ["TrainingTask"]

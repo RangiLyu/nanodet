@@ -1,5 +1,10 @@
 from .box_transform import bbox2distance, distance2bbox
-from .check_point import convert_old_model, load_model_weight, save_model
+from .check_point import (
+    convert_avg_params,
+    convert_old_model,
+    load_model_weight,
+    save_model,
+)
 from .config import cfg, load_config
 from .data_parallel import DataParallel
 from .distributed_data_parallel import DDP
@@ -38,4 +43,5 @@ __all__ = [
     "overlay_bbox_cv",
     "collect_files",
     "NanoDetLightningLogger",
+    "convert_avg_params",
 ]

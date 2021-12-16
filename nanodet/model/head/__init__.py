@@ -2,6 +2,7 @@ import copy
 
 from .gfl_head import GFLHead
 from .nanodet_head import NanoDetHead
+from .nanodet_plus_head import NanoDetPlusHead
 
 
 def build_head(cfg):
@@ -11,5 +12,7 @@ def build_head(cfg):
         return GFLHead(**head_cfg)
     elif name == "NanoDetHead":
         return NanoDetHead(**head_cfg)
+    elif name == "NanoDetPlusHead":
+        return NanoDetPlusHead(**head_cfg)
     else:
         raise NotImplementedError

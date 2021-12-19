@@ -44,9 +44,7 @@ def main(config, model_path, output_path, input_shape=(320, 320)):
     dummy_input = torch.autograd.Variable(
         torch.randn(1, 3, input_shape[0], input_shape[1])
     )
-    output_names = None
-    if config.model.arch.head.name == "NanoDetHead":
-        output_names = generate_ouput_names(config.model.arch.head)
+
     torch.onnx.export(
         model,
         dummy_input,
@@ -54,7 +52,8 @@ def main(config, model_path, output_path, input_shape=(320, 320)):
         verbose=True,
         keep_initializers_as_inputs=True,
         opset_version=11,
-        output_names=output_names,
+        input_names=["data"],
+        output_names=["output"],
     )
     logger.log("finished exporting onnx ")
 

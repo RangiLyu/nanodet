@@ -61,8 +61,9 @@ class Integral(nn.Module):
             x (Tensor): Integral result of box locations, i.e., distance
                 offsets from the box center in four directions, shape (N, 4).
         """
-        x = F.softmax(x.reshape(-1, self.reg_max + 1), dim=1)
-        x = F.linear(x, self.project.type_as(x)).reshape(-1, 4)
+        shape = x.size()
+        x = F.softmax(x.reshape(*shape[:-1], 4, self.reg_max + 1), dim=-1)
+        x = F.linear(x, self.project.type_as(x)).reshape(*shape[:-1], 4)
         return x
 
 

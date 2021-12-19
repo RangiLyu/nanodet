@@ -66,6 +66,7 @@ class NanoDetPlusHead(nn.Module):
     Args:
         num_classes (int): Number of categories excluding the background
             category.
+        loss (dict): Loss config.
         input_channel (int): Number of channels of the input feature.
         feat_channels (int): Number of channels of the feature.
             Default: 96.
@@ -180,36 +181,29 @@ class NanoDetPlusHead(nn.Module):
             self.cls_convs,
             self.gfl_cls,
         ):
-            batch_size = feat.shape[0]
             for conv in cls_convs:
                 feat = conv(feat)
-            output = (
-                gfl_cls(feat)
-                .permute(0, 2, 3, 1)
-                .reshape(batch_size, -1, self.num_classes + 4 * (self.reg_max + 1))
-            )
-            outputs.append(output)
-        return torch.cat(outputs, dim=1)
+            output = gfl_cls(feat)
+            outputs.append(output.flatten(start_dim=2))
+        outputs = torch.cat(outputs, dim=2).permute(0, 2, 1)
+        return outputs
 
-    def loss(self, preds, gt_meta):
+    def loss(self, preds, gt_meta, aux_preds=None):
         """Compute losses.
         Args:
             preds (Tensor): Prediction output.
             gt_meta (dict): Ground truth information.
+            aux_preds (tuple[Tensor], optional): Auxiliary head prediction output.
 
         Returns:
             loss (Tensor): Loss tensor.
             loss_states (dict): State dict of each loss.
         """
-        cls_preds, reg_preds = preds.split(
-            [self.num_classes, 4 * (self.reg_max + 1)], dim=-1
-        )
-        batch_size = cls_preds.shape[0]
-        input_height, input_width = gt_meta["img"].shape[2:]
-        device = cls_preds.device
         gt_bboxes = gt_meta["gt_bboxes"]
         gt_labels = gt_meta["gt_labels"]
-
+        device = preds[0].device
+        batch_size = preds[0].shape[0]
+        input_height, input_width = gt_meta["img"].shape[2:]
         featmap_sizes = [
             (math.ceil(input_height / stride), math.ceil(input_width) / stride)
             for stride in self.strides
@@ -227,42 +221,72 @@ class NanoDetPlusHead(nn.Module):
         ]
         center_priors = torch.cat(mlvl_center_priors, dim=1)
 
+        cls_preds, reg_preds = preds.split(
+            [self.num_classes, 4 * (self.reg_max + 1)], dim=-1
+        )
         dis_preds = self.distribution_project(reg_preds) * center_priors[..., 2, None]
         decoded_bboxes = distance2bbox(center_priors[..., :2], dis_preds)
 
-        (
-            all_labels,
-            all_label_scores,
-            all_bbox_targets,
-            all_dist_targets,
-            num_pos_per_img,
-        ) = multi_apply(
-            self.target_assign_single_img,
-            cls_preds.detach(),
-            center_priors,
-            decoded_bboxes.detach(),
-            gt_bboxes,
-            gt_labels,
+        if aux_preds is not None:
+            # use auxiliary head to assign
+            aux_cls_preds, aux_reg_preds = aux_preds.split(
+                [self.num_classes, 4 * (self.reg_max + 1)], dim=-1
+            )
+            aux_dis_preds = (
+                self.distribution_project(aux_reg_preds) * center_priors[..., 2, None]
+            )
+            aux_decoded_bboxes = distance2bbox(center_priors[..., :2], aux_dis_preds)
+            batch_assign_res = multi_apply(
+                self.target_assign_single_img,
+                aux_cls_preds.detach(),
+                center_priors,
+                aux_decoded_bboxes.detach(),
+                gt_bboxes,
+                gt_labels,
+            )
+        else:
+            # use self prediction to assign
+            batch_assign_res = multi_apply(
+                self.target_assign_single_img,
+                cls_preds.detach(),
+                center_priors,
+                decoded_bboxes.detach(),
+                gt_bboxes,
+                gt_labels,
+            )
+
+        loss, loss_states = self._get_loss_from_assign(
+            cls_preds, reg_preds, decoded_bboxes, batch_assign_res
         )
 
+        if aux_preds is not None:
+            aux_loss, aux_loss_states = self._get_loss_from_assign(
+                aux_cls_preds, aux_reg_preds, aux_decoded_bboxes, batch_assign_res
+            )
+            loss = loss + aux_loss
+            for k, v in aux_loss_states.items():
+                loss_states["aux_" + k] = v
+        return loss, loss_states
+
+    def _get_loss_from_assign(self, cls_preds, reg_preds, decoded_bboxes, assign):
+        device = cls_preds.device
+        labels, label_scores, bbox_targets, dist_targets, num_pos = assign
         num_total_samples = max(
-            reduce_mean(torch.tensor(sum(num_pos_per_img)).to(device)).item(), 1.0
+            reduce_mean(torch.tensor(sum(num_pos)).to(device)).item(), 1.0
         )
 
-        all_labels = torch.cat(all_labels, dim=0)
-        all_label_scores = torch.cat(all_label_scores, dim=0)
-        all_bbox_targets = torch.cat(all_bbox_targets, dim=0)
+        labels = torch.cat(labels, dim=0)
+        label_scores = torch.cat(label_scores, dim=0)
+        bbox_targets = torch.cat(bbox_targets, dim=0)
         cls_preds = cls_preds.reshape(-1, 80)
         reg_preds = reg_preds.reshape(-1, 4 * (self.reg_max + 1))
         decoded_bboxes = decoded_bboxes.reshape(-1, 4)
         loss_qfl = self.loss_qfl(
-            cls_preds,
-            (all_labels, all_label_scores),
-            avg_factor=num_total_samples,
+            cls_preds, (labels, label_scores), avg_factor=num_total_samples
         )
 
         pos_inds = torch.nonzero(
-            (all_labels >= 0) & (all_labels < self.num_classes), as_tuple=False
+            (labels >= 0) & (labels < self.num_classes), as_tuple=False
         ).squeeze(1)
 
         if len(pos_inds) > 0:
@@ -271,15 +295,15 @@ class NanoDetPlusHead(nn.Module):
 
             loss_bbox = self.loss_bbox(
                 decoded_bboxes[pos_inds],
-                all_bbox_targets[pos_inds],
+                bbox_targets[pos_inds],
                 weight=weight_targets,
                 avg_factor=bbox_avg_factor,
             )
 
-            all_dist_targets = torch.cat(all_dist_targets, dim=0)
+            dist_targets = torch.cat(dist_targets, dim=0)
             loss_dfl = self.loss_dfl(
                 reg_preds[pos_inds].reshape(-1, self.reg_max + 1),
-                all_dist_targets[pos_inds].reshape(-1),
+                dist_targets[pos_inds].reshape(-1),
                 weight=weight_targets[:, None].expand(-1, 4).reshape(-1),
                 avg_factor=4.0 * bbox_avg_factor,
             )
@@ -444,9 +468,9 @@ class NanoDetPlusHead(nn.Module):
     def get_bboxes(self, cls_preds, reg_preds, img_metas):
         """Decode the outputs to bboxes.
         Args:
-            cls_pred (Tensor): Shape (num_imgs, num_points, num_classes).
-            reg_pred (Tensor): Shape (num_imgs, num_points, 4 * (regmax + 1)).
-            img_meta (dict): Dict of image info.
+            cls_preds (Tensor): Shape (num_imgs, num_points, num_classes).
+            reg_preds (Tensor): Shape (num_imgs, num_points, 4 * (regmax + 1)).
+            img_metas (dict): Dict of image info.
 
         Returns:
             results_list (list[tuple]): List of detection bboxes and labels.
@@ -497,6 +521,7 @@ class NanoDetPlusHead(nn.Module):
     ):
         """Generate centers of a single stage feature map.
         Args:
+            batch_size (int): Number of images in one batch.
             featmap_size (tuple[int]): height and width of the feature map
             stride (int): down sample stride of the feature map
             dtype (obj:`torch.dtype`): data type of the tensors

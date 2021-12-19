@@ -196,6 +196,10 @@ class NanoDetLightningLogger(LightningLoggerBase):
         self.logger.info(string)
 
     @rank_zero_only
+    def log(self, string):
+        self.logger.info(string)
+
+    @rank_zero_only
     def dump_cfg(self, cfg_node):
         with open(os.path.join(self.log_dir, "train_cfg.yml"), "w") as f:
             cfg_node.dump(stream=f)

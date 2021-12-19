@@ -28,7 +28,11 @@ def test_gfl_head_loss():
     preds = head.forward(feat)
 
     # Test that empty ground truth encourages the network to predict background
-    meta = dict(gt_bboxes=[np.random.random((0, 4))], gt_labels=[np.array([])])
+    meta = dict(
+        img=torch.rand((2, 3, 64, 64)),
+        gt_bboxes=[np.random.random((0, 4))],
+        gt_labels=[np.array([])],
+    )
     loss, empty_gt_losses = head.loss(preds, meta)
     # When there is no truth, the cls loss should be nonzero but there should
     # be no box loss.
@@ -49,7 +53,9 @@ def test_gfl_head_loss():
         np.array([[23.6667, 23.8757, 238.6326, 151.8874]], dtype=np.float32),
     ]
     gt_labels = [np.array([2])]
-    meta = dict(gt_bboxes=gt_bboxes, gt_labels=gt_labels)
+    meta = dict(
+        img=torch.rand((2, 3, 64, 64)), gt_bboxes=gt_bboxes, gt_labels=gt_labels
+    )
     loss, one_gt_losses = head.loss(preds, meta)
     onegt_qfl_loss = one_gt_losses["loss_qfl"]
     onegt_box_loss = one_gt_losses["loss_bbox"]

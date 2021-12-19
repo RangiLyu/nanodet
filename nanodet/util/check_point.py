@@ -22,7 +22,7 @@ from .rank_filter import rank_filter
 
 
 def load_model_weight(model, checkpoint, logger):
-    state_dict = checkpoint["state_dict"]
+    state_dict = checkpoint["state_dict"].copy()
     # strip prefix of state_dict
     if list(state_dict.keys())[0].startswith("module."):
         state_dict = {k[7:]: v for k, v in checkpoint["state_dict"].items()}

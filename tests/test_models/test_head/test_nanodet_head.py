@@ -27,10 +27,9 @@ def test_gfl_head_loss():
     head = build_head(cfg)
     feat = [torch.rand(1, 1, 320 // stride, 320 // stride) for stride in [8, 16, 32]]
 
-    cls_preds, reg_preds = head.forward(feat)
-    for cls, reg, stride in zip(cls_preds, reg_preds, [8, 16, 32]):
-        assert cls.shape == (1, 80, 320 // stride, 320 // stride)
-        assert reg.shape == (1, (8 + 1) * 4, 320 // stride, 320 // stride)
+    preds = head.forward(feat)
+    num_points = sum([(320 // stride) ** 2 for stride in [8, 16, 32]])
+    assert preds.shape == (1, num_points, 80 + (8 + 1) * 4)
 
     head_cfg = dict(
         name="NanoDetHead",
@@ -53,7 +52,6 @@ def test_gfl_head_loss():
     cfg = CfgNode(head_cfg)
     head = build_head(cfg)
 
-    cls_preds, reg_preds = head.forward(feat)
-    for cls, reg, stride in zip(cls_preds, reg_preds, [8, 16, 32]):
-        assert cls.shape == (1, 20, 320 // stride, 320 // stride)
-        assert reg.shape == (1, (5 + 1) * 4, 320 // stride, 320 // stride)
+    preds = head.forward(feat)
+    num_points = sum([(320 // stride) ** 2 for stride in [8, 16, 32]])
+    assert preds.shape == (1, num_points, 20 + (5 + 1) * 4)

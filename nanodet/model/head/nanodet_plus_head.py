@@ -235,7 +235,7 @@ class NanoDetPlusHead(nn.Module):
         labels = torch.cat(labels, dim=0)
         label_scores = torch.cat(label_scores, dim=0)
         bbox_targets = torch.cat(bbox_targets, dim=0)
-        cls_preds = cls_preds.reshape(-1, 80)
+        cls_preds = cls_preds.reshape(-1, self.num_classes)
         reg_preds = reg_preds.reshape(-1, 4 * (self.reg_max + 1))
         decoded_bboxes = decoded_bboxes.reshape(-1, 4)
         loss_qfl = self.loss_qfl(

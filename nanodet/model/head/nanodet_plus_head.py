@@ -158,8 +158,8 @@ class NanoDetPlusHead(nn.Module):
         """
         gt_bboxes = gt_meta["gt_bboxes"]
         gt_labels = gt_meta["gt_labels"]
-        device = preds[0].device
-        batch_size = preds[0].shape[0]
+        device = preds.device
+        batch_size = preds.shape[0]
         input_height, input_width = gt_meta["img"].shape[2:]
         featmap_sizes = [
             (math.ceil(input_height / stride), math.ceil(input_width) / stride)

@@ -36,12 +36,18 @@ public:
     static NanoDet* detector;
     ncnn::Net* Net;
     static bool hasGPU;
+    // modify these parameters to the same with your config if you want to use your own model
+    int input_size[2] = {416, 416}; // input height and width
+    int num_class = 80; // number of classes. 80 for COCO
+    int reg_max = 7; // `reg_max` set in the training config. Default: 7.
 
+    // multi-level prediction features,
+    // classification |regression |stride
     std::vector<HeadInfo> heads_info{
-        // cls_pred|dis_pred|stride
         {"cls_pred_stride_8", "dis_pred_stride_8", 8},
         {"cls_pred_stride_16", "dis_pred_stride_16", 16},
         {"cls_pred_stride_32", "dis_pred_stride_32", 32},
+        {"cls_pred_stride_64", "dis_pred_stride_64", 64}, // nanodet-plus has 4 level features
     };
 
     std::vector<BoxInfo> detect(cv::Mat image, float score_threshold, float nms_threshold);
@@ -60,9 +66,6 @@ private:
     void decode_infer(ncnn::Mat& cls_pred, ncnn::Mat& dis_pred, int stride, float threshold, std::vector<std::vector<BoxInfo>>& results);
     BoxInfo disPred2Bbox(const float*& dfl_det, int label, float score, int x, int y, int stride);
     static void nms(std::vector<BoxInfo>& result, float nms_threshold);
-    int input_size[2] = {320, 320};
-    int num_class = 80;
-    int reg_max = 7;
 
 };
 

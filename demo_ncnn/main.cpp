@@ -226,8 +226,10 @@ int image_demo(NanoDet &detector, const char* imagepath)
 {
     // const char* imagepath = "D:/Dataset/coco/val2017/*.jpg";
 
-    std::vector<std::string> filenames;
+    std::vector<cv::String> filenames;
     cv::glob(imagepath, filenames, false);
+    int height = detector.input_size[0];
+    int width = detector.input_size[1];
 
     for (auto img_name : filenames)
     {
@@ -239,7 +241,7 @@ int image_demo(NanoDet &detector, const char* imagepath)
         }
         object_rect effect_roi;
         cv::Mat resized_img;
-        resize_uniform(image, resized_img, cv::Size(320, 320), effect_roi);
+        resize_uniform(image, resized_img, cv::Size(width, height), effect_roi);
         auto results = detector.detect(resized_img, 0.4, 0.5);
         draw_bboxes(image, results, effect_roi);
         cv::waitKey(0);
@@ -252,13 +254,15 @@ int webcam_demo(NanoDet& detector, int cam_id)
 {
     cv::Mat image;
     cv::VideoCapture cap(cam_id);
+    int height = detector.input_size[0];
+    int width = detector.input_size[1];
 
     while (true)
     {
         cap >> image;
         object_rect effect_roi;
         cv::Mat resized_img;
-        resize_uniform(image, resized_img, cv::Size(320, 320), effect_roi);
+        resize_uniform(image, resized_img, cv::Size(width, height), effect_roi);
         auto results = detector.detect(resized_img, 0.4, 0.5);
         draw_bboxes(image, results, effect_roi);
         cv::waitKey(1);
@@ -270,13 +274,15 @@ int video_demo(NanoDet& detector, const char* path)
 {
     cv::Mat image;
     cv::VideoCapture cap(path);
+    int height = detector.input_size[0];
+    int width = detector.input_size[1];
 
     while (true)
     {
         cap >> image;
         object_rect effect_roi;
         cv::Mat resized_img;
-        resize_uniform(image, resized_img, cv::Size(320, 320), effect_roi);
+        resize_uniform(image, resized_img, cv::Size(width, height), effect_roi);
         auto results = detector.detect(resized_img, 0.4, 0.5);
         draw_bboxes(image, results, effect_roi);
         cv::waitKey(1);
@@ -288,11 +294,13 @@ int benchmark(NanoDet& detector)
 {
     int loop_num = 100;
     int warm_up = 8;
+    int height = detector.input_size[0];
+    int width = detector.input_size[1];
 
     double time_min = DBL_MAX;
     double time_max = -DBL_MAX;
     double time_avg = 0;
-    ncnn::Mat input = ncnn::Mat(320, 320, 3);
+    ncnn::Mat input = ncnn::Mat(height, width, 3);
     input.fill(0.01f);
     for (int i = 0; i < warm_up + loop_num; i++)
     {

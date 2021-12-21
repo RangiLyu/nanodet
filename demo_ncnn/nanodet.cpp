@@ -123,8 +123,8 @@ std::vector<BoxInfo> NanoDet::detect(cv::Mat image, float score_threshold, float
 
 void NanoDet::decode_infer(ncnn::Mat& cls_pred, ncnn::Mat& dis_pred, int stride, float threshold, std::vector<std::vector<BoxInfo>>& results)
 {
-    int feature_h = this->input_size[1] / stride;
-    int feature_w = this->input_size[0] / stride;
+    int feature_h = ceil(this->input_size[1] / stride);
+    int feature_w = ceil(this->input_size[0] / stride);
 
     //cv::Mat debug_heatmap = cv::Mat(feature_h, feature_w, CV_8UC3);
     for (int idx = 0; idx < feature_h * feature_w; idx++)
@@ -156,8 +156,8 @@ void NanoDet::decode_infer(ncnn::Mat& cls_pred, ncnn::Mat& dis_pred, int stride,
 
 BoxInfo NanoDet::disPred2Bbox(const float*& dfl_det, int label, float score, int x, int y, int stride)
 {
-    float ct_x = (x + 0.5) * stride;
-    float ct_y = (y + 0.5) * stride;
+    float ct_x = x * stride;
+    float ct_y = y * stride;
     std::vector<float> dis_pred;
     dis_pred.resize(4);
     for (int i = 0; i < 4; i++)

@@ -186,6 +186,8 @@ class GFLHead(nn.Module):
         normal_init(self.gfl_reg, std=0.01)
 
     def forward(self, feats):
+        if torch.onnx.is_in_onnx_export:
+            return self._forward_onnx(feats)
         outputs = []
         for x, scale in zip(feats, self.scales):
             cls_feat = x
@@ -687,3 +689,20 @@ class GFLHead(nn.Module):
         cells_cx = (grid_cells[:, 2] + grid_cells[:, 0]) / 2
         cells_cy = (grid_cells[:, 3] + grid_cells[:, 1]) / 2
         return torch.stack([cells_cx, cells_cy], dim=-1)
+
+    def _forward_onnx(self, feats):
+        """only used for onnx export"""
+        outputs = []
+        for x, scale in zip(feats, self.scales):
+            cls_feat = x
+            reg_feat = x
+            for cls_conv in self.cls_convs:
+                cls_feat = cls_conv(cls_feat)
+            for reg_conv in self.reg_convs:
+                reg_feat = reg_conv(reg_feat)
+            cls_pred = self.gfl_cls(cls_feat)
+            reg_pred = scale(self.gfl_reg(reg_feat))
+            cls_pred = cls_pred.sigmoid()
+            out = torch.cat([cls_pred, reg_pred], dim=1)
+            outputs.append(out.flatten(start_dim=2))
+        return torch.cat(outputs, dim=2).permute(0, 2, 1)

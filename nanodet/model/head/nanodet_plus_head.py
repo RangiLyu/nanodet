@@ -137,7 +137,7 @@ class NanoDetPlusHead(nn.Module):
 
     def forward(self, feats):
         if torch.onnx.is_in_onnx_export:
-            return self.forward_onnx_concat(feats)
+            return self._forward_onnx(feats)
         outputs = []
         for feat, cls_convs, gfl_cls in zip(
             feats,
@@ -150,43 +150,6 @@ class NanoDetPlusHead(nn.Module):
             outputs.append(output.flatten(start_dim=2))
         outputs = torch.cat(outputs, dim=2).permute(0, 2, 1)
         return outputs
-
-    def forward_onnx(self, feats):
-        cls_outs = []
-        reg_outs = []
-        for feat, cls_convs, gfl_cls in zip(
-            feats,
-            self.cls_convs,
-            self.gfl_cls,
-        ):
-            for conv in cls_convs:
-                feat = conv(feat)
-            output = gfl_cls(feat).flatten(start_dim=2)
-            cls_pred, reg_pred = output.split(
-                [self.num_classes, 4 * (self.reg_max + 1)], dim=1
-            )
-            cls_pred = cls_pred.sigmoid()
-            cls_outs.append(cls_pred.permute(0, 2, 1))
-            reg_outs.append(reg_pred.permute(0, 2, 1))
-        return cls_outs, reg_outs
-
-    def forward_onnx_concat(self, feats):
-        outputs = []
-        for feat, cls_convs, gfl_cls in zip(
-            feats,
-            self.cls_convs,
-            self.gfl_cls,
-        ):
-            for conv in cls_convs:
-                feat = conv(feat)
-            output = gfl_cls(feat)
-            cls_pred, reg_pred = output.split(
-                [self.num_classes, 4 * (self.reg_max + 1)], dim=1
-            )
-            cls_pred = cls_pred.sigmoid()
-            out = torch.cat([cls_pred, reg_pred], dim=1)
-            outputs.append(out.flatten(start_dim=2))
-        return torch.cat(outputs, dim=2).permute(0, 2, 1)
 
     def loss(self, preds, gt_meta, aux_preds=None):
         """Compute losses.
@@ -538,3 +501,22 @@ class NanoDetPlusHead(nn.Module):
         strides = x.new_full((x.shape[0],), stride)
         proiors = torch.stack([x, y, strides, strides], dim=-1)
         return proiors.unsqueeze(0).repeat(batch_size, 1, 1)
+
+    def _forward_onnx(self, feats):
+        """only used for onnx export"""
+        outputs = []
+        for feat, cls_convs, gfl_cls in zip(
+            feats,
+            self.cls_convs,
+            self.gfl_cls,
+        ):
+            for conv in cls_convs:
+                feat = conv(feat)
+            output = gfl_cls(feat)
+            cls_pred, reg_pred = output.split(
+                [self.num_classes, 4 * (self.reg_max + 1)], dim=1
+            )
+            cls_pred = cls_pred.sigmoid()
+            out = torch.cat([cls_pred, reg_pred], dim=1)
+            outputs.append(out.flatten(start_dim=2))
+        return torch.cat(outputs, dim=2).permute(0, 2, 1)

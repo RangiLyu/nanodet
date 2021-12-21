@@ -84,6 +84,10 @@ class NanoDetPlusHead(nn.Module):
         self.loss_bbox = GIoULoss(loss_weight=self.loss_cfg.loss_bbox.loss_weight)
         self._init_layers()
         self.init_weights()
+        self.register_buffer(
+            "project",
+            torch.linspace(0, self.reg_max, self.reg_max + 1, dtype=torch.float32),
+        )
 
     def _init_layers(self):
         self.cls_convs = nn.ModuleList()
@@ -132,6 +136,8 @@ class NanoDetPlusHead(nn.Module):
         print("Finish initialize NanoDet-Plus Head.")
 
     def forward(self, feats):
+        if torch.onnx.is_in_onnx_export:
+            return self.forward_onnx_concat(feats)
         outputs = []
         for feat, cls_convs, gfl_cls in zip(
             feats,
@@ -144,6 +150,43 @@ class NanoDetPlusHead(nn.Module):
             outputs.append(output.flatten(start_dim=2))
         outputs = torch.cat(outputs, dim=2).permute(0, 2, 1)
         return outputs
+
+    def forward_onnx(self, feats):
+        cls_outs = []
+        reg_outs = []
+        for feat, cls_convs, gfl_cls in zip(
+            feats,
+            self.cls_convs,
+            self.gfl_cls,
+        ):
+            for conv in cls_convs:
+                feat = conv(feat)
+            output = gfl_cls(feat).flatten(start_dim=2)
+            cls_pred, reg_pred = output.split(
+                [self.num_classes, 4 * (self.reg_max + 1)], dim=1
+            )
+            cls_pred = cls_pred.sigmoid()
+            cls_outs.append(cls_pred.permute(0, 2, 1))
+            reg_outs.append(reg_pred.permute(0, 2, 1))
+        return cls_outs, reg_outs
+
+    def forward_onnx_concat(self, feats):
+        outputs = []
+        for feat, cls_convs, gfl_cls in zip(
+            feats,
+            self.cls_convs,
+            self.gfl_cls,
+        ):
+            for conv in cls_convs:
+                feat = conv(feat)
+            output = gfl_cls(feat)
+            cls_pred, reg_pred = output.split(
+                [self.num_classes, 4 * (self.reg_max + 1)], dim=1
+            )
+            cls_pred = cls_pred.sigmoid()
+            out = torch.cat([cls_pred, reg_pred], dim=1)
+            outputs.append(out.flatten(start_dim=2))
+        return torch.cat(outputs, dim=2).permute(0, 2, 1)
 
     def loss(self, preds, gt_meta, aux_preds=None):
         """Compute losses.

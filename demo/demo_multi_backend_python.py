@@ -1,11 +1,3 @@
-# -*- coding: utf-8 -*-
-
-"""
-name:       demo_ncnn.py
-date:       2020-12-16 11:21:07
-Env.:       Python 3.7.3, WIN 10
-"""
-
 import argparse
 from abc import ABCMeta, abstractmethod
 from pathlib import Path
@@ -15,256 +7,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.special import softmax
 from tqdm import tqdm
-
-# Copy from nanodet/util/visualization.py
-_COLORS = (
-    np.array(
-        [
-            0.000,
-            0.447,
-            0.741,
-            0.850,
-            0.325,
-            0.098,
-            0.929,
-            0.694,
-            0.125,
-            0.494,
-            0.184,
-            0.556,
-            0.466,
-            0.674,
-            0.188,
-            0.301,
-            0.745,
-            0.933,
-            0.635,
-            0.078,
-            0.184,
-            0.300,
-            0.300,
-            0.300,
-            0.600,
-            0.600,
-            0.600,
-            1.000,
-            0.000,
-            0.000,
-            1.000,
-            0.500,
-            0.000,
-            0.749,
-            0.749,
-            0.000,
-            0.000,
-            1.000,
-            0.000,
-            0.000,
-            0.000,
-            1.000,
-            0.667,
-            0.000,
-            1.000,
-            0.333,
-            0.333,
-            0.000,
-            0.333,
-            0.667,
-            0.000,
-            0.333,
-            1.000,
-            0.000,
-            0.667,
-            0.333,
-            0.000,
-            0.667,
-            0.667,
-            0.000,
-            0.667,
-            1.000,
-            0.000,
-            1.000,
-            0.333,
-            0.000,
-            1.000,
-            0.667,
-            0.000,
-            1.000,
-            1.000,
-            0.000,
-            0.000,
-            0.333,
-            0.500,
-            0.000,
-            0.667,
-            0.500,
-            0.000,
-            1.000,
-            0.500,
-            0.333,
-            0.000,
-            0.500,
-            0.333,
-            0.333,
-            0.500,
-            0.333,
-            0.667,
-            0.500,
-            0.333,
-            1.000,
-            0.500,
-            0.667,
-            0.000,
-            0.500,
-            0.667,
-            0.333,
-            0.500,
-            0.667,
-            0.667,
-            0.500,
-            0.667,
-            1.000,
-            0.500,
-            1.000,
-            0.000,
-            0.500,
-            1.000,
-            0.333,
-            0.500,
-            1.000,
-            0.667,
-            0.500,
-            1.000,
-            1.000,
-            0.500,
-            0.000,
-            0.333,
-            1.000,
-            0.000,
-            0.667,
-            1.000,
-            0.000,
-            1.000,
-            1.000,
-            0.333,
-            0.000,
-            1.000,
-            0.333,
-            0.333,
-            1.000,
-            0.333,
-            0.667,
-            1.000,
-            0.333,
-            1.000,
-            1.000,
-            0.667,
-            0.000,
-            1.000,
-            0.667,
-            0.333,
-            1.000,
-            0.667,
-            0.667,
-            1.000,
-            0.667,
-            1.000,
-            1.000,
-            1.000,
-            0.000,
-            1.000,
-            1.000,
-            0.333,
-            1.000,
-            1.000,
-            0.667,
-            1.000,
-            0.333,
-            0.000,
-            0.000,
-            0.500,
-            0.000,
-            0.000,
-            0.667,
-            0.000,
-            0.000,
-            0.833,
-            0.000,
-            0.000,
-            1.000,
-            0.000,
-            0.000,
-            0.000,
-            0.167,
-            0.000,
-            0.000,
-            0.333,
-            0.000,
-            0.000,
-            0.500,
-            0.000,
-            0.000,
-            0.667,
-            0.000,
-            0.000,
-            0.833,
-            0.000,
-            0.000,
-            1.000,
-            0.000,
-            0.000,
-            0.000,
-            0.167,
-            0.000,
-            0.000,
-            0.333,
-            0.000,
-            0.000,
-            0.500,
-            0.000,
-            0.000,
-            0.667,
-            0.000,
-            0.000,
-            0.833,
-            0.000,
-            0.000,
-            1.000,
-            0.000,
-            0.000,
-            0.000,
-            0.143,
-            0.143,
-            0.143,
-            0.286,
-            0.286,
-            0.286,
-            0.429,
-            0.429,
-            0.429,
-            0.571,
-            0.571,
-            0.571,
-            0.714,
-            0.714,
-            0.714,
-            0.857,
-            0.857,
-            0.857,
-            0.000,
-            0.447,
-            0.741,
-            0.314,
-            0.717,
-            0.741,
-            0.50,
-            0.5,
-            0,
-        ]
-    )
-    .astype(np.float32)
-    .reshape(-1, 3)
-)
 
 
 def get_resize_matrix(raw_shape, dst_shape, keep_ratio):
@@ -658,17 +400,63 @@ class NanoDetABC(metaclass=ABCMeta):
             cv2.imwrite(save_path, img_draw)
 
 
-class NanoDetONNX(NanoDetABC):
-    def __init__(self, model_path, *args, **kwargs):
-        import onnxruntime as ort
+class NanoDetMNN(NanoDetABC):
+    import MNN as MNNlib
 
+    def __init__(self, model_path, *args, **kwargs):
+        super(NanoDetMNN, self).__init__(*args, **kwargs)
+        print("Using MNN as inference backend")
+        print(f"Using weight: {model_path}")
+
+        # load model
+        self.model_path = model_path
+        self.interpreter = self.MNNlib.Interpreter(self.model_path)
+        self.session = self.interpreter.createSession()
+        self.input_tensor = self.interpreter.getSessionInput(self.session)
+
+    def infer_image(self, img_input):
+        tmp_input = self.MNNlib.Tensor(
+            (1, 3, self.input_size[1], self.input_size[0]),
+            self.MNNlib.Halide_Type_Float,
+            img_input,
+            self.MNNlib.Tensor_DimensionType_Caffe,
+        )
+        self.input_tensor.copyFrom(tmp_input)
+        self.interpreter.runSession(self.session)
+        score_out_name = [
+            "cls_pred_stride_8",
+            "cls_pred_stride_16",
+            "cls_pred_stride_32",
+        ]
+        scores = [
+            self.interpreter.getSessionOutput(self.session, x).getData()
+            for x in score_out_name
+        ]
+        scores = [np.reshape(x, (-1, 80)) for x in scores]
+        boxes_out_name = [
+            "dis_pred_stride_8",
+            "dis_pred_stride_16",
+            "dis_pred_stride_32",
+        ]
+        raw_boxes = [
+            self.interpreter.getSessionOutput(self.session, x).getData()
+            for x in boxes_out_name
+        ]
+        raw_boxes = [np.reshape(x, (-1, 32)) for x in raw_boxes]
+        return scores, raw_boxes
+
+
+class NanoDetONNX(NanoDetABC):
+    import onnxruntime as ort
+
+    def __init__(self, model_path, *args, **kwargs):
         super(NanoDetONNX, self).__init__(*args, **kwargs)
         print("Using ONNX as inference backend")
         print(f"Using weight: {model_path}")
 
         # load model
         self.model_path = model_path
-        self.ort_session = ort.InferenceSession(self.model_path)
+        self.ort_session = self.ort.InferenceSession(self.model_path)
         self.input_name = self.ort_session.get_inputs()[0].name
 
     def infer_image(self, img_input):
@@ -679,9 +467,9 @@ class NanoDetONNX(NanoDetABC):
 
 
 class NanoDetTorch(NanoDetABC):
-    def __init__(self, model_path, cfg_path, *args, **kwargs):
-        import torch
+    import torch
 
+    def __init__(self, model_path, cfg_path, *args, **kwargs):
         from nanodet.model.arch import build_model
         from nanodet.util import Logger, cfg, load_config, load_model_weight
 
@@ -695,15 +483,15 @@ class NanoDetTorch(NanoDetABC):
         load_config(cfg, cfg_path)
         self.logger = Logger(-1, cfg.save_dir, False)
         self.model = build_model(cfg.model)
-        checkpoint = torch.load(model_path, map_location=lambda storage, loc: storage)
+        checkpoint = self.torch.load(
+            model_path, map_location=lambda storage, loc: storage
+        )
         load_model_weight(self.model, checkpoint, self.logger)
 
     def infer_image(self, img_input):
-        import torch
-
         self.model.train(False)
-        with torch.no_grad():
-            inference_results = self.model(torch.from_numpy(img_input))
+        with self.torch.no_grad():
+            inference_results = self.model(self.torch.from_numpy(img_input))
         scores = [
             x.permute(0, 2, 3, 1).reshape((-1, 80)).sigmoid().detach().numpy()
             for x in inference_results[0]
@@ -716,19 +504,21 @@ class NanoDetTorch(NanoDetABC):
 
 
 class NanoDetNCNN(NanoDetABC):
-    def __init__(self, model_param, model_bin, *args, **kwargs):
+    def __init__(self, model_path, *args, **kwargs):
         import ncnn
+
+        model_bin = model_path[:-3] + "bin"
 
         super(NanoDetNCNN, self).__init__(*args, **kwargs)
         print("Using ncnn as inference backend")
-        print(f"Using param: {model_param}, bin: {model_bin}")
+        print(f"Using param: {model_path}, bin: {model_bin}")
 
         # load model
-        self.model_param = model_param
+        self.model_param = model_path
         self.model_bin = model_bin
 
         self.net = ncnn.Net()
-        self.net.load_param(model_param)
+        self.net.load_param(model_path)
         self.net.load_model(model_bin)
         self.input_name = "input.1"
 
@@ -758,13 +548,261 @@ class NanoDetNCNN(NanoDetABC):
         return scores, raw_boxes
 
 
+# Copy from nanodet/util/visualization.py
+_COLORS = (
+    np.array(
+        [
+            0.000,
+            0.447,
+            0.741,
+            0.850,
+            0.325,
+            0.098,
+            0.929,
+            0.694,
+            0.125,
+            0.494,
+            0.184,
+            0.556,
+            0.466,
+            0.674,
+            0.188,
+            0.301,
+            0.745,
+            0.933,
+            0.635,
+            0.078,
+            0.184,
+            0.300,
+            0.300,
+            0.300,
+            0.600,
+            0.600,
+            0.600,
+            1.000,
+            0.000,
+            0.000,
+            1.000,
+            0.500,
+            0.000,
+            0.749,
+            0.749,
+            0.000,
+            0.000,
+            1.000,
+            0.000,
+            0.000,
+            0.000,
+            1.000,
+            0.667,
+            0.000,
+            1.000,
+            0.333,
+            0.333,
+            0.000,
+            0.333,
+            0.667,
+            0.000,
+            0.333,
+            1.000,
+            0.000,
+            0.667,
+            0.333,
+            0.000,
+            0.667,
+            0.667,
+            0.000,
+            0.667,
+            1.000,
+            0.000,
+            1.000,
+            0.333,
+            0.000,
+            1.000,
+            0.667,
+            0.000,
+            1.000,
+            1.000,
+            0.000,
+            0.000,
+            0.333,
+            0.500,
+            0.000,
+            0.667,
+            0.500,
+            0.000,
+            1.000,
+            0.500,
+            0.333,
+            0.000,
+            0.500,
+            0.333,
+            0.333,
+            0.500,
+            0.333,
+            0.667,
+            0.500,
+            0.333,
+            1.000,
+            0.500,
+            0.667,
+            0.000,
+            0.500,
+            0.667,
+            0.333,
+            0.500,
+            0.667,
+            0.667,
+            0.500,
+            0.667,
+            1.000,
+            0.500,
+            1.000,
+            0.000,
+            0.500,
+            1.000,
+            0.333,
+            0.500,
+            1.000,
+            0.667,
+            0.500,
+            1.000,
+            1.000,
+            0.500,
+            0.000,
+            0.333,
+            1.000,
+            0.000,
+            0.667,
+            1.000,
+            0.000,
+            1.000,
+            1.000,
+            0.333,
+            0.000,
+            1.000,
+            0.333,
+            0.333,
+            1.000,
+            0.333,
+            0.667,
+            1.000,
+            0.333,
+            1.000,
+            1.000,
+            0.667,
+            0.000,
+            1.000,
+            0.667,
+            0.333,
+            1.000,
+            0.667,
+            0.667,
+            1.000,
+            0.667,
+            1.000,
+            1.000,
+            1.000,
+            0.000,
+            1.000,
+            1.000,
+            0.333,
+            1.000,
+            1.000,
+            0.667,
+            1.000,
+            0.333,
+            0.000,
+            0.000,
+            0.500,
+            0.000,
+            0.000,
+            0.667,
+            0.000,
+            0.000,
+            0.833,
+            0.000,
+            0.000,
+            1.000,
+            0.000,
+            0.000,
+            0.000,
+            0.167,
+            0.000,
+            0.000,
+            0.333,
+            0.000,
+            0.000,
+            0.500,
+            0.000,
+            0.000,
+            0.667,
+            0.000,
+            0.000,
+            0.833,
+            0.000,
+            0.000,
+            1.000,
+            0.000,
+            0.000,
+            0.000,
+            0.167,
+            0.000,
+            0.000,
+            0.333,
+            0.000,
+            0.000,
+            0.500,
+            0.000,
+            0.000,
+            0.667,
+            0.000,
+            0.000,
+            0.833,
+            0.000,
+            0.000,
+            1.000,
+            0.000,
+            0.000,
+            0.000,
+            0.143,
+            0.143,
+            0.143,
+            0.286,
+            0.286,
+            0.286,
+            0.429,
+            0.429,
+            0.429,
+            0.571,
+            0.571,
+            0.571,
+            0.714,
+            0.714,
+            0.714,
+            0.857,
+            0.857,
+            0.857,
+            0.000,
+            0.447,
+            0.741,
+            0.314,
+            0.717,
+            0.741,
+            0.50,
+            0.5,
+            0,
+        ]
+    )
+    .astype(np.float32)
+    .reshape(-1, 3)
+)
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--model_path", dest="model_path", type=str, default="../model/nanodet_m.param"
-    )
-    parser.add_argument(
-        "--model_bin", dest="model_bin", type=str, default="../model/nanodet_m.bin"
+        "--model_path", dest="model_path", type=str, default="../model/nanodet-320.mnn"
     )
     parser.add_argument(
         "--cfg_path", dest="cfg_path", type=str, default="config/nanodet-m.yml"
@@ -776,20 +814,24 @@ def main():
     parser.add_argument(
         "--input_shape", dest="input_shape", nargs=2, type=int, default=[320, 320]
     )
-    parser.add_argument("--backend", choices=["ncnn", "ONNX", "torch"], default="ncnn")
+    parser.add_argument(
+        "--backend", choices=["MNN", "ONNX", "torch", "ncnn"], default="ncnn"
+    )
     args = parser.parse_args()
 
     print(f"Detecting {args.img_fold}")
 
     # load detector
-    if args.backend == "ncnn":
-        detector = NanoDetNCNN(
-            args.model_path, args.model_bin, input_shape=args.input_shape
-        )
+    if args.backend == "MNN":
+        detector = NanoDetMNN(args.model_path, input_shape=args.input_shape)
     elif args.backend == "ONNX":
         detector = NanoDetONNX(args.model_path, input_shape=args.input_shape)
     elif args.backend == "torch":
         detector = NanoDetTorch(
+            args.model_path, args.cfg_path, input_shape=args.input_shape
+        )
+    elif args.backend == "ncnn":
+        detector = NanoDetNCNN(
             args.model_path, args.cfg_path, input_shape=args.input_shape
         )
     else:
@@ -800,7 +842,7 @@ def main():
 
 
 def test_one():
-    detector = NanoDetNCNN("./weight/nanodet_m.param", "./weight/nanodet_m.bin")
+    detector = NanoDetMNN("./weight/nanodet-320.mnn")
     img = cv2.imread("./data/2.jpg")
     bbox, label, score = detector.detect(img)
     img_draw = detector.draw_box(img, bbox, label, score)

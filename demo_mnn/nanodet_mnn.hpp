@@ -34,6 +34,13 @@ typedef struct BoxInfo_
     int label;
 } BoxInfo;
 
+typedef struct CenterPrior_
+{
+    int x;
+    int y;
+    int stride;
+} CenterPrior;
+
 class NanoDet {
 public:
     NanoDet(const std::string &mnn_path,
@@ -44,8 +51,17 @@ public:
     int detect(cv::Mat &img, std::vector<BoxInfo> &result_list);
     std::string get_label_str(int label);
 
+    // modify these parameters to the same with your config if you want to use your own model
+    int input_size[2] = {416, 416}; // input height and width
+    int num_class = 80; // number of classes. 80 for COCO
+    int reg_max = 7; // `reg_max` set in the training config. Default: 7.
+    std::vector<int> strides = { 8, 16, 32, 64 }; // strides of the multi-level feature.
+
+    std::string input_name = "data";
+    std::string output_name = "output";
+
 private:
-    void decode_infer(MNN::Tensor *cls_pred, MNN::Tensor *dis_pred, int stride, float threshold, std::vector<std::vector<BoxInfo>> &results);
+    void decode_infer(MNN::Tensor *pred, std::vector<CenterPrior>& center_priors, float threshold, std::vector<std::vector<BoxInfo>> &results);
     BoxInfo disPred2Bbox(const float *&dfl_det, int label, float score, int x, int y, int stride);
     void nms(std::vector<BoxInfo> &input_boxes, float NMS_THRESH);
 
@@ -59,24 +75,11 @@ private:
     int image_w;
     int image_h;
 
-    int in_w = 320;
-    int in_h = 320;
-
     float score_threshold;
     float nms_threshold;
 
     const float mean_vals[3] = { 103.53f, 116.28f, 123.675f };
     const float norm_vals[3] = { 0.017429f, 0.017507f, 0.017125f };
-
-    const int num_class = 80;
-    const int reg_max = 7;
-
-    std::vector<HeadInfo> heads_info{
-        // cls_pred|dis_pred|stride
-        {"cls_pred_stride_8", "dis_pred_stride_8", 8},
-        {"cls_pred_stride_16", "dis_pred_stride_16", 16},
-        {"cls_pred_stride_32", "dis_pred_stride_32", 32},
-    };
 
     std::vector<std::string>
     labels{"person", "bicycle", "car", "motorcycle", "airplane", "bus", "train", "truck", "boat", "traffic light",

@@ -559,11 +559,11 @@ class GFLHead(nn.Module):
         ):
             det_result = {}
             det_bboxes, det_labels = result
-            det_bboxes = det_bboxes.cpu().numpy()
+            det_bboxes = det_bboxes.detach().cpu().numpy()
             det_bboxes[:, :4] = warp_boxes(
                 det_bboxes[:, :4], np.linalg.inv(warp_matrix), img_width, img_height
             )
-            classes = det_labels.cpu().numpy()
+            classes = det_labels.detach().cpu().numpy()
             for i in range(self.num_classes):
                 inds = classes == i
                 det_result[i] = np.concatenate(

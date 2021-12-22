@@ -1,13 +1,15 @@
 Cython
 matplotlib
 numpy
+onnx
+onnx-simplifier
 opencv-python
 pyaml
 pycocotools
-pytorch-lightning>=1.2.5
+pytorch-lightning>=1.4.0
 tensorboard
 termcolor
-torch>=1.6
+torch>=1.7
 torchmetrics
 torchvision
 tqdm

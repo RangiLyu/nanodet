@@ -84,6 +84,10 @@ class NanoDetPlusHead(nn.Module):
         self.loss_bbox = GIoULoss(loss_weight=self.loss_cfg.loss_bbox.loss_weight)
         self._init_layers()
         self.init_weights()
+        self.register_buffer(
+            "project",
+            torch.linspace(0, self.reg_max, self.reg_max + 1, dtype=torch.float32),
+        )
 
     def _init_layers(self):
         self.cls_convs = nn.ModuleList()
@@ -132,6 +136,8 @@ class NanoDetPlusHead(nn.Module):
         print("Finish initialize NanoDet-Plus Head.")
 
     def forward(self, feats):
+        if torch.onnx.is_in_onnx_export:
+            return self._forward_onnx(feats)
         outputs = []
         for feat, cls_convs, gfl_cls in zip(
             feats,
@@ -397,11 +403,11 @@ class NanoDetPlusHead(nn.Module):
         ):
             det_result = {}
             det_bboxes, det_labels = result
-            det_bboxes = det_bboxes.cpu().numpy()
+            det_bboxes = det_bboxes.detach().cpu().numpy()
             det_bboxes[:, :4] = warp_boxes(
                 det_bboxes[:, :4], np.linalg.inv(warp_matrix), img_width, img_height
             )
-            classes = det_labels.cpu().numpy()
+            classes = det_labels.detach().cpu().numpy()
             for i in range(self.num_classes):
                 inds = classes == i
                 det_result[i] = np.concatenate(
@@ -495,3 +501,22 @@ class NanoDetPlusHead(nn.Module):
         strides = x.new_full((x.shape[0],), stride)
         proiors = torch.stack([x, y, strides, strides], dim=-1)
         return proiors.unsqueeze(0).repeat(batch_size, 1, 1)
+
+    def _forward_onnx(self, feats):
+        """only used for onnx export"""
+        outputs = []
+        for feat, cls_convs, gfl_cls in zip(
+            feats,
+            self.cls_convs,
+            self.gfl_cls,
+        ):
+            for conv in cls_convs:
+                feat = conv(feat)
+            output = gfl_cls(feat)
+            cls_pred, reg_pred = output.split(
+                [self.num_classes, 4 * (self.reg_max + 1)], dim=1
+            )
+            cls_pred = cls_pred.sigmoid()
+            out = torch.cat([cls_pred, reg_pred], dim=1)
+            outputs.append(out.flatten(start_dim=2))
+        return torch.cat(outputs, dim=2).permute(0, 2, 1)

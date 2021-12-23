@@ -226,6 +226,8 @@ int image_demo(NanoDet& detector, const char* imagepath)
 
     std::vector<std::string> filenames;
     cv::glob(imagepath, filenames, false);
+    int height = detector.input_size[0];
+    int width = detector.input_size[1];
 
     for (auto img_name : filenames)
     {
@@ -237,7 +239,7 @@ int image_demo(NanoDet& detector, const char* imagepath)
         }
         object_rect effect_roi;
         cv::Mat resized_img;
-        resize_uniform(image, resized_img, cv::Size(320, 320), effect_roi);
+        resize_uniform(image, resized_img, cv::Size(width, height), effect_roi);
         auto results = detector.detect(resized_img, 0.4, 0.5);
         draw_bboxes(image, results, effect_roi);
         cv::waitKey(0);
@@ -251,12 +253,15 @@ int webcam_demo(NanoDet& detector, int cam_id)
     cv::Mat image;
     cv::VideoCapture cap(cam_id);
 
+    int height = detector.input_size[0];
+    int width = detector.input_size[1];
+
     while (true)
     {
         cap >> image;
         object_rect effect_roi;
         cv::Mat resized_img;
-        resize_uniform(image, resized_img, cv::Size(320, 320), effect_roi);
+        resize_uniform(image, resized_img, cv::Size(width, height), effect_roi);
         auto results = detector.detect(resized_img, 0.4, 0.5);
         draw_bboxes(image, results, effect_roi);
         cv::waitKey(1);
@@ -269,12 +274,15 @@ int video_demo(NanoDet& detector, const char* path)
     cv::Mat image;
     cv::VideoCapture cap(path);
 
+    int height = detector.input_size[0];
+    int width = detector.input_size[1];
+
     while (true)
     {
         cap >> image;
         object_rect effect_roi;
         cv::Mat resized_img;
-        resize_uniform(image, resized_img, cv::Size(320, 320), effect_roi);
+        resize_uniform(image, resized_img, cv::Size(width, height), effect_roi);
         auto results = detector.detect(resized_img, 0.4, 0.5);
         draw_bboxes(image, results, effect_roi);
         cv::waitKey(1);
@@ -290,7 +298,10 @@ int benchmark(NanoDet& detector)
     double time_min = DBL_MAX;
     double time_max = -DBL_MAX;
     double time_avg = 0;
-    cv::Mat image(320, 320, CV_8UC3, cv::Scalar(1, 1, 1));
+
+    int height = detector.input_size[0];
+    int width = detector.input_size[1];
+    cv::Mat image(height, width, CV_8UC3, cv::Scalar(1, 1, 1));
 
     for (int i = 0; i < warm_up + loop_num; i++)
     {
@@ -320,6 +331,8 @@ int main(int argc, char** argv)
         return -1;
     }
     std::cout<<"start init model"<<std::endl;
+
+    // model path
     auto detector = NanoDet("nanodet.xml");
     std::cout<<"success"<<std::endl;
 

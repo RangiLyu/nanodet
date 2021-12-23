@@ -84,10 +84,6 @@ class NanoDetPlusHead(nn.Module):
         self.loss_bbox = GIoULoss(loss_weight=self.loss_cfg.loss_bbox.loss_weight)
         self._init_layers()
         self.init_weights()
-        self.register_buffer(
-            "project",
-            torch.linspace(0, self.reg_max, self.reg_max + 1, dtype=torch.float32),
-        )
 
     def _init_layers(self):
         self.cls_convs = nn.ModuleList()

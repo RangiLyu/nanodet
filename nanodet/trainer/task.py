@@ -327,6 +327,9 @@ class TrainingTask(LightningModule):
             )
             self.weight_averager.load_from(self.model)
 
+    def on_epoch_start(self):
+        self.model.set_epoch(self.current_epoch)
+
     def on_train_batch_end(self, outputs, batch, batch_idx, dataloader_idx) -> None:
         if self.weight_averager:
             self.weight_averager.update(self.model, self.global_step)

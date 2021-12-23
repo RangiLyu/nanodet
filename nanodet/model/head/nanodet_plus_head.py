@@ -84,10 +84,6 @@ class NanoDetPlusHead(nn.Module):
         self.loss_bbox = GIoULoss(loss_weight=self.loss_cfg.loss_bbox.loss_weight)
         self._init_layers()
         self.init_weights()
-        self.register_buffer(
-            "project",
-            torch.linspace(0, self.reg_max, self.reg_max + 1, dtype=torch.float32),
-        )
 
     def _init_layers(self):
         self.cls_convs = nn.ModuleList()
@@ -136,7 +132,7 @@ class NanoDetPlusHead(nn.Module):
         print("Finish initialize NanoDet-Plus Head.")
 
     def forward(self, feats):
-        if torch.onnx.is_in_onnx_export:
+        if torch.onnx.is_in_onnx_export():
             return self._forward_onnx(feats)
         outputs = []
         for feat, cls_convs, gfl_cls in zip(
@@ -164,8 +160,8 @@ class NanoDetPlusHead(nn.Module):
         """
         gt_bboxes = gt_meta["gt_bboxes"]
         gt_labels = gt_meta["gt_labels"]
-        device = preds[0].device
-        batch_size = preds[0].shape[0]
+        device = preds.device
+        batch_size = preds.shape[0]
         input_height, input_width = gt_meta["img"].shape[2:]
         featmap_sizes = [
             (math.ceil(input_height / stride), math.ceil(input_width) / stride)

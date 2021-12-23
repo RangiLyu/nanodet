@@ -35,6 +35,7 @@ class OneStageDetector(nn.Module):
             self.fpn = build_fpn(fpn_cfg)
         if head_cfg is not None:
             self.head = build_head(head_cfg)
+        self.epoch = 0
 
     def forward(self, x):
         x = self.backbone(x)
@@ -62,3 +63,6 @@ class OneStageDetector(nn.Module):
         loss, loss_states = self.head.loss(preds, gt_meta)
 
         return preds, loss, loss_states
+
+    def set_epoch(self, epoch):
+        self.epoch = epoch

@@ -72,7 +72,7 @@ def main(config, model_path, output_path, input_shape=(320, 320)):
 def parse_args():
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-        description="Convert .pth model to onnx.",
+        description="Convert .pth or .ckpt model to onnx.",
     )
     parser.add_argument("--cfg_path", type=str, help="Path to .yml config file.")
     parser.add_argument(

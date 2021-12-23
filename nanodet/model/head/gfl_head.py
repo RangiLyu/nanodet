@@ -186,7 +186,7 @@ class GFLHead(nn.Module):
         normal_init(self.gfl_reg, std=0.01)
 
     def forward(self, feats):
-        if torch.onnx.is_in_onnx_export:
+        if torch.onnx.is_in_onnx_export():
             return self._forward_onnx(feats)
         outputs = []
         for x, scale in zip(feats, self.scales):

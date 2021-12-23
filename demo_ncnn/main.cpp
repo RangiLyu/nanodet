@@ -306,14 +306,9 @@ int benchmark(NanoDet& detector)
     {
         double start = ncnn::get_current_time();
         ncnn::Extractor ex = detector.Net->create_extractor();
-        ex.input("input.1", input);
-        for (const auto& head_info : detector.heads_info)
-        {
-            ncnn::Mat dis_pred;
-            ncnn::Mat cls_pred;
-            ex.extract(head_info.dis_layer.c_str(), dis_pred);
-            ex.extract(head_info.cls_layer.c_str(), cls_pred);
-        }
+        ex.input("data", input);
+        ncnn::Mat preds;
+        ex.extract("output", preds);
         double end = ncnn::get_current_time();
 
         double time = end - start;
@@ -337,7 +332,7 @@ int main(int argc, char** argv)
         fprintf(stderr, "usage: %s [mode] [path]. \n For webcam mode=0, path is cam id; \n For image demo, mode=1, path=xxx/xxx/*.jpg; \n For video, mode=2; \n For benchmark, mode=3 path=0.\n", argv[0]);
         return -1;
     }
-    NanoDet detector = NanoDet("./nanodet_m.param", "./nanodet_m.bin", true);
+    NanoDet detector = NanoDet("./nanodet.param", "./nanodet.bin", true);
     int mode = atoi(argv[1]);
     switch (mode)
     {

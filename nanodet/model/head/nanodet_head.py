@@ -136,7 +136,7 @@ class NanoDetHead(GFLHead):
         print("Finish initialize NanoDet Head.")
 
     def forward(self, feats):
-        if torch.onnx.is_in_onnx_export:
+        if torch.onnx.is_in_onnx_export():
             return self._forward_onnx(feats)
         outputs = []
         for x, cls_convs, reg_convs, gfl_cls, gfl_reg in zip(

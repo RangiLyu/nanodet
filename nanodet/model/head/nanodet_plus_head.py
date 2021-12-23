@@ -136,7 +136,7 @@ class NanoDetPlusHead(nn.Module):
         print("Finish initialize NanoDet-Plus Head.")
 
     def forward(self, feats):
-        if torch.onnx.is_in_onnx_export:
+        if torch.onnx.is_in_onnx_export():
             return self._forward_onnx(feats)
         outputs = []
         for feat, cls_convs, gfl_cls in zip(

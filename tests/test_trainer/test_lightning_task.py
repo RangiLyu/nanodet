@@ -72,7 +72,7 @@ class DummyRunner:
 
 
 def test_lightning_training_task():
-    load_config(cfg, "./config/nanodet-m.yml")
+    load_config(cfg, "./config/legacy_v0.x_configs/nanodet-m.yml")
     task = TrainingTask(cfg)
     runner = DummyRunner(task)
     runner.test()

@@ -18,7 +18,7 @@ def test_logger():
 
     logger.log_metrics({"mAP": 30.1}, 1)
 
-    load_config(cfg, "./config/nanodet-m.yml")
+    load_config(cfg, "./config/legacy_v0.x_configs/nanodet-m.yml")
     logger.dump_cfg(cfg)
 
     logger.finalize(None)

@@ -243,12 +243,6 @@ NanoDet provide C++ and Android demo based on ncnn library.
     python tools/export_onnx.py --cfg_path ${CONFIG_PATH} --model_path ${PYTORCH_MODEL_PATH}
     ```
 
-    Then using [onnx-simplifier](https://github.com/daquexian/onnx-simplifier) to simplify onnx structure.
-
-    ```shell script
-    python -m onnxsim ${INPUT_ONNX_MODEL} ${OUTPUT_ONNX_MODEL}
-    ```
-
     Run **onnx2ncnn** in ncnn tools to generate ncnn .param and .bin file.
 
     After that, using **ncnnoptimize** to optimize ncnn model.

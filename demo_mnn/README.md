@@ -23,26 +23,20 @@ Please follow the [official document](https://www.yuque.com/mnn/en/build_linux) 
 1. Export ONNX model
 
    ```shell
-   python ./tools/export_onnx.py
+    python tools/export_onnx.py --cfg_path ${CONFIG_PATH} --model_path ${PYTORCH_MODEL_PATH}
    ```
 
-2. Use *onnx-simplifier* to simplify it
+2. Convert to MNN
 
    ``` shell
-   python -m onnxsim ./output.onnx sim.onnx
+   python -m MNN.tools.mnnconvert -f ONNX --modelFile sim.onnx --MNNModel nanodet.mnn
    ```
 
-3. Convert to MNN
-
-   ``` shell
-   python -m MNN.tools.mnnconvert -f ONNX --modelFile sim.onnx --MNNModel nanodet-320.mnn
-   ```
-
-It should be note that the input size does not have to be 320, it can be any integer multiple of strides,
+It should be note that the input size does not have to be fixed, it can be any integer multiple of strides,
 since NanoDet is anchor free. We can adapt the shape of `dummy_input` in *./tools/export_onnx.py* to get ONNX and MNN models
 with different input sizes.
 
-Here are converted model [Baidu Disk](https://pan.baidu.com/s/1DE4_yo0xez6Wd95xv7NnDQ)(extra code: *5mfa*),
+Here are converted model
 [Google Drive](https://drive.google.com/drive/folders/1dEdAXkof_lCusYBNrgbGzdLFZbDPMiFn?usp=sharing).
 
 ## Build
@@ -70,29 +64,7 @@ Note that a flag at `main.cpp` is used to control whether to show the detection 
 
 ### Python
 
-`demo_mnn.py` provide an inference class `NanoDetMNN` that combines preprocess, post process, visualization.
-Besides it can be used in command line with the form:
-
-```shell
-demo_mnn.py [-h] [--model_path MODEL_PATH] [--cfg_path CFG_PATH]
-    [--img_fold IMG_FOLD] [--result_fold RESULT_FOLD]
-    [--input_shape INPUT_SHAPE INPUT_SHAPE]
-    [--backend {MNN,ONNX,torch}]
-```
-
-For example:
-
-``` shell
-# run MNN 320 model
-python ./demo_mnn.py --model_path ../model/nanodet-320.mnn --img_fold ../imgs --result_fold ../results
-# run MNN 160 model
-python ./demo_mnn.py --model_path ../model/nanodet-160.mnn --input_shape 160 160 --backend MNN
-# run onnx model
-python ./demo_mnn.py --model_path ../model/sim.onnx --backend ONNX
-# run Pytorch model
-python ./demo_mnn.py --model_path ../model/nanodet_m.pth ../../config/nanodet-m.yml --backend torch
-```
-
+The multi-backend python demo is still working in progress.
 ### C++
 
 C++ inference interface is same with NCNN code, to detect images in a fold, run:
@@ -105,6 +77,18 @@ For speed benchmark
 
 ``` shell
 ./nanodet-mnn "3" "0"
+```
+
+## Custom model
+
+If you want to use custom model, please make sure the hyperparameters
+in `nanodet_mnn.h` are the same with your training config file.
+
+```cpp
+int input_size[2] = {416, 416}; // input height and width
+int num_class = 80; // number of classes. 80 for COCO
+int reg_max = 7; // `reg_max` set in the training config. Default: 7.
+std::vector<int> strides = { 8, 16, 32, 64 }; // strides of the multi-level feature.
 ```
 
 ## Reference

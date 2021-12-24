@@ -141,3 +141,15 @@ NanoDet-Plus-m      | 320*320  |   27.0   | 5.25ms / 190FPS       |
 NanoDet-Plus-m      | 416*416  |   30.4   | 8.32ms / 120FPS       |
 NanoDet-Plus-m-1.5x | 320*320  |   29.9   | 7.21ms / 139FPS       |
 NanoDet-Plus-m-1.5x | 416*416  |   34.1   | 11.50ms / 87FPS       |
+
+## Custom model
+
+If you want to use custom model, please make sure the hyperparameters
+in `nanodet_openvino.h` are the same with your training config file.
+
+```cpp
+int input_size[2] = {416, 416}; // input height and width
+int num_class = 80; // number of classes. 80 for COCO
+int reg_max = 7; // `reg_max` set in the training config. Default: 7.
+std::vector<int> strides = { 8, 16, 32, 64 }; // strides of the multi-level feature.
+```

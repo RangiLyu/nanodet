@@ -1,29 +1,34 @@
 #Config File example
 save_dir: workspace/nanodet_m
 model:
+  weight_averager:
+    name: ExpMovingAverager
+    decay: 0.9998
   arch:
-    name: OneStageDetector
+    name: NanoDetPlus
+    detach_epoch: 10
     backbone:
       name: ShuffleNetV2
       model_size: 1.0x
       out_stages: [2,3,4]
       activation: LeakyReLU
     fpn:
-      name: PAN
+      name: GhostPAN
       in_channels: [116, 232, 464]
       out_channels: 96
-      start_level: 0
-      num_outs: 3
+      kernel_size: 5
+      num_extra_level: 1
+      use_depthwise: True
+      activation: LeakyReLU
     head:
-      name: NanoDetHead
-      num_classes: 80 #Please fill in the number of categories (not include background category)
+      name: NanoDetPlusHead
+      num_classes: 80
       input_channel: 96
       feat_channels: 96
       stacked_convs: 2
-      share_cls_reg: True
-      octave_base_scale: 5
-      scales_per_octave: 1
-      strides: [8, 16, 32]
+      kernel_size: 5
+      strides: [8, 16, 32, 64]
+      activation: LeakyReLU
       reg_max: 7
       norm_cfg:
         type: BN
@@ -39,6 +44,16 @@ model:
         loss_bbox:
           name: GIoULoss
           loss_weight: 2.0
+    # Auxiliary head, only use in training time.
+    aux_head:
+      name: SimpleConvHead
+      num_classes: 80
+      input_channel: 192
+      feat_channels: 192
+      stacked_convs: 4
+      strides: [8, 16, 32, 64]
+      activation: LeakyReLU
+      reg_max: 7
 
 class_names: &class_names ['NAME1', 'NAME2', 'NAME3', 'NAME4', '...']  #Please fill in the category names (not include background category)
 data:
@@ -71,27 +86,27 @@ data:
     pipeline:
       normalize: [[103.53, 116.28, 123.675], [57.375, 57.12, 58.395]]
 device:
-  gpu_ids: [0]
-  workers_per_gpu: 12
-  batchsize_per_gpu: 160
+  gpu_ids: [0] # Set like [0, 1, 2, 3] if you have multi-GPUs
+  workers_per_gpu: 8
+  batchsize_per_gpu: 96
 schedule:
 #  resume:
 #  load_model: YOUR_MODEL_PATH
   optimizer:
-    name: SGD
-    lr: 0.14
-    momentum: 0.9
-    weight_decay: 0.0001
+    name: AdamW
+    lr: 0.001
+    weight_decay: 0.05
   warmup:
     name: linear
-    steps: 300
-    ratio: 0.1
-  total_epochs: 190
+    steps: 500
+    ratio: 0.0001
+  total_epochs: 300
   lr_schedule:
-    name: MultiStepLR
-    milestones: [130,160,175,185]
-    gamma: 0.1
+    name: CosineAnnealingLR
+    T_max: 300
+    eta_min: 0.00005
   val_intervals: 10
+grad_clip: 35
 evaluator:
   name: CocoDetectionEvaluator
   save_key: mAP

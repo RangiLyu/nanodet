@@ -1,10 +1,9 @@
 <div align="center">
 
-# NanoDet-Plus
-
 <img src="docs/imgs/Title.jpg" />
 
-### Super fast and high accuracy lightweight anchor-free object detection model. Real-time on mobile devices.
+# NanoDet-Plus
+**Super fast and high accuracy lightweight anchor-free object detection model. Real-time on mobile devices.**
 
 
 [![CI testing](https://img.shields.io/github/checks-status/RangiLyu/nanodet/main?label=CI&style=flat)](https://img.shields.io/github/checks-status/RangiLyu/nanodet/main?label=CI&style=flat)

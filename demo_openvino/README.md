@@ -78,7 +78,7 @@ source /opt/intel/openvino_2021/bin/setupvars.sh
 
    Then convert model. Notice: mean_values and scale_values should be the same with your training settings in YAML config file.
    ```shell
-   python3 mo_onnx.py --input_model ${ONNX_MODEL} --mean_values [103.53,116.28,123.675] --scale_values [57.375,57.12,58.395]
+   python3 mo.py --input_model ${ONNX_MODEL} --mean_values [103.53,116.28,123.675] --scale_values [57.375,57.12,58.395] --output output --data_type FP32 --output_dir ${OUTPUT_DIR}
    ```
 
 ## Build
@@ -105,7 +105,11 @@ make
 
 ## Run demo
 
-First, move nanodet openvino model files to the demo's folder. Then run these commands:
+You can convert the model to openvino or use the [converted model](https://drive.google.com/file/d/1dAwIA2pMkSetPEcvB0dvmLaOAK-9h-Lm/view?usp=sharing)
+
+First, move nanodet openvino model files to the `build` folder and rename the files to `nanodet.xml`, `nanodet.mapping`, `nanodet.bin`.
+
+Then run these commands:
 
 ### Webcam
 
@@ -116,13 +120,13 @@ First, move nanodet openvino model files to the demo's folder. Then run these co
 ### Inference images
 
 ```shell
-./nanodet_demo 1 IMAGE_FOLDER/*.jpg
+./nanodet_demo 1 ${IMAGE_FOLDER}/*.jpg
 ```
 
 ### Inference video
 
 ```shell
-./nanodet_demo 2 VIDEO_PATH
+./nanodet_demo 2 ${VIDEO_PATH}
 ```
 
 ### Benchmark
@@ -130,3 +134,10 @@ First, move nanodet openvino model files to the demo's folder. Then run these co
 ```shell
 ./nanodet_demo 3 0
 ```
+
+Model               |Resolution|COCO mAP  | CPU Latency (i7-8700) |
+:------------------:|:--------:|:--------:|:---------------------:|
+NanoDet-Plus-m      | 320*320  |   27.0   | 5.25ms / 190FPS       |
+NanoDet-Plus-m      | 416*416  |   30.4   | 8.32ms / 120FPS       |
+NanoDet-Plus-m-1.5x | 320*320  |   29.9   | 7.21ms / 139FPS       |
+NanoDet-Plus-m-1.5x | 416*416  |   34.1   | 11.50ms / 87FPS       |

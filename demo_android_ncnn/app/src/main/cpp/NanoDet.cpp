@@ -40,12 +40,32 @@ int activation_function_softmax(const _Tp* src, _Tp* dst, int length)
     return 0;
 }
 
+static void generate_grid_center_priors(const int input_height, const int input_width, std::vector<int>& strides, std::vector<CenterPrior>& center_priors)
+{
+    for (int i = 0; i < (int)strides.size(); i++)
+    {
+        int stride = strides[i];
+        int feat_w = ceil((float)input_width / stride);
+        int feat_h = ceil((float)input_height / stride);
+        for (int y = 0; y < feat_h; y++)
+        {
+            for (int x = 0; x < feat_w; x++)
+            {
+                CenterPrior ct;
+                ct.x = x;
+                ct.y = y;
+                ct.stride = stride;
+                center_priors.push_back(ct);
+            }
+        }
+    }
+}
+
 NanoDet::NanoDet(AAssetManager *mgr, const char *param, const char *bin, bool useGPU) {
     this->Net = new ncnn::Net();
-    // opt 需要在加载前设置
     hasGPU = ncnn::get_gpu_count() > 0;
     this->Net->opt.use_vulkan_compute = false; //hasGPU && useGPU;  // gpu
-    this->Net->opt.use_fp16_arithmetic = true;  // fp16运算加速
+    this->Net->opt.use_fp16_arithmetic = true;
     this->Net->opt.use_fp16_packed = true;
     this->Net->opt.use_fp16_storage = true;
     this->Net->load_param(mgr, param);
@@ -59,7 +79,7 @@ NanoDet::~NanoDet()
 
 void NanoDet::preprocess(JNIEnv *env, jobject image, ncnn::Mat& in)
 {
-    in = ncnn::Mat::from_android_bitmap_resize(env, image, ncnn::Mat::PIXEL_RGBA2BGR, input_size, input_size);
+    in = ncnn::Mat::from_android_bitmap_resize(env, image, ncnn::Mat::PIXEL_RGBA2BGR, input_size[1], input_size[0]);
 //    in = ncnn::Mat::from_pixels(image.data, ncnn::Mat::PIXEL_BGR, img_w, img_h);
     //in = ncnn::Mat::from_pixels_resize(image.data, ncnn::Mat::PIXEL_BGR, img_w, img_h, this->input_width, this->input_height);
 
@@ -71,8 +91,8 @@ void NanoDet::preprocess(JNIEnv *env, jobject image, ncnn::Mat& in)
 std::vector<BoxInfo> NanoDet::detect(JNIEnv *env, jobject image, float score_threshold, float nms_threshold) {
     AndroidBitmapInfo img_size;
     AndroidBitmap_getInfo(env, image, &img_size);
-    float width_ratio = (float) img_size.width / (float) this->input_size;
-    float height_ratio = (float) img_size.height / (float) this->input_size;
+    float width_ratio = (float) img_size.width / (float) this->input_size[1];
+    float height_ratio = (float) img_size.height / (float) this->input_size[0];
 
     ncnn::Mat input;
     this->preprocess(env, image, input);
@@ -82,19 +102,19 @@ std::vector<BoxInfo> NanoDet::detect(JNIEnv *env, jobject image, float score_thr
     ex.set_num_threads(4);
     hasGPU = ncnn::get_gpu_count() > 0;
     //ex.set_vulkan_compute(hasGPU);
-    ex.input("input.1", input);
+    ex.input("data", input);
     std::vector<std::vector<BoxInfo>> results;
     results.resize(this->num_class);
 
-    for (const auto& head_info : this->heads_info)
-    {
-        ncnn::Mat dis_pred;
-        ncnn::Mat cls_pred;
-        ex.extract(head_info.dis_layer.c_str(), dis_pred);
-        ex.extract(head_info.cls_layer.c_str(), cls_pred);
+    ncnn::Mat out;
+    ex.extract("output", out);
+    // printf("%d %d %d \n", out.w, out.h, out.c);
 
-        this->decode_infer(cls_pred, dis_pred, head_info.stride, score_threshold, results, width_ratio, height_ratio);
-    }
+    // generate center priors in format of (x, y, stride)
+    std::vector<CenterPrior> center_priors;
+    generate_grid_center_priors(this->input_size[0], this->input_size[1], this->strides, center_priors);
+
+    this->decode_infer(out, center_priors, score_threshold, results, width_ratio, height_ratio);
 
     std::vector<BoxInfo> dets;
     for (int i = 0; i < (int)results.size(); i++)
@@ -110,17 +130,19 @@ std::vector<BoxInfo> NanoDet::detect(JNIEnv *env, jobject image, float score_thr
 }
 
 
-void NanoDet::decode_infer(ncnn::Mat& cls_pred, ncnn::Mat& dis_pred, int stride, float threshold, std::vector<std::vector<BoxInfo>>& results, float width_ratio, float height_ratio)
+void NanoDet::decode_infer(ncnn::Mat& feats, std::vector<CenterPrior>& center_priors, float threshold, std::vector<std::vector<BoxInfo>>& results, float width_ratio, float height_ratio)
 {
-    int feature_h = this->input_size / stride;
-    int feature_w = this->input_size / stride;
+    const int num_points = center_priors.size();
+    //printf("num_points:%d\n", num_points);
 
     //cv::Mat debug_heatmap = cv::Mat(feature_h, feature_w, CV_8UC3);
-    for (int idx = 0; idx < feature_h * feature_w; idx++)
+    for (int idx = 0; idx < num_points; idx++)
     {
-        const float* scores = cls_pred.row(idx);
-        int row = idx / feature_w;
-        int col = idx % feature_w;
+        const int ct_x = center_priors[idx].x;
+        const int ct_y = center_priors[idx].y;
+        const int stride = center_priors[idx].stride;
+
+        const float* scores = feats.row(idx);
         float score = 0;
         int cur_label = 0;
         for (int label = 0; label < this->num_class; label++)
@@ -134,8 +156,8 @@ void NanoDet::decode_infer(ncnn::Mat& cls_pred, ncnn::Mat& dis_pred, int stride,
         if (score > threshold)
         {
             //std::cout << "label:" << cur_label << " score:" << score << std::endl;
-            const float* bbox_pred = dis_pred.row(idx);
-            results[cur_label].push_back(this->disPred2Bbox(bbox_pred, cur_label, score, col, row, stride, width_ratio, height_ratio));
+            const float* bbox_pred = feats.row(idx) + this->num_class;
+            results[cur_label].push_back(this->disPred2Bbox(bbox_pred, cur_label, score, ct_x, ct_y, stride, width_ratio, height_ratio));
             //debug_heatmap.at<cv::Vec3b>(row, col)[0] = 255;
             //cv::imshow("debug", debug_heatmap);
         }
@@ -145,8 +167,8 @@ void NanoDet::decode_infer(ncnn::Mat& cls_pred, ncnn::Mat& dis_pred, int stride,
 
 BoxInfo NanoDet::disPred2Bbox(const float*& dfl_det, int label, float score, int x, int y, int stride, float width_ratio, float height_ratio)
 {
-    float ct_x = (x + 0.5) * stride;
-    float ct_y = (y + 0.5) * stride;
+    float ct_x = x * stride;
+    float ct_y = y * stride;
     std::vector<float> dis_pred;
     dis_pred.resize(4);
     for (int i = 0; i < 4; i++)
@@ -165,8 +187,8 @@ BoxInfo NanoDet::disPred2Bbox(const float*& dfl_det, int label, float score, int
     }
     float xmin = (std::max)(ct_x - dis_pred[0], .0f) * width_ratio;
     float ymin = (std::max)(ct_y - dis_pred[1], .0f) * height_ratio;
-    float xmax = (std::min)(ct_x + dis_pred[2], (float)this->input_size) * width_ratio;
-    float ymax = (std::min)(ct_y + dis_pred[3], (float)this->input_size) * height_ratio;
+    float xmax = (std::min)(ct_x + dis_pred[2], (float)this->input_size[1]) * width_ratio;
+    float ymax = (std::min)(ct_y + dis_pred[3], (float)this->input_size[0]) * height_ratio;
 
     //std::cout << xmin << "," << ymin << "," << xmax << "," << xmax << "," << std::endl;
     return BoxInfo { xmin, ymin, xmax, ymax, score, label };

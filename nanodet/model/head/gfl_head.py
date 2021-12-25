@@ -1,3 +1,5 @@
+import math
+
 import cv2
 import numpy as np
 import torch
@@ -59,8 +61,9 @@ class Integral(nn.Module):
             x (Tensor): Integral result of box locations, i.e., distance
                 offsets from the box center in four directions, shape (N, 4).
         """
-        x = F.softmax(x.reshape(-1, self.reg_max + 1), dim=1)
-        x = F.linear(x, self.project.type_as(x)).reshape(-1, 4)
+        shape = x.size()
+        x = F.softmax(x.reshape(*shape[:-1], 4, self.reg_max + 1), dim=-1)
+        x = F.linear(x, self.project.type_as(x)).reshape(*shape[:-1], 4)
         return x
 
 
@@ -183,31 +186,41 @@ class GFLHead(nn.Module):
         normal_init(self.gfl_reg, std=0.01)
 
     def forward(self, feats):
-        return multi_apply(self.forward_single, feats, self.scales)
-
-    def forward_single(self, x, scale):
-        cls_feat = x
-        reg_feat = x
-        for cls_conv in self.cls_convs:
-            cls_feat = cls_conv(cls_feat)
-        for reg_conv in self.reg_convs:
-            reg_feat = reg_conv(reg_feat)
-        cls_score = self.gfl_cls(cls_feat)
-        bbox_pred = scale(self.gfl_reg(reg_feat)).float()
-        return cls_score, bbox_pred
+        if torch.onnx.is_in_onnx_export():
+            return self._forward_onnx(feats)
+        outputs = []
+        for x, scale in zip(feats, self.scales):
+            cls_feat = x
+            reg_feat = x
+            for cls_conv in self.cls_convs:
+                cls_feat = cls_conv(cls_feat)
+            for reg_conv in self.reg_convs:
+                reg_feat = reg_conv(reg_feat)
+            cls_score = self.gfl_cls(cls_feat)
+            bbox_pred = scale(self.gfl_reg(reg_feat)).float()
+            output = torch.cat([cls_score, bbox_pred], dim=1)
+            outputs.append(output.flatten(start_dim=2))
+        outputs = torch.cat(outputs, dim=2).permute(0, 2, 1)
+        return outputs
 
     def loss(self, preds, gt_meta):
-        cls_scores, bbox_preds = preds
-        batch_size = cls_scores[0].shape[0]
-        device = cls_scores[0].device
+        cls_scores, bbox_preds = preds.split(
+            [self.num_classes, 4 * (self.reg_max + 1)], dim=-1
+        )
+        device = cls_scores.device
         gt_bboxes = gt_meta["gt_bboxes"]
         gt_labels = gt_meta["gt_labels"]
+        input_height, input_width = gt_meta["img"].shape[2:]
         gt_bboxes_ignore = None
 
-        featmap_sizes = [featmap.size()[-2:] for featmap in cls_scores]
+        featmap_sizes = [
+            (math.ceil(input_height / stride), math.ceil(input_width) / stride)
+            for stride in self.strides
+        ]
 
         cls_reg_targets = self.target_assign(
-            batch_size,
+            cls_scores,
+            bbox_preds,
             featmap_sizes,
             gt_bboxes,
             gt_bboxes_ignore,
@@ -218,6 +231,8 @@ class GFLHead(nn.Module):
             return None
 
         (
+            cls_preds_list,
+            reg_preds_list,
             grid_cells_list,
             labels_list,
             label_weights_list,
@@ -233,8 +248,8 @@ class GFLHead(nn.Module):
         losses_qfl, losses_bbox, losses_dfl, avg_factor = multi_apply(
             self.loss_single,
             grid_cells_list,
-            cls_scores,
-            bbox_preds,
+            cls_preds_list,
+            reg_preds_list,
             labels_list,
             label_weights_list,
             bbox_targets_list,
@@ -278,10 +293,9 @@ class GFLHead(nn.Module):
         stride,
         num_total_samples,
     ):
-
         grid_cells = grid_cells.reshape(-1, 4)
-        cls_score = cls_score.permute(0, 2, 3, 1).reshape(-1, self.cls_out_channels)
-        bbox_pred = bbox_pred.permute(0, 2, 3, 1).reshape(-1, 4 * (self.reg_max + 1))
+        cls_score = cls_score.reshape(-1, self.cls_out_channels)
+        bbox_pred = bbox_pred.reshape(-1, 4 * (self.reg_max + 1))
         bbox_targets = bbox_targets.reshape(-1, 4)
         labels = labels.reshape(-1)
         label_weights = label_weights.reshape(-1)
@@ -347,7 +361,8 @@ class GFLHead(nn.Module):
 
     def target_assign(
         self,
-        batch_size,
+        cls_preds,
+        reg_preds,
         featmap_sizes,
         gt_bboxes_list,
         gt_bboxes_ignore_list,
@@ -364,6 +379,7 @@ class GFLHead(nn.Module):
         :param device: pytorch device
         :return: Assign results of all images.
         """
+        batch_size = cls_preds.shape[0]
         # get grid cells of one image
         multi_level_grid_cells = [
             self.get_grid_cells(
@@ -414,12 +430,16 @@ class GFLHead(nn.Module):
         num_total_pos = sum([max(inds.numel(), 1) for inds in pos_inds_list])
         num_total_neg = sum([max(inds.numel(), 1) for inds in neg_inds_list])
         # merge list of targets tensors into one batch then split to multi levels
+        mlvl_cls_preds = images_to_levels([c for c in cls_preds], num_level_cells)
+        mlvl_reg_preds = images_to_levels([r for r in reg_preds], num_level_cells)
         mlvl_grid_cells = images_to_levels(all_grid_cells, num_level_cells)
         mlvl_labels = images_to_levels(all_labels, num_level_cells)
         mlvl_label_weights = images_to_levels(all_label_weights, num_level_cells)
         mlvl_bbox_targets = images_to_levels(all_bbox_targets, num_level_cells)
         mlvl_bbox_weights = images_to_levels(all_bbox_weights, num_level_cells)
         return (
+            mlvl_cls_preds,
+            mlvl_reg_preds,
             mlvl_grid_cells,
             mlvl_labels,
             mlvl_label_weights,
@@ -508,7 +528,9 @@ class GFLHead(nn.Module):
         return pos_inds, neg_inds, pos_gt_bboxes, pos_assigned_gt_inds
 
     def post_process(self, preds, meta):
-        cls_scores, bbox_preds = preds
+        cls_scores, bbox_preds = preds.split(
+            [self.num_classes, 4 * (self.reg_max + 1)], dim=-1
+        )
         result_list = self.get_bboxes(cls_scores, bbox_preds, meta)
         det_results = {}
         warp_matrixes = (
@@ -537,11 +559,11 @@ class GFLHead(nn.Module):
         ):
             det_result = {}
             det_bboxes, det_labels = result
-            det_bboxes = det_bboxes.cpu().numpy()
+            det_bboxes = det_bboxes.detach().cpu().numpy()
             det_bboxes[:, :4] = warp_boxes(
                 det_bboxes[:, :4], np.linalg.inv(warp_matrix), img_width, img_height
             )
-            classes = det_labels.cpu().numpy()
+            classes = det_labels.detach().cpu().numpy()
             for i in range(self.num_classes):
                 inds = classes == i
                 det_result[i] = np.concatenate(
@@ -562,90 +584,55 @@ class GFLHead(nn.Module):
             cv2.imshow("det", result)
         return result
 
-    def get_bboxes(self, cls_scores, bbox_preds, img_metas, rescale=False):
+    def get_bboxes(self, cls_preds, reg_preds, img_metas):
+        """Decode the outputs to bboxes.
+        Args:
+            cls_preds (Tensor): Shape (num_imgs, num_points, num_classes).
+            reg_preds (Tensor): Shape (num_imgs, num_points, 4 * (regmax + 1)).
+            img_metas (dict): Dict of image info.
 
-        assert len(cls_scores) == len(bbox_preds)
-        num_levels = len(cls_scores)
-        device = cls_scores[0].device
-
+        Returns:
+            results_list (list[tuple]): List of detection bboxes and labels.
+        """
+        device = cls_preds.device
+        b = cls_preds.shape[0]
         input_height, input_width = img_metas["img"].shape[2:]
-        input_shape = [input_height, input_width]
+        input_shape = (input_height, input_width)
 
-        result_list = []
-        for img_id in range(cls_scores[0].shape[0]):
-            cls_score_list = [cls_scores[i][img_id].detach() for i in range(num_levels)]
-            bbox_pred_list = [bbox_preds[i][img_id].detach() for i in range(num_levels)]
-            scale_factor = 1
-            dets = self.get_bboxes_single(
-                cls_score_list,
-                bbox_pred_list,
-                input_shape,
-                scale_factor,
-                device,
-                rescale,
-            )
-
-            result_list.append(dets)
-        return result_list
-
-    def get_bboxes_single(
-        self, cls_scores, bbox_preds, img_shape, scale_factor, device, rescale=False
-    ):
-        """
-        Decode output tensors to bboxes on one image.
-        :param cls_scores: classification prediction tensors of all stages
-        :param bbox_preds: regression prediction tensors of all stages
-        :param img_shape: shape of input image
-        :param scale_factor: scale factor of boxes
-        :param device: device of the tensor
-        :return: predict boxes and labels
-        """
-        assert len(cls_scores) == len(bbox_preds)
-        mlvl_bboxes = []
-        mlvl_scores = []
-        for stride, cls_score, bbox_pred in zip(self.strides, cls_scores, bbox_preds):
-            assert cls_score.size()[-2:] == bbox_pred.size()[-2:]
-            featmap_size = cls_score.size()[-2:]
+        featmap_sizes = [
+            (math.ceil(input_height / stride), math.ceil(input_width) / stride)
+            for stride in self.strides
+        ]
+        # get grid cells of one image
+        mlvl_center_priors = []
+        for i, stride in enumerate(self.strides):
             y, x = self.get_single_level_center_point(
-                featmap_size, stride, cls_score.dtype, device, flatten=True
+                featmap_sizes[i], stride, torch.float32, device
             )
-            center_points = torch.stack([x, y], dim=-1)
-            scores = (
-                cls_score.permute(1, 2, 0).reshape(-1, self.cls_out_channels).sigmoid()
+            strides = x.new_full((x.shape[0],), stride)
+            proiors = torch.stack([x, y, strides, strides], dim=-1)
+            mlvl_center_priors.append(proiors.unsqueeze(0).repeat(b, 1, 1))
+
+        center_priors = torch.cat(mlvl_center_priors, dim=1)
+        dis_preds = self.distribution_project(reg_preds) * center_priors[..., 2, None]
+        bboxes = distance2bbox(center_priors[..., :2], dis_preds, max_shape=input_shape)
+        scores = cls_preds.sigmoid()
+        result_list = []
+        for i in range(b):
+            # add a dummy background class at the end of all labels
+            # same with mmdetection2.0
+            score, bbox = scores[i], bboxes[i]
+            padding = score.new_zeros(score.shape[0], 1)
+            score = torch.cat([score, padding], dim=1)
+            results = multiclass_nms(
+                bbox,
+                score,
+                score_thr=0.05,
+                nms_cfg=dict(type="nms", iou_threshold=0.6),
+                max_num=100,
             )
-            bbox_pred = bbox_pred.permute(1, 2, 0)
-            bbox_pred = self.distribution_project(bbox_pred) * stride
-
-            nms_pre = 1000
-            if scores.shape[0] > nms_pre:
-                max_scores, _ = scores.max(dim=1)
-                _, topk_inds = max_scores.topk(nms_pre)
-                center_points = center_points[topk_inds, :]
-                bbox_pred = bbox_pred[topk_inds, :]
-                scores = scores[topk_inds, :]
-
-            bboxes = distance2bbox(center_points, bbox_pred, max_shape=img_shape)
-            mlvl_bboxes.append(bboxes)
-            mlvl_scores.append(scores)
-
-        mlvl_bboxes = torch.cat(mlvl_bboxes)
-        if rescale:
-            mlvl_bboxes /= mlvl_bboxes.new_tensor(scale_factor)
-
-        mlvl_scores = torch.cat(mlvl_scores)
-        # add a dummy background class at the end of all labels
-        # same with mmdetection2.0
-        padding = mlvl_scores.new_zeros(mlvl_scores.shape[0], 1)
-        mlvl_scores = torch.cat([mlvl_scores, padding], dim=1)
-
-        det_bboxes, det_labels = multiclass_nms(
-            mlvl_bboxes,
-            mlvl_scores,
-            score_thr=0.05,
-            nms_cfg=dict(type="nms", iou_threshold=0.6),
-            max_num=100,
-        )
-        return det_bboxes, det_labels
+            result_list.append(results)
+        return result_list
 
     def get_single_level_center_point(
         self, featmap_size, stride, dtype, device, flatten=True
@@ -702,3 +689,20 @@ class GFLHead(nn.Module):
         cells_cx = (grid_cells[:, 2] + grid_cells[:, 0]) / 2
         cells_cy = (grid_cells[:, 3] + grid_cells[:, 1]) / 2
         return torch.stack([cells_cx, cells_cy], dim=-1)
+
+    def _forward_onnx(self, feats):
+        """only used for onnx export"""
+        outputs = []
+        for x, scale in zip(feats, self.scales):
+            cls_feat = x
+            reg_feat = x
+            for cls_conv in self.cls_convs:
+                cls_feat = cls_conv(cls_feat)
+            for reg_conv in self.reg_convs:
+                reg_feat = reg_conv(reg_feat)
+            cls_pred = self.gfl_cls(cls_feat)
+            reg_pred = scale(self.gfl_reg(reg_feat))
+            cls_pred = cls_pred.sigmoid()
+            out = torch.cat([cls_pred, reg_pred], dim=1)
+            outputs.append(out.flatten(start_dim=2))
+        return torch.cat(outputs, dim=2).permute(0, 2, 1)

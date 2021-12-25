@@ -1,8 +1,11 @@
 from .box_transform import bbox2distance, distance2bbox
-from .check_point import convert_old_model, load_model_weight, save_model
+from .check_point import (
+    convert_avg_params,
+    convert_old_model,
+    load_model_weight,
+    save_model,
+)
 from .config import cfg, load_config
-from .data_parallel import DataParallel
-from .distributed_data_parallel import DDP
 from .flops_counter import get_model_complexity_info
 from .logger import AverageMeter, Logger, MovingAverage, NanoDetLightningLogger
 from .misc import images_to_levels, multi_apply, unmap
@@ -20,8 +23,6 @@ __all__ = [
     "save_model",
     "cfg",
     "load_config",
-    "DataParallel",
-    "DDP",
     "get_model_complexity_info",
     "AverageMeter",
     "Logger",
@@ -38,4 +39,5 @@ __all__ = [
     "overlay_bbox_cv",
     "collect_files",
     "NanoDetLightningLogger",
+    "convert_avg_params",
 ]

@@ -123,6 +123,7 @@ def main(args):
         callbacks=[ProgressBar(refresh_rate=0)],  # disable tqdm bar
         logger=logger,
         benchmark=True,
+        gradient_clip_val=cfg.get("grad_clip", 0.0),
     )
 
     trainer.fit(task, train_dataloader, val_dataloader)

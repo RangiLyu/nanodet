@@ -16,16 +16,18 @@ import copy
 import json
 import os
 import warnings
-from typing import Any, List
+from typing import Any, Dict, List
 
 import torch
 import torch.distributed as dist
 from pytorch_lightning import LightningModule
+from pytorch_lightning.utilities import rank_zero_only
 
 from nanodet.data.batch_process import stack_batch_img
-from nanodet.util import gather_results, mkdir
+from nanodet.util import convert_avg_params, gather_results, mkdir
 
 from ..model.arch import build_model
+from ..model.weight_averager import build_weight_averager
 
 
 class TrainingTask(LightningModule):
@@ -44,6 +46,12 @@ class TrainingTask(LightningModule):
         self.evaluator = evaluator
         self.save_flag = -10
         self.log_style = "NanoDet"
+        self.weight_averager = None
+        if "weight_averager" in cfg.model:
+            self.weight_averager = build_weight_averager(
+                cfg.model.weight_averager, device=self.device
+            )
+            self.avg_model = copy.deepcopy(self.model)
 
     def _preprocess_batch_input(self, batch):
         batch_imgs = batch["img"]
@@ -63,10 +71,6 @@ class TrainingTask(LightningModule):
         preds = self.forward(batch["img"])
         results = self.model.head.post_process(preds, batch)
         return results
-
-    def on_train_start(self) -> None:
-        if self.current_epoch > 0:
-            self.lr_scheduler.last_epoch = self.current_epoch - 1
 
     def training_step(self, batch, batch_idx):
         batch = self._preprocess_batch_input(batch)
@@ -103,7 +107,10 @@ class TrainingTask(LightningModule):
 
     def validation_step(self, batch, batch_idx):
         batch = self._preprocess_batch_input(batch)
-        preds, loss, loss_states = self.model.forward_train(batch)
+        if self.weight_averager is not None:
+            preds, loss, loss_states = self.avg_model.forward_train(batch)
+        else:
+            preds, loss, loss_states = self.model.forward_train(batch)
 
         if batch_idx % self.cfg.log.interval == 0:
             lr = self.optimizers().param_groups[0]["lr"]
@@ -152,6 +159,9 @@ class TrainingTask(LightningModule):
                 mkdir(self.local_rank, best_save_path)
                 self.trainer.save_checkpoint(
                     os.path.join(best_save_path, "model_best.ckpt")
+                )
+                self.save_model_state(
+                    os.path.join(best_save_path, "nanodet_model_best.pth")
                 )
                 txt_path = os.path.join(best_save_path, "eval_results.txt")
                 if self.local_rank < 1:
@@ -290,3 +300,60 @@ class TrainingTask(LightningModule):
 
     def info(self, string):
         self.logger.info(string)
+
+    @rank_zero_only
+    def save_model_state(self, path):
+        self.logger.info("Saving model to {}".format(path))
+        state_dict = (
+            self.weight_averager.state_dict()
+            if self.weight_averager
+            else self.model.state_dict()
+        )
+        torch.save({"state_dict": state_dict}, path)
+
+    # ------------Hooks-----------------
+    def on_train_start(self) -> None:
+        if self.current_epoch > 0:
+            self.lr_scheduler.last_epoch = self.current_epoch - 1
+
+    def on_pretrain_routine_end(self) -> None:
+        if "weight_averager" in self.cfg.model:
+            self.logger.info("Weight Averaging is enabled")
+            if self.weight_averager and self.weight_averager.has_inited():
+                self.weight_averager.to(self.weight_averager.device)
+                return
+            self.weight_averager = build_weight_averager(
+                self.cfg.model.weight_averager, device=self.device
+            )
+            self.weight_averager.load_from(self.model)
+
+    def on_epoch_start(self):
+        self.model.set_epoch(self.current_epoch)
+
+    def on_train_batch_end(self, outputs, batch, batch_idx, dataloader_idx) -> None:
+        if self.weight_averager:
+            self.weight_averager.update(self.model, self.global_step)
+
+    def on_validation_epoch_start(self):
+        if self.weight_averager:
+            self.weight_averager.apply_to(self.avg_model)
+
+    def on_test_epoch_start(self) -> None:
+        if self.weight_averager:
+            self.on_load_checkpoint({"state_dict": self.state_dict()})
+            self.weight_averager.apply_to(self.model)
+
+    def on_load_checkpoint(self, checkpointed_state: Dict[str, Any]) -> None:
+        if self.weight_averager:
+            avg_params = convert_avg_params(checkpointed_state)
+            if len(avg_params) != len(self.model.state_dict()):
+                self.logger.info(
+                    "Weight averaging is enabled but average state does not"
+                    "match the model"
+                )
+            else:
+                self.weight_averager = build_weight_averager(
+                    self.cfg.model.weight_averager, device=self.device
+                )
+                self.weight_averager.load_state_dict(avg_params)
+                self.logger.info("Loaded average state from checkpoint.")

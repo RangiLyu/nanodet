@@ -15,8 +15,6 @@
 import torch
 import torch.nn as nn
 
-from nanodet.util import multi_apply
-
 from ..module.conv import ConvModule, DepthwiseConvModule
 from ..module.init_weights import normal_init
 from .gfl_head import GFLHead
@@ -138,38 +136,50 @@ class NanoDetHead(GFLHead):
         print("Finish initialize NanoDet Head.")
 
     def forward(self, feats):
-        return multi_apply(
-            self.forward_single,
-            feats,
-            self.cls_convs,
-            self.reg_convs,
-            self.gfl_cls,
-            self.gfl_reg,
-        )
-
-    def forward_single(self, x, cls_convs, reg_convs, gfl_cls, gfl_reg):
-        cls_feat = x
-        reg_feat = x
-        for cls_conv in cls_convs:
-            cls_feat = cls_conv(cls_feat)
-        for reg_conv in reg_convs:
-            reg_feat = reg_conv(reg_feat)
-        if self.share_cls_reg:
-            feat = gfl_cls(cls_feat)
-            cls_score, bbox_pred = torch.split(
-                feat, [self.cls_out_channels, 4 * (self.reg_max + 1)], dim=1
-            )
-        else:
-            cls_score = gfl_cls(cls_feat)
-            bbox_pred = gfl_reg(reg_feat)
-
         if torch.onnx.is_in_onnx_export():
-            cls_score = (
-                torch.sigmoid(cls_score)
-                .reshape(1, self.num_classes, -1)
-                .permute(0, 2, 1)
-            )
-            bbox_pred = bbox_pred.reshape(1, (self.reg_max + 1) * 4, -1).permute(
-                0, 2, 1
-            )
-        return cls_score, bbox_pred
+            return self._forward_onnx(feats)
+        outputs = []
+        for x, cls_convs, reg_convs, gfl_cls, gfl_reg in zip(
+            feats, self.cls_convs, self.reg_convs, self.gfl_cls, self.gfl_reg
+        ):
+            cls_feat = x
+            reg_feat = x
+            for cls_conv in cls_convs:
+                cls_feat = cls_conv(cls_feat)
+            for reg_conv in reg_convs:
+                reg_feat = reg_conv(reg_feat)
+            if self.share_cls_reg:
+                output = gfl_cls(cls_feat)
+            else:
+                cls_score = gfl_cls(cls_feat)
+                bbox_pred = gfl_reg(reg_feat)
+                output = torch.cat([cls_score, bbox_pred], dim=1)
+            outputs.append(output.flatten(start_dim=2))
+        outputs = torch.cat(outputs, dim=2).permute(0, 2, 1)
+        return outputs
+
+    def _forward_onnx(self, feats):
+        """only used for onnx export"""
+        outputs = []
+        for x, cls_convs, reg_convs, gfl_cls, gfl_reg in zip(
+            feats, self.cls_convs, self.reg_convs, self.gfl_cls, self.gfl_reg
+        ):
+            cls_feat = x
+            reg_feat = x
+            for cls_conv in cls_convs:
+                cls_feat = cls_conv(cls_feat)
+            for reg_conv in reg_convs:
+                reg_feat = reg_conv(reg_feat)
+            if self.share_cls_reg:
+                output = gfl_cls(cls_feat)
+                cls_pred, reg_pred = output.split(
+                    [self.num_classes, 4 * (self.reg_max + 1)], dim=1
+                )
+            else:
+                cls_pred = gfl_cls(cls_feat)
+                reg_pred = gfl_reg(reg_feat)
+
+            cls_pred = cls_pred.sigmoid()
+            out = torch.cat([cls_pred, reg_pred], dim=1)
+            outputs.append(out.flatten(start_dim=2))
+        return torch.cat(outputs, dim=2).permute(0, 2, 1)

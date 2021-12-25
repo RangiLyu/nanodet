@@ -40,6 +40,29 @@ int activation_function_softmax(const _Tp* src, _Tp* dst, int length)
     return 0;
 }
 
+
+static void generate_grid_center_priors(const int input_height, const int input_width, std::vector<int>& strides, std::vector<CenterPrior>& center_priors)
+{
+    for (int i = 0; i < (int)strides.size(); i++)
+    {
+        int stride = strides[i];
+        int feat_w = ceil((float)input_width / stride);
+        int feat_h = ceil((float)input_height / stride);
+        for (int y = 0; y < feat_h; y++)
+        {
+            for (int x = 0; x < feat_w; x++)
+            {
+                CenterPrior ct;
+                ct.x = x;
+                ct.y = y;
+                ct.stride = stride;
+                center_priors.push_back(ct);
+            }
+        }
+    }
+}
+
+
 bool NanoDet::hasGPU = false;
 NanoDet* NanoDet::detector = nullptr;
 
@@ -87,21 +110,20 @@ std::vector<BoxInfo> NanoDet::detect(cv::Mat image, float score_threshold, float
 #if NCNN_VULKAN
     ex.set_vulkan_compute(this->hasGPU);
 #endif
-    ex.input("input.1", input);
+    ex.input("data", input);
 
     std::vector<std::vector<BoxInfo>> results;
     results.resize(this->num_class);
 
-    for (const auto& head_info : this->heads_info)
-    {
-        ncnn::Mat dis_pred;
-        ncnn::Mat cls_pred;
-        ex.extract(head_info.dis_layer.c_str(), dis_pred);
-        ex.extract(head_info.cls_layer.c_str(), cls_pred);
-        // std::cout << "c:" << cls_pred.c << " h:" << cls_pred.h <<" w:" <<cls_pred.w <<std::endl;
+    ncnn::Mat out;
+    ex.extract("output", out);
+    // printf("%d %d %d \n", out.w, out.h, out.c);
 
-        this->decode_infer(cls_pred, dis_pred, head_info.stride, score_threshold, results);
-    }
+    // generate center priors in format of (x, y, stride)
+    std::vector<CenterPrior> center_priors;
+    generate_grid_center_priors(this->input_size[0], this->input_size[1], this->strides, center_priors);
+
+    this->decode_infer(out, center_priors, score_threshold, results);
 
     std::vector<BoxInfo> dets;
     for (int i = 0; i < (int)results.size(); i++)
@@ -121,17 +143,19 @@ std::vector<BoxInfo> NanoDet::detect(cv::Mat image, float score_threshold, float
     return dets;
 }
 
-void NanoDet::decode_infer(ncnn::Mat& cls_pred, ncnn::Mat& dis_pred, int stride, float threshold, std::vector<std::vector<BoxInfo>>& results)
+void NanoDet::decode_infer(ncnn::Mat& feats, std::vector<CenterPrior>& center_priors, float threshold, std::vector<std::vector<BoxInfo>>& results)
 {
-    int feature_h = this->input_size[1] / stride;
-    int feature_w = this->input_size[0] / stride;
+    const int num_points = center_priors.size();
+    //printf("num_points:%d\n", num_points);
 
     //cv::Mat debug_heatmap = cv::Mat(feature_h, feature_w, CV_8UC3);
-    for (int idx = 0; idx < feature_h * feature_w; idx++)
+    for (int idx = 0; idx < num_points; idx++)
     {
-        const float* scores = cls_pred.row(idx);
-        int row = idx / feature_w;
-        int col = idx % feature_w;
+        const int ct_x = center_priors[idx].x;
+        const int ct_y = center_priors[idx].y;
+        const int stride = center_priors[idx].stride;
+
+        const float* scores = feats.row(idx);
         float score = 0;
         int cur_label = 0;
         for (int label = 0; label < this->num_class; label++)
@@ -145,19 +169,18 @@ void NanoDet::decode_infer(ncnn::Mat& cls_pred, ncnn::Mat& dis_pred, int stride,
         if (score > threshold)
         {
             //std::cout << "label:" << cur_label << " score:" << score << std::endl;
-            const float* bbox_pred = dis_pred.row(idx);
-            results[cur_label].push_back(this->disPred2Bbox(bbox_pred, cur_label, score, col, row, stride));
+            const float* bbox_pred = feats.row(idx) + this->num_class;
+            results[cur_label].push_back(this->disPred2Bbox(bbox_pred, cur_label, score, ct_x, ct_y, stride));
             //debug_heatmap.at<cv::Vec3b>(row, col)[0] = 255;
             //cv::imshow("debug", debug_heatmap);
         }
-
     }
 }
 
 BoxInfo NanoDet::disPred2Bbox(const float*& dfl_det, int label, float score, int x, int y, int stride)
 {
-    float ct_x = (x + 0.5) * stride;
-    float ct_y = (y + 0.5) * stride;
+    float ct_x = x * stride;
+    float ct_y = y * stride;
     std::vector<float> dis_pred;
     dis_pred.resize(4);
     for (int i = 0; i < 4; i++)

@@ -12,17 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from torch.nn.parallel import DistributedDataParallel
+import copy
 
-from .scatter_gather import scatter_kwargs
+from .ema import ExpMovingAverager
 
 
-class DDP(DistributedDataParallel):
-    def __init__(self, batchsize, **kwargs):
-        self.batchsize = batchsize
-        super(DDP, self).__init__(**kwargs)
-
-    def scatter(self, inputs, kwargs, device_ids):
-        return scatter_kwargs(
-            inputs, kwargs, device_ids, dim=self.dim, chunk_sizes=[self.batchsize]
-        )
+def build_weight_averager(cfg, device="cpu"):
+    cfg = copy.deepcopy(cfg)
+    name = cfg.pop("name")
+    if name == "ExpMovingAverager":
+        return ExpMovingAverager(**cfg, device=device)
+    else:
+        raise NotImplementedError(f"{name} is not implemented")

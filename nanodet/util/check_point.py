@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from collections import OrderedDict
+from typing import Any, Dict
 
 import pytorch_lightning as pl
 import torch
@@ -21,12 +22,17 @@ from .rank_filter import rank_filter
 
 
 def load_model_weight(model, checkpoint, logger):
-    state_dict = checkpoint["state_dict"]
+    state_dict = checkpoint["state_dict"].copy()
+    for k in checkpoint["state_dict"]:
+        # convert average model weights
+        if k.startswith("avg_model."):
+            v = state_dict.pop(k)
+            state_dict[k[4:]] = v
     # strip prefix of state_dict
     if list(state_dict.keys())[0].startswith("module."):
-        state_dict = {k[7:]: v for k, v in checkpoint["state_dict"].items()}
+        state_dict = {k[7:]: v for k, v in state_dict.items()}
     if list(state_dict.keys())[0].startswith("model."):
-        state_dict = {k[6:]: v for k, v in checkpoint["state_dict"].items()}
+        state_dict = {k[6:]: v for k, v in state_dict.items()}
 
     model_state_dict = (
         model.module.state_dict() if hasattr(model, "module") else model.state_dict()
@@ -88,3 +94,18 @@ def convert_old_model(old_model_dict):
         new_checkpoint["optimizer_states"] = optimizer_states
 
     return new_checkpoint
+
+
+def convert_avg_params(checkpoint: Dict[str, Any]) -> Dict[str, Any]:
+    """Converts average state dict to the format that can be loaded to a model.
+    Args:
+        checkpoint: model.
+    Returns:
+        Converted average state dict.
+    """
+    state_dict = checkpoint["state_dict"]
+    avg_weights = {}
+    for k, v in state_dict.items():
+        if "avg_model" in k:
+            avg_weights[k[10:]] = v
+    return avg_weights

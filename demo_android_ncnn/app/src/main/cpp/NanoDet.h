@@ -49,7 +49,7 @@ private:
 
     ncnn::Net *Net;
     // modify these parameters to the same with your config if you want to use your own model
-    int input_size[2] = {416, 416}; // input height and width
+    int input_size[2] = {320, 320}; // input height and width
     int num_class = 80; // number of classes. 80 for COCO
     int reg_max = 7; // `reg_max` set in the training config. Default: 7.
     std::vector<int> strides = { 8, 16, 32, 64 }; // strides of the multi-level feature.

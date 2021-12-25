@@ -79,7 +79,7 @@ NanoDet::~NanoDet()
 
 void NanoDet::preprocess(JNIEnv *env, jobject image, ncnn::Mat& in)
 {
-    in = ncnn::Mat::from_android_bitmap_resize(env, image, ncnn::Mat::PIXEL_RGBA2BGR, input_size, input_size);
+    in = ncnn::Mat::from_android_bitmap_resize(env, image, ncnn::Mat::PIXEL_RGBA2BGR, input_size[1], input_size[0]);
 //    in = ncnn::Mat::from_pixels(image.data, ncnn::Mat::PIXEL_BGR, img_w, img_h);
     //in = ncnn::Mat::from_pixels_resize(image.data, ncnn::Mat::PIXEL_BGR, img_w, img_h, this->input_width, this->input_height);
 
@@ -91,8 +91,8 @@ void NanoDet::preprocess(JNIEnv *env, jobject image, ncnn::Mat& in)
 std::vector<BoxInfo> NanoDet::detect(JNIEnv *env, jobject image, float score_threshold, float nms_threshold) {
     AndroidBitmapInfo img_size;
     AndroidBitmap_getInfo(env, image, &img_size);
-    float width_ratio = (float) img_size.width / (float) this->input_size;
-    float height_ratio = (float) img_size.height / (float) this->input_size;
+    float width_ratio = (float) img_size.width / (float) this->input_size[1];
+    float height_ratio = (float) img_size.height / (float) this->input_size[0];
 
     ncnn::Mat input;
     this->preprocess(env, image, input);
@@ -167,8 +167,8 @@ void NanoDet::decode_infer(ncnn::Mat& feats, std::vector<CenterPrior>& center_pr
 
 BoxInfo NanoDet::disPred2Bbox(const float*& dfl_det, int label, float score, int x, int y, int stride, float width_ratio, float height_ratio)
 {
-    float ct_x = (x + 0.5) * stride;
-    float ct_y = (y + 0.5) * stride;
+    float ct_x = x * stride;
+    float ct_y = y * stride;
     std::vector<float> dis_pred;
     dis_pred.resize(4);
     for (int i = 0; i < 4; i++)
@@ -187,8 +187,8 @@ BoxInfo NanoDet::disPred2Bbox(const float*& dfl_det, int label, float score, int
     }
     float xmin = (std::max)(ct_x - dis_pred[0], .0f) * width_ratio;
     float ymin = (std::max)(ct_y - dis_pred[1], .0f) * height_ratio;
-    float xmax = (std::min)(ct_x + dis_pred[2], (float)this->input_size) * width_ratio;
-    float ymax = (std::min)(ct_y + dis_pred[3], (float)this->input_size) * height_ratio;
+    float xmax = (std::min)(ct_x + dis_pred[2], (float)this->input_size[1]) * width_ratio;
+    float ymax = (std::min)(ct_y + dis_pred[3], (float)this->input_size[0]) * height_ratio;
 
     //std::cout << xmin << "," << ymin << "," << xmax << "," << xmax << "," << std::endl;
     return BoxInfo { xmin, ymin, xmax, ymax, score, label };

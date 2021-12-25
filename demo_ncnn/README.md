@@ -115,10 +115,10 @@ export OMP_THREAD_LIMIT=4
 
 Model               |Resolution|COCO mAP  | CPU Latency (i7-8700) | ARM CPU Latency (4*A76) | Vulkan GPU Latency (GTX1060) |
 :------------------:|:--------:|:--------:|:---------------------:|:-----------------------:|:---------------------:|
-NanoDet-Plus-m      | 320*320  |   27.0   | 10.32ms / 96.9FPS     |                         | 3.40ms / 294.1FPS       |
-NanoDet-Plus-m      | 416*416  |   30.4   | 17.98ms / 55.6FPS     |                         | 4.27ms / 234.2FPS       |
-NanoDet-Plus-m-1.5x | 320*320  |   29.9   | 12.87ms / 77.7FPS     |                         | 3.78ms / 264.6FPS       |
-NanoDet-Plus-m-1.5x | 416*416  |   34.1   | 22.53ms / 44.4FPS     |                         | 4.79ms / 208.8FPS       |
+NanoDet-Plus-m      | 320*320  |   27.0   | 10.32ms / 96.9FPS     | 11.97ms / 83.5FPS       | 3.40ms / 294.1FPS       |
+NanoDet-Plus-m      | 416*416  |   30.4   | 17.98ms / 55.6FPS     | 19.77ms / 50.6FPS       | 4.27ms / 234.2FPS       |
+NanoDet-Plus-m-1.5x | 320*320  |   29.9   | 12.87ms / 77.7FPS     | 15.90ms / 62.9FPS       | 3.78ms / 264.6FPS       |
+NanoDet-Plus-m-1.5x | 416*416  |   34.1   | 22.53ms / 44.4FPS     | 25.49ms / 39.2FPS       | 4.79ms / 208.8FPS       |
 
 # Custom model
 

@@ -31,7 +31,7 @@ NanoDet is a FCOS-style one-stage anchor-free object detection model which using
 
 In NanoDet-Plus, we propose a novel label assignment strategy with a simple **assign guidance module (AGM)** and a **dynamic soft label assigner (DSLA)** to solve the optimal label assignment problem in lightweight model training. We also introduce a light feature pyramid called Ghost-PAN to enhance multi-layer feature fusion. These improvements boost previous NanoDet's detection accuracy by **7 mAP** on COCO dataset.
 
-[NanoDet-Plus 知乎中文介绍(Coming soon)](https://zhuanlan.zhihu.com/p/449912627)
+[NanoDet-Plus 知乎中文介绍](https://zhuanlan.zhihu.com/p/449912627)
 
 [NanoDet 知乎中文介绍](https://zhuanlan.zhihu.com/p/306530300) 
 

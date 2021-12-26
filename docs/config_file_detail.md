@@ -96,6 +96,19 @@ head:
 
 `loss`: adjust loss functions and weights
 
+## Weight averaging
+
+Nanodet supports weight averaging method like EMA:
+
+```yaml
+model:
+  weight_averager:
+    name: ExpMovingAverager
+    decay: 0.9998
+  arch:
+    ...
+```
+
 ## Data
 
 ```yaml

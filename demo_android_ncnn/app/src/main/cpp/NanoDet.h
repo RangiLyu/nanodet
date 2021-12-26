@@ -9,12 +9,19 @@
 #include "net.h"
 #include "YoloV5.h"
 
-typedef struct HeadInfo
+typedef struct HeadInfo_
 {
     std::string cls_layer;
     std::string dis_layer;
     int stride;
 } HeadInfo;
+
+typedef struct CenterPrior_
+{
+    int x;
+    int y;
+    int stride;
+} CenterPrior;
 
 
 class NanoDet{
@@ -35,21 +42,18 @@ public:
                                     "hair drier", "toothbrush"};
 private:
     void preprocess(JNIEnv *env, jobject image, ncnn::Mat& in);
-    void decode_infer(ncnn::Mat& cls_pred, ncnn::Mat& dis_pred, int stride, float threshold, std::vector<std::vector<BoxInfo>>& results, float width_ratio, float height_ratio);
+    void decode_infer(ncnn::Mat& feats, std::vector<CenterPrior>& center_priors, float threshold, std::vector<std::vector<BoxInfo>>& results, float width_ratio, float height_ratio);
     BoxInfo disPred2Bbox(const float*& dfl_det, int label, float score, int x, int y, int stride, float width_ratio, float height_ratio);
 
     static void nms(std::vector<BoxInfo>& result, float nms_threshold);
 
     ncnn::Net *Net;
-    int input_size = 320;
-    int num_class = 80;
-    int reg_max = 7;
-    std::vector<HeadInfo> heads_info{
-        // cls_pred|dis_pred|stride
-        {"cls_pred_stride_8", "dis_pred_stride_8", 8},
-        {"cls_pred_stride_16", "dis_pred_stride_16", 16},
-        {"cls_pred_stride_32", "dis_pred_stride_32", 32},
-    };
+    // modify these parameters to the same with your config if you want to use your own model
+    int input_size[2] = {320, 320}; // input height and width
+    int num_class = 80; // number of classes. 80 for COCO
+    int reg_max = 7; // `reg_max` set in the training config. Default: 7.
+    std::vector<int> strides = { 8, 16, 32, 64 }; // strides of the multi-level feature.
+
 
 public:
     static NanoDet *detector;

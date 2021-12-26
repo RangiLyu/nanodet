@@ -35,6 +35,27 @@ int activation_function_softmax(const _Tp* src, _Tp* dst, int length)
     return 0;
 }
 
+static void generate_grid_center_priors(const int input_height, const int input_width, std::vector<int>& strides, std::vector<CenterPrior>& center_priors)
+{
+    for (int i = 0; i < (int)strides.size(); i++)
+    {
+        int stride = strides[i];
+        int feat_w = ceil((float)input_width / stride);
+        int feat_h = ceil((float)input_height / stride);
+        for (int y = 0; y < feat_h; y++)
+        {
+            for (int x = 0; x < feat_w; x++)
+            {
+                CenterPrior ct;
+                ct.x = x;
+                ct.y = y;
+                ct.stride = stride;
+                center_priors.push_back(ct);
+            }
+        }
+    }
+}
+
 NanoDet::NanoDet(const char* model_path)
 {
     InferenceEngine::Core ie;
@@ -109,22 +130,20 @@ std::vector<BoxInfo> NanoDet::detect(cv::Mat image, float score_threshold, float
 
     // get output
     std::vector<std::vector<BoxInfo>> results;
-    results.resize(this->num_class_);
+    results.resize(this->num_class);
 
-    for (const auto& head_info : this->heads_info_)
     {
-        const InferenceEngine::Blob::Ptr dis_pred_blob = infer_request_.GetBlob(head_info.dis_layer);
-        const InferenceEngine::Blob::Ptr cls_pred_blob = infer_request_.GetBlob(head_info.cls_layer);
+        const InferenceEngine::Blob::Ptr pred_blob = infer_request_.GetBlob(output_name_);
 
-        auto mdis_pred = InferenceEngine::as<InferenceEngine::MemoryBlob>(dis_pred_blob);
-        auto mdis_pred_holder = mdis_pred->rmap();
-        const float *dis_pred = mdis_pred_holder.as<const float *>();
+        auto m_pred = InferenceEngine::as<InferenceEngine::MemoryBlob>(pred_blob);
+        auto m_pred_holder = m_pred->rmap();
+        const float *pred = m_pred_holder.as<const float *>();
 
-        auto mcls_pred = InferenceEngine::as<InferenceEngine::MemoryBlob>(cls_pred_blob);
-        auto mcls_pred_holder = mcls_pred->rmap();
-        const float *cls_pred = mcls_pred_holder.as<const float *>();
-        // std::cout << "c:" << cls_pred.c << " h:" << cls_pred.h <<" w:" <<cls_pred.w <<std::endl;
-        this->decode_infer(cls_pred, dis_pred, head_info.stride, score_threshold, results);
+        // generate center priors in format of (x, y, stride)
+        std::vector<CenterPrior> center_priors;
+        generate_grid_center_priors(this->input_size[0], this->input_size[1], this->strides, center_priors);
+
+        this->decode_infer(pred, center_priors, score_threshold, results);
     }
 
     std::vector<BoxInfo> dets;
@@ -144,31 +163,35 @@ std::vector<BoxInfo> NanoDet::detect(cv::Mat image, float score_threshold, float
     return dets;
 }
 
-void NanoDet::decode_infer(const float*& cls_pred, const float*& dis_pred, int stride, float threshold, std::vector<std::vector<BoxInfo>>& results)
+void NanoDet::decode_infer(const float*& pred, std::vector<CenterPrior>& center_priors, float threshold, std::vector<std::vector<BoxInfo>>& results)
 {
-    int feature_h = input_size_ / stride;
-    int feature_w = input_size_ / stride;
+    const int num_points = center_priors.size();
+    const int num_channels = num_class + (reg_max + 1) * 4;
+    //printf("num_points:%d\n", num_points);
+
     //cv::Mat debug_heatmap = cv::Mat::zeros(feature_h, feature_w, CV_8UC3);
-    for (int idx = 0; idx < feature_h * feature_w; idx++)
+    for (int idx = 0; idx < num_points; idx++)
     {
-        int row = idx / feature_w;
-        int col = idx % feature_w;
+        const int ct_x = center_priors[idx].x;
+        const int ct_y = center_priors[idx].y;
+        const int stride = center_priors[idx].stride;
+
         float score = 0;
         int cur_label = 0;
 
-        for (int label = 0; label < num_class_; label++)
+        for (int label = 0; label < num_class; label++)
         {
-            if (cls_pred[idx * num_class_ +label] > score)
+            if (pred[idx * num_channels +label] > score)
             {
-                score = cls_pred[idx * num_class_ + label];
+                score = pred[idx * num_channels + label];
                 cur_label = label;
             }
         }
         if (score > threshold)
         {
             //std::cout << row << "," << col <<" label:" << cur_label << " score:" << score << std::endl;
-            const float* bbox_pred = dis_pred + idx * (reg_max_ + 1) * 4;
-            results[cur_label].push_back(this->disPred2Bbox(bbox_pred, cur_label, score, col, row, stride));
+            const float* bbox_pred = pred + idx * num_channels + num_class;
+            results[cur_label].push_back(this->disPred2Bbox(bbox_pred, cur_label, score, ct_x, ct_y, stride));
             //debug_heatmap.at<cv::Vec3b>(row, col)[0] = 255;
             //cv::imshow("debug", debug_heatmap);
         }
@@ -178,16 +201,16 @@ void NanoDet::decode_infer(const float*& cls_pred, const float*& dis_pred, int s
 
 BoxInfo NanoDet::disPred2Bbox(const float*& dfl_det, int label, float score, int x, int y, int stride)
 {
-    float ct_x = (x + 0.5) * stride;
-    float ct_y = (y + 0.5) * stride;
+    float ct_x = x * stride;
+    float ct_y = y * stride;
     std::vector<float> dis_pred;
     dis_pred.resize(4);
     for (int i = 0; i < 4; i++)
     {
         float dis = 0;
-        float* dis_after_sm = new float[reg_max_ + 1];
-        activation_function_softmax(dfl_det + i * (reg_max_ + 1), dis_after_sm, reg_max_ + 1);
-        for (int j = 0; j < reg_max_ + 1; j++)
+        float* dis_after_sm = new float[reg_max + 1];
+        activation_function_softmax(dfl_det + i * (reg_max + 1), dis_after_sm, reg_max + 1);
+        for (int j = 0; j < reg_max + 1; j++)
         {
             dis += j * dis_after_sm[j];
         }
@@ -198,8 +221,8 @@ BoxInfo NanoDet::disPred2Bbox(const float*& dfl_det, int label, float score, int
     }
     float xmin = (std::max)(ct_x - dis_pred[0], .0f);
     float ymin = (std::max)(ct_y - dis_pred[1], .0f);
-    float xmax = (std::min)(ct_x + dis_pred[2], (float)this->input_size_);
-    float ymax = (std::min)(ct_y + dis_pred[3], (float)this->input_size_);
+    float xmax = (std::min)(ct_x + dis_pred[2], (float)this->input_size[1]);
+    float ymax = (std::min)(ct_y + dis_pred[3], (float)this->input_size[0]);
 
     //std::cout << xmin << "," << ymin << "," << xmax << "," << xmax << "," << std::endl;
     return BoxInfo { xmin, ymin, xmax, ymax, score, label };

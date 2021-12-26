@@ -1,16 +1,19 @@
+import tempfile
+
 import numpy as np
 import torch
 import torch.nn as nn
 
 from nanodet.trainer.task import TrainingTask
-from nanodet.util import cfg, load_config
+from nanodet.util import NanoDetLightningLogger, cfg, load_config
 
 
-class DummyModule(nn.Module):
+class DummyTrainer(nn.Module):
     current_epoch = 0
     global_step = 0
     local_rank = 0
     use_ddp = False
+    logger = NanoDetLightningLogger(tempfile.TemporaryDirectory().name)
 
     def save_checkpoint(self, *args, **kwargs):
         pass
@@ -21,13 +24,14 @@ class DummyRunner:
         self.task = task
 
     def test(self):
+        self.task.trainer = DummyTrainer()
+
         optimizer = self.task.configure_optimizers()
 
         def optimizers():
             return optimizer
 
         self.task.optimizers = optimizers
-        # self.task.trainer = DummyModule()
 
         self.task.on_train_start()
         assert self.task.current_epoch == 0
@@ -56,7 +60,6 @@ class DummyRunner:
         self.task.scalar_summary = func
         self.task.training_step(dummy_batch, 0)
 
-        self.task.trainer = DummyModule()
         self.task.optimizer_step(optimizer=optimizer)
         self.task.training_epoch_end([])
         assert self.task.lr_scheduler.last_epoch == 1
@@ -69,7 +72,7 @@ class DummyRunner:
 
 
 def test_lightning_training_task():
-    load_config(cfg, "./config/nanodet-m.yml")
+    load_config(cfg, "./config/legacy_v0.x_configs/nanodet-m.yml")
     task = TrainingTask(cfg)
     runner = DummyRunner(task)
     runner.test()

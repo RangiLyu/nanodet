@@ -3,7 +3,7 @@ from .yacs import CfgNode
 cfg = CfgNode(new_allowed=True)
 cfg.save_dir = "./"
 # common params for NETWORK
-cfg.model = CfgNode()
+cfg.model = CfgNode(new_allowed=True)
 cfg.model.arch = CfgNode(new_allowed=True)
 cfg.model.arch.backbone = CfgNode(new_allowed=True)
 cfg.model.arch.fpn = CfgNode(new_allowed=True)

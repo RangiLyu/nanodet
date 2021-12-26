@@ -22,6 +22,9 @@ activations = {
     "ELU": nn.ELU,
     "GELU": nn.GELU,
     "PReLU": nn.PReLU,
+    "SiLU": nn.SiLU,
+    "HardSwish": nn.Hardswish,
+    "Hardswish": nn.Hardswish,
     None: nn.Identity,
 }
 

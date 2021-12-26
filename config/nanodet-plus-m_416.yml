@@ -1,5 +1,11 @@
-#Config File example
-save_dir: workspace/nanodet_m
+# nanodet-plus-m_416
+# COCO mAP(0.5:0.95) = 0.304
+#             AP_50  = 0.459
+#             AP_75  = 0.317
+#           AP_small = 0.106
+#               AP_m = 0.322
+#               AP_l = 0.477
+save_dir: workspace/nanodet-plus-m_416
 model:
   weight_averager:
     name: ExpMovingAverager
@@ -54,44 +60,40 @@ model:
       strides: [8, 16, 32, 64]
       activation: LeakyReLU
       reg_max: 7
-
-class_names: &class_names ['NAME1', 'NAME2', 'NAME3', 'NAME4', '...']  #Please fill in the category names (not include background category)
 data:
   train:
-    name: XMLDataset
-    class_names: *class_names
-    img_path: TRAIN_IMAGE_FOLDER  #Please fill in train image path
-    ann_path: TRAIN_XML_FOLDER  #Please fill in train xml path
-    input_size: [320,320] #[w,h]
-    keep_ratio: True
+    name: CocoDataset
+    img_path: coco/train2017
+    ann_path: coco/annotations/instances_train2017.json
+    input_size: [416,416] #[w,h]
+    keep_ratio: False
     pipeline:
       perspective: 0.0
       scale: [0.6, 1.4]
-      stretch: [[1, 1], [1, 1]]
+      stretch: [[0.8, 1.2], [0.8, 1.2]]
       rotation: 0
       shear: 0
       translate: 0.2
       flip: 0.5
       brightness: 0.2
-      contrast: [0.8, 1.2]
-      saturation: [0.8, 1.2]
+      contrast: [0.6, 1.4]
+      saturation: [0.5, 1.2]
       normalize: [[103.53, 116.28, 123.675], [57.375, 57.12, 58.395]]
   val:
-    name: XMLDataset
-    class_names: *class_names
-    img_path: VAL_IMAGE_FOLDER #Please fill in val image path
-    ann_path: VAL_XML_FOLDER #Please fill in val xml path
-    input_size: [320,320] #[w,h]
-    keep_ratio: True
+    name: CocoDataset
+    img_path: coco/val2017
+    ann_path: coco/annotations/instances_val2017.json
+    input_size: [416,416] #[w,h]
+    keep_ratio: False
     pipeline:
       normalize: [[103.53, 116.28, 123.675], [57.375, 57.12, 58.395]]
 device:
-  gpu_ids: [0] # Set like [0, 1, 2, 3] if you have multi-GPUs
-  workers_per_gpu: 8
+  gpu_ids: [0]
+  workers_per_gpu: 10
   batchsize_per_gpu: 96
 schedule:
 #  resume:
-#  load_model: YOUR_MODEL_PATH
+#  load_model:
   optimizer:
     name: AdamW
     lr: 0.001
@@ -110,6 +112,20 @@ grad_clip: 35
 evaluator:
   name: CocoDetectionEvaluator
   save_key: mAP
-
 log:
-  interval: 10
+  interval: 50
+
+class_names: ['person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus',
+              'train', 'truck', 'boat', 'traffic_light', 'fire_hydrant',
+              'stop_sign', 'parking_meter', 'bench', 'bird', 'cat', 'dog',
+              'horse', 'sheep', 'cow', 'elephant', 'bear', 'zebra', 'giraffe',
+              'backpack', 'umbrella', 'handbag', 'tie', 'suitcase', 'frisbee',
+              'skis', 'snowboard', 'sports_ball', 'kite', 'baseball_bat',
+              'baseball_glove', 'skateboard', 'surfboard', 'tennis_racket',
+              'bottle', 'wine_glass', 'cup', 'fork', 'knife', 'spoon', 'bowl',
+              'banana', 'apple', 'sandwich', 'orange', 'broccoli', 'carrot',
+              'hot_dog', 'pizza', 'donut', 'cake', 'chair', 'couch',
+              'potted_plant', 'bed', 'dining_table', 'toilet', 'tv', 'laptop',
+              'mouse', 'remote', 'keyboard', 'cell_phone', 'microwave',
+              'oven', 'toaster', 'sink', 'refrigerator', 'book', 'clock',
+              'vase', 'scissors', 'teddy_bear', 'hair_drier', 'toothbrush']

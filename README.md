@@ -1,71 +1,81 @@
-![](docs/imgs/Title.jpg)
+<div align="center">
 
-# NanoDet
+<img src="docs/imgs/Title.jpg" />
+
+# NanoDet-Plus
+**Super fast and high accuracy lightweight anchor-free object detection model. Real-time on mobile devices.**
+
+
 [![CI testing](https://img.shields.io/github/checks-status/RangiLyu/nanodet/main?label=CI&style=flat)](https://img.shields.io/github/checks-status/RangiLyu/nanodet/main?label=CI&style=flat)
 ![Codecov](https://img.shields.io/codecov/c/github/RangiLyu/nanodet?color=hotpink)
 [![GitHub license](https://img.shields.io/github/license/RangiLyu/nanodet?color=turquoise&style=flat)](https://github.com/RangiLyu/nanodet/blob/main/LICENSE)
 [![Github downloads](https://img.shields.io/github/downloads/RangiLyu/nanodet/total?color=orange&label=downloads&logo=github&logoColor=lightgrey&style=flat)](https://img.shields.io/github/downloads/RangiLyu/nanodet/total?color=yellow&label=Downloads&logo=github&logoColor=lightgrey&style=flat)
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/RangiLyu/nanodet?style=flat)](https://img.shields.io/github/v/release/RangiLyu/nanodet?style=flat)
 
-### Super fast and lightweight anchor-free object detection model. Real-time on mobile devices.
+</div>
 
 * ⚡Super lightweight: Model file is only 980KB(INT8) or 1.8MB(FP16).
 * ⚡Super fast: 97fps(10.23ms) on mobile ARM CPU.
-* 😎Training friendly:  Much lower GPU memory cost than other models. Batch-size=80 is available on GTX1060 6G.
-* 😎Easy to deploy: Provide **C++ implementation** with various backends and **Android demo** based on ncnn inference framework.
+* 👍High accuracy: Up to **34.3 mAP<sup>val</sup>@0.5:0.95** and still realtime on CPU.
+* 🤗Training friendly:  Much lower GPU memory cost than other models. Batch-size=80 is available on GTX1060 6G.
+* 😎Easy to deploy: Support various backends including **ncnn, MNN and OpenVINO**. Also provide **Android demo** based on ncnn inference framework.
 
 ****
-## NEWS!!!
 
-* [2021.08.28] Refactor data processing pipeline and support multi-scale training (#311).
+# Introduction
 
-* [2021.05.30] Release ncnn int8 models, and new pre-trained models with ShuffleNetV2-1.5x backbone. Much higher mAP but still realtime(**26.8mAP 21.53ms**).
 
-* [2021.03.12] Apply the **Transformer** encoder to NanoDet! Introducing **NanoDet-t**, which replaces the PAN in NanoDet-m with a **TAN(Transformer Attention Net)**,  gets 21.7 mAP(+1.1) on COCO val 2017. Check [nanodet-t.yml](config/Transformer/nanodet-t.yml) for more details.
+![](docs/imgs/nanodet-plus-arch.png)
 
-Find more update notes in [Update notes](docs/update.md).
+NanoDet is a FCOS-style one-stage anchor-free object detection model which using [Generalized Focal Loss](https://arxiv.org/pdf/2006.04388.pdf) as classification and regression loss.
+
+In NanoDet-Plus, we propose a novel label assignment strategy with a simple **assign guidance module (AGM)** and a **dynamic soft label assigner (DSLA)** to solve the optimal label assignment problem in lightweight model training. We also introduce a light feature pyramid called Ghost-PAN to enhance multi-layer feature fusion. These improvements boost previous NanoDet's detection accuracy by **7 mAP** on COCO dataset.
+
+[NanoDet-Plus 知乎中文介绍](https://zhuanlan.zhihu.com/p/449912627)
+
+[NanoDet 知乎中文介绍](https://zhuanlan.zhihu.com/p/306530300) 
+
+QQ交流群：908606542 (答案：炼丹)
+
 ****
 ## Benchmarks
 
-Model          |Resolution|COCO mAP |Latency(ARM 4 Threads) | FLOPS      |   Params  | Model Size
-:-------------:|:--------:|:-------:|:--------------------:|:----------:|:---------:|:-------:
-NanoDet-m      | 320*320 |   20.6   | **10.23ms**          | **0.72G**  | **0.95M** | **1.8MB(FP16)** &#124; **980KB(INT8)**
-NanoDet-m      | 416*416 |   23.5   | 16.44ms              | 1.2G       | **0.95M** | **1.8MB(FP16)** &#124; **980KB(INT8)**
-NanoDet-m-1.5x | 320*320 |   23.5   | 13.53ms              | 1.44G      | 2.08M     |   3.9MB(FP16) &#124; 2MB(INT8)
-NanoDet-m-1.5x | 416*416 | **26.8** | 21.53ms              | 2.42G      | 2.08M     |   3.9MB(FP16) &#124; 2MB(INT8)
-NanoDet-g      | 416*416 |   22.9   | Not Designed For ARM | 4.2G       | 3.81M     |   7.7MB(FP16) &#124; 3.6MB(INT8)
-YoloV3-Tiny    | 416*416 |   16.6   | 37.6ms               | 5.62G      | 8.86M     |   33.7MB
-YoloV4-Tiny    | 416*416 |   21.7   | 32.81ms              | 6.96G      | 6.06M     |   23.0MB
+Model          |Resolution| mAP<sup>val<br>0.5:0.95 |CPU Latency<sup><br>(i7-8700) |ARM Latency<sup><br>(4xA76) | FLOPS      |   Params  | Model Size
+:-------------:|:--------:|:-------:|:--------------------:|:--------------------:|:----------:|:---------:|:-------:
+NanoDet-m      | 320*320 |   20.6   | **4.98ms**           | **10.23ms**          | **0.72G**  | **0.95M** | **1.8MB(FP16)** &#124; **980KB(INT8)**
+**NanoDet-Plus-m** | 320*320 | **27.0** | **5.25ms**       | **11.97ms**          | **0.9G**   | **1.17M** | **2.3MB(FP16)** &#124; **1.2MB(INT8)**
+**NanoDet-Plus-m** | 416*416 | **30.4** | **8.32ms**       | **19.77ms**          | **1.52G**  | **1.17M** | **2.3MB(FP16)** &#124; **1.2MB(INT8)**
+**NanoDet-Plus-m-1.5x** | 320*320 | **29.9** | **7.21ms**  | **15.90ms**          | **1.75G**  | **2.44M** | **4.7MB(FP16)** &#124; **2.3MB(INT8)**
+**NanoDet-Plus-m-1.5x** | 416*416 | **34.1** | **11.50ms** | **25.49ms**          | **2.97G**   | **2.44M** | **4.7MB(FP16)** &#124; **2.3MB(INT8)**
+YOLOv3-Tiny    | 416*416 |   16.6   | -                    | 37.6ms               | 5.62G      | 8.86M     |   33.7MB
+YOLOv4-Tiny    | 416*416 |   21.7   | -                    | 32.81ms              | 6.96G      | 6.06M     |   23.0MB
+YOLOX-Nano     | 416*416 |   25.8   | -                    | 23.08ms              | 1.08G      | 0.91M     |   1.8MB(FP16)
+YOLOv5-n       | 640*640 |   28.4   | -                    | 44.39ms              | 4.5G       | 1.9M      |   3.8MB(FP16)
+FBNetV5        | 320*640 |   30.4   | -                    | -                    | 1.8G       | -         |   -
+MobileDet      | 320*320 |   25.6   | -                    | -                    | 0.9G       | -         |   -
 
-***Find more models in [Model Zoo](#model-zoo)***
+***Download pre-trained models and find more models in [Model Zoo](#model-zoo)***
 
-Note:
+<details>
+    <summary>Notes (click to expand)</summary>
 
-* Performance is measured on Kirin 980(4xA76+4xA55) ARM CPU based on ncnn. You can test latency on your phone with [ncnn_android_benchmark](https://github.com/nihui/ncnn-android-benchmark).
+* ARM Performance is measured on Kirin 980(4xA76+4xA55) ARM CPU based on ncnn. You can test latency on your phone with [ncnn_android_benchmark](https://github.com/nihui/ncnn-android-benchmark).
+
+* Intel CPU Performance is measured Intel Core-i7-8700 based on OpenVINO.
 
 * NanoDet mAP(0.5:0.95) is validated on COCO val2017 dataset with no testing time augmentation.
 
-* YOLO mAP refers from [Scaled-YOLOv4: Scaling Cross Stage Partial Network](https://arxiv.org/abs/2011.08036).
+* YOLOv3&YOLOv4 mAP refers from [Scaled-YOLOv4: Scaling Cross Stage Partial Network](https://arxiv.org/abs/2011.08036).
 
-* **NanoDet-g** is designed for **edge NPU, GPU or TPU** with high parallel computing power but low memory bandwidth.
-  It has much lower memory access cost than NanoDet-m.
-
-****
-NanoDet is a FCOS-style one-stage anchor-free object detection model which using ATSS for target sampling and using Generalized Focal Loss for classification and box regression. Please refer to these papers for more details.
-
-[Fcos: Fully convolutional one-stage object detection](http://openaccess.thecvf.com/content_ICCV_2019/papers/Tian_FCOS_Fully_Convolutional_One-Stage_Object_Detection_ICCV_2019_paper.pdf)
-
-[ATSS:Bridging the Gap Between Anchor-based and Anchor-free Detection via Adaptive Training Sample Selection](https://arxiv.org/pdf/1912.02424.pdf)
-
-[Generalized Focal Loss: Learning Qualified and Distributed Bounding Boxes for Dense Object Detection](https://arxiv.org/pdf/2006.04388.pdf)
-
-
-![](docs/imgs/Model_arch.png)
-
-[知乎中文介绍](https://zhuanlan.zhihu.com/p/306530300)
- | QQ交流群：908606542 (答案：炼丹)
+</details>
 
 ****
+
+## NEWS!!!
+
+* [2021.12.25] **NanoDet-Plus** release! Adding **AGM**(Assign Guidance Module) & **DSLA**(Dynamic Soft Label Assigner) to improve **7 mAP** with only a little cost.
+
+Find more update notes in [Update notes](docs/update.md).
 ## Demo
 
 ### Android demo
@@ -82,7 +92,7 @@ C++ demo based on [ncnn](https://github.com/Tencent/ncnn) is in ***demo_ncnn*** 
 
 ### MNN demo
 
-Inference using [Alibaba's MNN framework](https://github.com/alibaba/MNN) is in ***demo_mnn*** folder. Including python and cpp inference code. Please refer to [MNN demo guide](demo_mnn/README.md).
+Inference using [Alibaba's MNN framework](https://github.com/alibaba/MNN) is in ***demo_mnn*** folder. Please refer to [MNN demo guide](demo_mnn/README.md).
 
 ### OpenVINO demo
 
@@ -171,11 +181,24 @@ NanoDet supports variety of backbones. Go to the [***config*** folder](config/) 
 Model                 | Backbone           |Resolution|COCO mAP| FLOPS |Params | Pre-train weight |
 :--------------------:|:------------------:|:--------:|:------:|:-----:|:-----:|:-----:|
 NanoDet-m             | ShuffleNetV2 1.0x  | 320*320  |  20.6  | 0.72G | 0.95M | [Download](https://drive.google.com/file/d/1ZkYucuLusJrCb_i63Lid0kYyyLvEiGN3/view?usp=sharing) |
+NanoDet-Plus-m-320 (***NEW***)     | ShuffleNetV2 1.0x | 320*320  |  27.0  | 0.9G  | 1.17M | [Weight](https://drive.google.com/file/d/1Dq0cTIdJDUhQxJe45z6rWncbZmOyh1Tv/view?usp=sharing) &#124; [Checkpoint](https://drive.google.com/file/d/1YvuEhahlgqxIhJu7bsL-fhaqubKcCWQc/view?usp=sharing)
+NanoDet-Plus-m-416 (***NEW***)     | ShuffleNetV2 1.0x | 416*416  |  30.4  | 1.52G | 1.17M | [Weight](https://drive.google.com/file/d/1FN3WK3FLjBm7oCqiwUcD3m3MjfqxuzXe/view?usp=sharing) &#124; [Checkpoint](https://drive.google.com/file/d/1gFjyrl7O8p5APr1ZOtWEm3tQNN35zi_W/view?usp=sharing)
+NanoDet-Plus-m-1.5x-320 (***NEW***)| ShuffleNetV2 1.5x | 320*320  |  29.9  | 1.75G | 2.44M | [Weight](https://drive.google.com/file/d/1Xdlgu5lxiS3w6ER7GE1mZpY663wmpcyY/view?usp=sharing) &#124; [Checkpoint](https://drive.google.com/file/d/1qXR6t3TBMXlz6GlTU3fxiLA-eueYoGrW/view?usp=sharing)
+NanoDet-Plus-m-1.5x-416 (***NEW***)| ShuffleNetV2 1.5x | 416*416  |  34.1  | 2.97G | 2.44M | [Weight](https://drive.google.com/file/d/16FJJJgUt5VrSKG7RM_ImdKKzhJ-Mu45I/view?usp=sharing) &#124; [Checkpoint](https://drive.google.com/file/d/17sdAUydlEXCrHMsxlDPLj5cGb-8-mmY6/view?usp=sharing)
+
+
+*Notice*: The difference between `Weight` and `Checkpoint` is the weight only provide params in inference time, but the checkpoint contains training time params.
+
+
+Legacy Model Zoo
+
+Model                 | Backbone           |Resolution|COCO mAP| FLOPS |Params | Pre-train weight |
+:--------------------:|:------------------:|:--------:|:------:|:-----:|:-----:|:-----:|
 NanoDet-m-416         | ShuffleNetV2 1.0x  | 416*416  |  23.5  |  1.2G | 0.95M | [Download](https://drive.google.com/file/d/1jY-Um2VDDEhuVhluP9lE70rG83eXQYhV/view?usp=sharing)|
 NanoDet-m-1.5x        | ShuffleNetV2 1.5x  | 320*320  |  23.5  | 1.44G | 2.08M | [Download](https://drive.google.com/file/d/1_n1cAWy622LV8wbUnXImtcvcUVPOhYrW/view?usp=sharing) |
 NanoDet-m-1.5x-416    | ShuffleNetV2 1.5x  | 416*416  |  26.8  | 2.42G | 2.08M | [Download](https://drive.google.com/file/d/1CCYgwX3LWfN7hukcomhEhGWN-qcC3Tv4/view?usp=sharing)|
 NanoDet-m-0.5x        | ShuffleNetV2 0.5x  | 320*320  |  13.5  |  0.3G | 0.28M | [Download](https://drive.google.com/file/d/1rMHkD30jacjRpslmQja5jls86xd0YssR/view?usp=sharing) |
-NanoDet-t (***NEW***) | ShuffleNetV2 1.0x  | 320*320  |  21.7  | 0.96G | 1.36M | [Download](https://drive.google.com/file/d/1TqRGZeOKVCb98ehTaE0gJEuND6jxwaqN/view?usp=sharing) |
+NanoDet-t             | ShuffleNetV2 1.0x  | 320*320  |  21.7  | 0.96G | 1.36M | [Download](https://drive.google.com/file/d/1TqRGZeOKVCb98ehTaE0gJEuND6jxwaqN/view?usp=sharing) |
 NanoDet-g             | Custom CSP Net     | 416*416  |  22.9  |  4.2G | 3.81M | [Download](https://drive.google.com/file/d/1f2lH7Ae1AY04g20zTZY7JS_dKKP37hvE/view?usp=sharing)|
 NanoDet-EfficientLite | EfficientNet-Lite0 | 320*320  |  24.7  | 1.72G | 3.11M | [Download](https://drive.google.com/file/d/1Dj1nBFc78GHDI9Wn8b3X4MTiIV2el8qP/view?usp=sharing)|
 NanoDet-EfficientLite | EfficientNet-Lite1 | 416*416  |  30.3  | 4.06G | 4.01M | [Download](https://drive.google.com/file/d/1ernkb_XhnKMPdCBBtUEdwxIIBF6UVnXq/view?usp=sharing) |
@@ -219,26 +242,6 @@ NanoDet-RepVGG        | RepVGG-A0          | 416*416  |  27.8  | 11.3G | 6.75M |
    python tools/train.py CONFIG_FILE_PATH
    ```
 
-   For **Windows users**, if you have problems with the new lightning trainer, try to use tools/deprecated/train.py
-
-   <details>
-   <summary>follow this...</summary>
-
-   For single GPU, run
-
-    ```shell script
-    python tools/deprecated/train.py CONFIG_FILE_PATH
-    ```
-
-    For multi-GPU, NanoDet using distributed training. (Notice: Windows not support distributed training before pytorch1.7) Please run
-
-    ```shell script
-    python -m torch.distributed.launch --nproc_per_node=GPU_NUM --master_port 29501 tools/deprecated/train.py CONFIG_FILE_PATH
-    ```
-
-   </details>
-
-
 4. **Visualize Logs**
 
     TensorBoard logs are saved in `save_dir` which you set in config file.
@@ -254,37 +257,37 @@ NanoDet-RepVGG        | RepVGG-A0          | 416*416  |  27.8  | 11.3G | 6.75M |
 
 ## How to Deploy
 
-NanoDet provide C++ and Android demo based on ncnn library.
+NanoDet provide multi-backend C++ demo including ncnn, OpenVINO and MNN.
+There is also an Android demo based on ncnn library.
 
-1. Convert model
+### Export model to ONNX
 
-    To convert NanoDet pytorch model to ncnn, you can choose this way: pytorch->onnx->ncnn
+To convert NanoDet pytorch model to ncnn, you can choose this way: pytorch->onnx->ncnn
 
-    To export onnx model, run `tools/export_onnx.py`.
+To export onnx model, run `tools/export_onnx.py`.
 
-    ```shell script
-    python tools/export_onnx.py --cfg_path ${CONFIG_PATH} --model_path ${PYTORCH_MODEL_PATH}
-    ```
+```shell script
+python tools/export_onnx.py --cfg_path ${CONFIG_PATH} --model_path ${PYTORCH_MODEL_PATH}
+```
 
-    Then using [onnx-simplifier](https://github.com/daquexian/onnx-simplifier) to simplify onnx structure.
+### Run NanoDet in C++ with inference libraries
 
-    ```shell script
-    python -m onnxsim ${INPUT_ONNX_MODEL} ${OUTPUT_ONNX_MODEL}
-    ```
+### ncnn
 
-    Run **onnx2ncnn** in ncnn tools to generate ncnn .param and .bin file.
+Please refer to [demo_ncnn](demo_ncnn/README.md).
 
-    After that, using **ncnnoptimize** to optimize ncnn model.
+### OpenVINO
 
-    If you have quentions about converting ncnn model, refer to ncnn wiki. https://github.com/Tencent/ncnn/wiki
+Please refer to [demo_openvino](demo_openvino/README.md).
 
-2. Run NanoDet model with C++
+### MNN
 
-    Please refer to [demo_ncnn](demo_ncnn/README.md).
+Please refer to [demo_mnn](demo_mnn/README.md).
 
-3. Run NanoDet on Android
 
-    Please refer to [android_demo](demo_android_ncnn/README.md).
+### Run NanoDet on Android
+
+Please refer to [android_demo](demo_android_ncnn/README.md).
 
 ****
 

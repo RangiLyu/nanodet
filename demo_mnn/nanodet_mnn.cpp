@@ -2,13 +2,34 @@
 
 using namespace std;
 
+static void generate_grid_center_priors(const int input_height, const int input_width, std::vector<int>& strides, std::vector<CenterPrior>& center_priors)
+{
+    for (int i = 0; i < (int)strides.size(); i++)
+    {
+        int stride = strides[i];
+        int feat_w = ceil((float)input_width / stride);
+        int feat_h = ceil((float)input_height / stride);
+        for (int y = 0; y < feat_h; y++)
+        {
+            for (int x = 0; x < feat_w; x++)
+            {
+                CenterPrior ct;
+                ct.x = x;
+                ct.y = y;
+                ct.stride = stride;
+                center_priors.push_back(ct);
+            }
+        }
+    }
+}
+
+
 NanoDet::NanoDet(const std::string &mnn_path,
                      int input_width, int input_length, int num_thread_,
                      float score_threshold_, float nms_threshold_)
 {
     num_thread = num_thread_;
-    in_w = input_width;
-    in_h = input_length;
+
     score_threshold = score_threshold_;
     nms_threshold = nms_threshold_;
 
@@ -41,14 +62,14 @@ int NanoDet::detect(cv::Mat &raw_image, std::vector<BoxInfo> &result_list)
     image_h = raw_image.rows;
     image_w = raw_image.cols;
     cv::Mat image;
-    cv::resize(raw_image, image, cv::Size(in_w, in_h));
+    cv::resize(raw_image, image, cv::Size(input_size[1], input_size[0]));
 
-    NanoDet_interpreter->resizeTensor(input_tensor, {1, 3, in_h, in_w});
+    NanoDet_interpreter->resizeTensor(input_tensor, {1, 3, input_size[0], input_size[1]});
     NanoDet_interpreter->resizeSession(NanoDet_session);
     std::shared_ptr<MNN::CV::ImageProcess> pretreat(
         MNN::CV::ImageProcess::create(MNN::CV::BGR, MNN::CV::BGR, mean_vals, 3,
                                         norm_vals, 3));
-    pretreat->convert(image.data, in_w, in_h, image.step[0], input_tensor);
+    pretreat->convert(image.data, input_size[1], input_size[0], image.step[0], input_tensor);
 
     auto start = chrono::steady_clock::now();
 
@@ -60,19 +81,15 @@ int NanoDet::detect(cv::Mat &raw_image, std::vector<BoxInfo> &result_list)
     std::vector<std::vector<BoxInfo>> results;
     results.resize(num_class);
 
-    for (const auto &head_info : heads_info)
-    {
-        MNN::Tensor *tensor_scores = NanoDet_interpreter->getSessionOutput(NanoDet_session, head_info.cls_layer.c_str());
-        MNN::Tensor *tensor_boxes = NanoDet_interpreter->getSessionOutput(NanoDet_session, head_info.dis_layer.c_str());
+    MNN::Tensor *tensor_preds = NanoDet_interpreter->getSessionOutput(NanoDet_session, output_name.c_str());
 
-        MNN::Tensor tensor_scores_host(tensor_scores, tensor_scores->getDimensionType());
-        tensor_scores->copyToHostTensor(&tensor_scores_host);
+    MNN::Tensor tensor_preds_host(tensor_preds, tensor_preds->getDimensionType());
+    tensor_preds->copyToHostTensor(&tensor_preds_host);
+    // generate center priors in format of (x, y, stride)
+    std::vector<CenterPrior> center_priors;
+    generate_grid_center_priors(this->input_size[0], this->input_size[1], this->strides, center_priors);
 
-        MNN::Tensor tensor_boxes_host(tensor_boxes, tensor_boxes->getDimensionType());
-        tensor_boxes->copyToHostTensor(&tensor_boxes_host);
-
-        decode_infer(&tensor_scores_host, &tensor_boxes_host, head_info.stride, score_threshold, results);
-    }
+    decode_infer(&tensor_preds_host, center_priors, score_threshold, results);
 
     auto end = chrono::steady_clock::now();
     chrono::duration<double> elapsed = end - start;
@@ -85,10 +102,10 @@ int NanoDet::detect(cv::Mat &raw_image, std::vector<BoxInfo> &result_list)
 
         for (auto box : results[i])
         {
-            box.x1 = box.x1 / in_w * image_w;
-            box.x2 = box.x2 / in_w * image_w;
-            box.y1 = box.y1 / in_h * image_h;
-            box.y2 = box.y2 / in_h * image_h;
+            box.x1 = box.x1 / input_size[1] * image_w;
+            box.x2 = box.x2 / input_size[1] * image_w;
+            box.y1 = box.y1 / input_size[0] * image_h;
+            box.y2 = box.y2 / input_size[0] * image_h;
             result_list.push_back(box);
         }
     }
@@ -97,19 +114,22 @@ int NanoDet::detect(cv::Mat &raw_image, std::vector<BoxInfo> &result_list)
     return 0;
 }
 
-void NanoDet::decode_infer(MNN::Tensor *cls_pred, MNN::Tensor *dis_pred, int stride, float threshold, std::vector<std::vector<BoxInfo>> &results)
+void NanoDet::decode_infer(MNN::Tensor *pred, std::vector<CenterPrior>& center_priors, float threshold, std::vector<std::vector<BoxInfo>> &results)
 {
-    int feature_h = in_h / stride;
-    int feature_w = in_w / stride;
+    const int num_points = center_priors.size();
+    const int num_channels = num_class + (reg_max + 1) * 4;
+    //printf("num_points:%d\n", num_points);
 
     //cv::Mat debug_heatmap = cv::Mat(feature_h, feature_w, CV_8UC3);
-    for (int idx = 0; idx < feature_h * feature_w; idx++)
+    for (int idx = 0; idx < num_points; idx++)
     {
-        // scores is a tensor with shape [feature_h * feature_w, num_class]
-        const float *scores = cls_pred->host<float>() + (idx * num_class);
+        const int ct_x = center_priors[idx].x;
+        const int ct_y = center_priors[idx].y;
+        const int stride = center_priors[idx].stride;
 
-        int row = idx / feature_w;
-        int col = idx % feature_w;
+        // preds is a tensor with shape [num_points, num_channels]
+        const float *scores = pred->host<float>() + (idx * num_channels);
+
         float score = 0;
         int cur_label = 0;
         for (int label = 0; label < num_class; label++)
@@ -122,20 +142,17 @@ void NanoDet::decode_infer(MNN::Tensor *cls_pred, MNN::Tensor *dis_pred, int str
         }
         if (score > threshold)
         {
-            //std::cout << "label:" << cur_label << " score:" << score << std::endl;
-            // bbox is a tensor with shape [feature_h * feature_w, 4_points * 8_distribution_bite]
-            const float *bbox_pred = dis_pred->host<float>() + (idx * 4 * (reg_max + 1));
-            results[cur_label].push_back(disPred2Bbox(bbox_pred, cur_label, score, col, row, stride));
-            //debug_heatmap.at<cv::Vec3b>(row, col)[0] = 255;
-            //cv::imshow("debug", debug_heatmap);
+            const float *bbox_pred = pred->host<float>() + idx * num_channels + num_class;
+            results[cur_label].push_back(disPred2Bbox(bbox_pred, cur_label, score, ct_x, ct_y, stride));
+
         }
     }
 }
 
 BoxInfo NanoDet::disPred2Bbox(const float *&dfl_det, int label, float score, int x, int y, int stride)
 {
-    float ct_x = (x + 0.5) * stride;
-    float ct_y = (y + 0.5) * stride;
+    float ct_x = x * stride;
+    float ct_y = y * stride;
     std::vector<float> dis_pred;
     dis_pred.resize(4);
     for (int i = 0; i < 4; i++)
@@ -154,8 +171,8 @@ BoxInfo NanoDet::disPred2Bbox(const float *&dfl_det, int label, float score, int
     }
     float xmin = (std::max)(ct_x - dis_pred[0], .0f);
     float ymin = (std::max)(ct_y - dis_pred[1], .0f);
-    float xmax = (std::min)(ct_x + dis_pred[2], (float)in_w);
-    float ymax = (std::min)(ct_y + dis_pred[3], (float)in_h);
+    float xmax = (std::min)(ct_x + dis_pred[2], (float)input_size[1]);
+    float ymax = (std::min)(ct_y + dis_pred[3], (float)input_size[0]);
 
     //std::cout << xmin << "," << ymin << "," << xmax << "," << xmax << "," << std::endl;
     return BoxInfo{xmin, ymin, xmax, ymax, score, label};

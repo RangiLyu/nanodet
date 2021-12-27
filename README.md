@@ -288,6 +288,21 @@ Please refer to [android_demo](demo_android_ncnn/README.md).
 
 ****
 
+## Citation
+
+If you find this project useful in your research, please consider cite:
+
+```BibTeX
+@misc{=nanodet,
+    title={NanoDet-Plus: Super fast and high accuracy lightweight anchor-free object detection model.},
+    author={RangiLyu},
+    howpublished = {\url{https://github.com/RangiLyu/nanodet}},
+    year={2021}
+}
+```
+
+****
+
 ## Thanks
 
 https://github.com/Tencent/ncnn

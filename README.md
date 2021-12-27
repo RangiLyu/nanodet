@@ -33,7 +33,7 @@ In NanoDet-Plus, we propose a novel label assignment strategy with a simple **as
 
 [NanoDet-Plus 知乎中文介绍](https://zhuanlan.zhihu.com/p/449912627)
 
-[NanoDet 知乎中文介绍](https://zhuanlan.zhihu.com/p/306530300) 
+[NanoDet 知乎中文介绍](https://zhuanlan.zhihu.com/p/306530300)
 
 QQ交流群：908606542 (答案：炼丹)
 
@@ -54,7 +54,7 @@ YOLOv5-n       | 640*640 |   28.4   | -                    | 44.39ms            
 FBNetV5        | 320*640 |   30.4   | -                    | -                    | 1.8G       | -         |   -
 MobileDet      | 320*320 |   25.6   | -                    | -                    | 0.9G       | -         |   -
 
-***Download pre-trained models and find more models in [Model Zoo](#model-zoo)***
+***Download pre-trained models and find more models in [Model Zoo](#model-zoo) or in [Release Files](https://github.com/RangiLyu/nanodet/releases)***
 
 <details>
     <summary>Notes (click to expand)</summary>
@@ -106,7 +106,9 @@ https://nihui.github.io/ncnn-webassembly-nanodet/
 
 First, install requirements and setup NanoDet following installation guide. Then download COCO pretrain weight from here
 
-👉[COCO pretrain weight (Google Drive)](https://drive.google.com/file/d/1ZkYucuLusJrCb_i63Lid0kYyyLvEiGN3/view?usp=sharing)
+👉[COCO pretrain weight (Google Drive)](https://github.com/RangiLyu/nanodet/releases/download/v1.0.0-alpha/nanodet-plus-m_416_checkpoint.ckpt)
+
+The pre-trained weight was trained by the config `config/nanodet-plus-m_416.yml`.
 
 * Inference images
 
@@ -137,7 +139,7 @@ Besides, We provide a notebook [here](./demo/demo-inference-with-pytorch.ipynb) 
 * Linux or MacOS
 * CUDA >= 10.0
 * Python >= 3.6
-* Pytorch >= 1.6
+* Pytorch >= 1.7
 * experimental support Windows (Notice: Windows not support distributed training before pytorch1.7)
 
 ### Step

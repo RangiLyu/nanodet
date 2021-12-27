@@ -111,12 +111,14 @@ def main(args):
         else None
     )
 
+    accelerator = None if len(cfg.device.gpu_ids) <= 1 else "ddp"
+
     trainer = pl.Trainer(
         default_root_dir=cfg.save_dir,
         max_epochs=cfg.schedule.total_epochs,
         gpus=cfg.device.gpu_ids,
         check_val_every_n_epoch=cfg.schedule.val_intervals,
-        accelerator="ddp",
+        accelerator=accelerator,
         log_every_n_steps=cfg.log.interval,
         num_sanity_val_steps=0,
         resume_from_checkpoint=model_resume_path,

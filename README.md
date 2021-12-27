@@ -106,7 +106,7 @@ https://nihui.github.io/ncnn-webassembly-nanodet/
 
 First, install requirements and setup NanoDet following installation guide. Then download COCO pretrain weight from here
 
-👉[COCO pretrain weight (Google Drive)](https://github.com/RangiLyu/nanodet/releases/download/v1.0.0-alpha/nanodet-plus-m_416_checkpoint.ckpt)
+👉[COCO pretrain checkpoint](https://github.com/RangiLyu/nanodet/releases/download/v1.0.0-alpha-1/nanodet-plus-m_416_checkpoint.ckpt)
 
 The pre-trained weight was trained by the config `config/nanodet-plus-m_416.yml`.
 

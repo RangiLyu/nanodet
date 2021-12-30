@@ -194,8 +194,7 @@ class NanoDetLightningLogger(LightningLoggerBase):
         self.logger.addHandler(ch)
     
     @rank_zero_only
-    def _init_wandb(self) -> None:
-        wandb_args = self._kwargs.get("wandb_args", {})
+    def _init_wandb(self, wandb_args) -> None:
         wandb_logger = WandbLogger(project=self._name, **wandb_args)
         wandb_logger.experiment._label(repo="nanodet")
         return wandb_logger

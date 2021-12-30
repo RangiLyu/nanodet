@@ -114,7 +114,7 @@ class AverageMeter(object):
 class NanoDetLightningLogger(LightningLoggerBase):
     def __init__(self, save_dir="./", use_wandb=True, **kwargs):
         super().__init__()
-        self._name = "NanoDet" or kwargs.pop("name", None)
+        self._name = kwargs.pop("name", None) or "NanoDet"
         self._version = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
         self.log_dir = os.path.join(save_dir, f"logs-{self._version}")
 
@@ -155,7 +155,6 @@ class NanoDetLightningLogger(LightningLoggerBase):
                 "the dependencies to use torch.utils.tensorboard "
                 "(applicable to PyTorch 1.1 or higher)"
             ) from None
-
         self._experiment = SummaryWriter(log_dir=self.log_dir, **self._kwargs)
         return self._experiment
 

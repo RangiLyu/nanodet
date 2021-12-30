@@ -224,7 +224,7 @@ class NanoDetLightningLogger(LightningLoggerBase):
             self.experiment.add_scalars(prefix + k, {"Val": v}, step)
         if self._wandb_logger:
             log_dict = {prefix + k: v for k, v in metrics.items()}
-            self._wandb_logger.experiment.log(log_dict)
+            self._wandb_logger.log_metrics(log_dict, step=step)
 
     @rank_zero_only
     def save(self):

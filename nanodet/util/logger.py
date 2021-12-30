@@ -22,6 +22,7 @@ from pytorch_lightning.loggers.base import rank_zero_experiment
 from pytorch_lightning.utilities import rank_zero_only
 from pytorch_lightning.utilities.cloud_io import get_filesystem
 from termcolor import colored
+from pytorch_lightning.loggers import WandbLogger 
 
 from .path import mkdir
 
@@ -111,18 +112,18 @@ class AverageMeter(object):
 
 
 class NanoDetLightningLogger(LightningLoggerBase):
-    def __init__(self, save_dir="./", **kwargs):
+    def __init__(self, save_dir="./", use_wandb=True, **kwargs):
         super().__init__()
-        self._name = "NanoDet"
+        self._name = "NanoDet" or kwargs.get("name", None)
         self._version = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
         self.log_dir = os.path.join(save_dir, f"logs-{self._version}")
+        self._kwargs = kwargs
 
         self._fs = get_filesystem(save_dir)
         self._fs.makedirs(self.log_dir, exist_ok=True)
         self._init_logger()
-
+        self._wandb_logger = self._init_wandb() if use_wandb else None
         self._experiment = None
-        self._kwargs = kwargs
 
     @property
     def name(self):
@@ -190,6 +191,13 @@ class NanoDetLightningLogger(LightningLoggerBase):
         # add the handlers to the logger
         self.logger.addHandler(fh)
         self.logger.addHandler(ch)
+    
+    @rank_zero_only
+    def _init_wandb(self) -> None:
+        wandb_args = self._kwargs.get("wandb_args", {})
+        wandb_logger = WandbLogger(project=self._name, **wandb_args)
+        wandb_logger.experiment._label(repo="nanodet")
+        return wandb_logger
 
     @rank_zero_only
     def info(self, string):
@@ -207,12 +215,17 @@ class NanoDetLightningLogger(LightningLoggerBase):
     @rank_zero_only
     def log_hyperparams(self, params):
         self.logger.info(f"hyperparams: {params}")
+        if self._wandb_logger:
+            self._wandb_logger.experiment.config.update(params)
 
     @rank_zero_only
-    def log_metrics(self, metrics, step):
-        self.logger.info(f"Val_metrics: {metrics}")
+    def log_metrics(self, metrics, step, prefix="Val_metrics/"):
+        self.logger.info(f"{prefix}: {metrics}")
         for k, v in metrics.items():
-            self.experiment.add_scalars("Val_metrics/" + k, {"Val": v}, step)
+            self.experiment.add_scalars(prefix + k, {"Val": v}, step)
+        if self._wandb_logger:
+            log_dict = {prefix + k: v for k, v in metrics.items()}
+            self._wandb_logger.experiment.log(log_dict)
 
     @rank_zero_only
     def save(self):

@@ -77,6 +77,7 @@ class TrainingTask(LightningModule):
         preds, loss, loss_states = self.model.forward_train(batch)
 
         # log train losses
+        log_dict = {}
         if self.global_step % self.cfg.log.interval == 0:
             lr = self.optimizers().param_groups[0]["lr"]
             log_msg = "Train|Epoch{}/{}|Iter{}({})| lr:{:.2e}| ".format(
@@ -97,8 +98,10 @@ class TrainingTask(LightningModule):
                     loss_states[loss_name].mean().item(),
                     self.global_step,
                 )
+                log_dict[loss_name] = loss_states[loss_name].mean().item()
+            log_dict["lr"] = lr
             self.logger.info(log_msg)
-
+            self.logger.log_metrics(log_dict, self.global_step, prefix="")
         return loss
 
     def training_epoch_end(self, outputs: List[Any]) -> None:

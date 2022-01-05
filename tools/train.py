@@ -41,6 +41,7 @@ def parse_args():
         "--local_rank", default=-1, type=int, help="node rank for distributed training"
     )
     parser.add_argument("--seed", type=int, default=None, help="random seed")
+    parser.add_argument('--use_wandb', action='store_true', help='use wandb logger')
     args = parser.parse_args()
     return args
 
@@ -59,7 +60,7 @@ def main(args):
     torch.backends.cudnn.benchmark = True
     mkdir(local_rank, cfg.save_dir)
 
-    logger = NanoDetLightningLogger(cfg.save_dir)
+    logger = NanoDetLightningLogger(cfg.save_dir, args.use_wandb)
     logger.dump_cfg(cfg)
 
     if args.seed is not None:

@@ -46,12 +46,17 @@ class TrainingTask(LightningModule):
         self.evaluator = evaluator
         self.save_flag = -10
         self.log_style = "NanoDet"
+        self.num_eval_samples = 16
         self.weight_averager = None
         if "weight_averager" in cfg.model:
             self.weight_averager = build_weight_averager(
                 cfg.model.weight_averager, device=self.device
             )
             self.avg_model = copy.deepcopy(self.model)
+            
+        if len(cfg.device.gpu_ids) > 1:
+            self.num_eval_samples = self.num_eval_samples // cfg.device.gpu_ids
+
 
     def _preprocess_batch_input(self, batch):
         batch_imgs = batch["img"]
@@ -131,6 +136,22 @@ class TrainingTask(LightningModule):
             self.logger.info(log_msg)
 
         dets = self.model.head.post_process(preds, batch)
+        if self.logger._wandb_logger and len(self.logger._eval_samples) < self.num_eval_samples:
+            required_samples = max(0,self.num_eval_samples - len(self.logger._eval_samples))
+            max_len = min(required_samples, len(batch['img']))
+                
+            for i, img_name in enumerate(batch['img'][:max_len]):
+                img_id = batch['img_info']['id'][i]
+                img_name = batch['img_info']['file_name'][i]
+                img_dets = dets[img_id]
+                img_path = os.path.join(self.cfg.data.val.img_path, img_name)
+                classes = self.cfg.class_names
+                
+                self.logger._log_eval_sample(sample_id=img_id,
+                                             sample_path=img_path,
+                                             preds=img_dets,
+                                             classes=classes)
+
         return dets
 
     def validation_epoch_end(self, validation_step_outputs):
@@ -179,6 +200,7 @@ class TrainingTask(LightningModule):
             self.logger.log_metrics(eval_results, self.current_epoch + 1)
         else:
             self.logger.info("Skip val on rank {}".format(self.local_rank))
+        self.logger._log_eval_table(self.cfg.class_names)
 
     def test_step(self, batch, batch_idx):
         dets = self.predict(batch, batch_idx)

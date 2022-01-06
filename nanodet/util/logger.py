@@ -23,6 +23,7 @@ from pytorch_lightning.utilities import rank_zero_only
 from pytorch_lightning.utilities.cloud_io import get_filesystem
 from termcolor import colored
 from pytorch_lightning.loggers import WandbLogger 
+import wandb
 
 from .path import mkdir
 
@@ -121,9 +122,10 @@ class NanoDetLightningLogger(LightningLoggerBase):
         self._fs = get_filesystem(save_dir)
         self._fs.makedirs(self.log_dir, exist_ok=True)
         self._init_logger()
-        self._wandb_logger = self._init_wandb(kwargs.pop("wandb_args",{})) if use_wandb else None
         self._experiment = None
+        self._wandb_logger = self._init_wandb(kwargs.pop("wandb_args",{})) if use_wandb else None
         self._kwargs = kwargs
+        self._eval_samples = [] # [['id', 'sample', 'avg_conf_per_class']]
 
 
     @property
@@ -237,3 +239,50 @@ class NanoDetLightningLogger(LightningLoggerBase):
         if self._wandb_logger:
             self._wandb_logger.experiment.finish()
         self.save()
+        
+    def _log_eval_sample(self, sample_id, sample_path, preds, classes):
+        """
+        Creates one validation image sample
+        Args:
+            sample_id (int): 
+            sample_path (Path):
+            preds (Dict[int,List[float]]):
+            classes (List[str]):
+        """
+        
+        wandb_classes = wandb.Classes([{'id': id, 'name': name} for id, name in enumerate(classes)])
+        class_id_to_label = {k: v for k, v in enumerate(classes)}
+        box_data = []
+        avg_conf_per_class = [0] * len(classes)
+        pred_class_count = {}
+        for cls in preds:
+            for *xyxy, conf in preds[cls]:
+                if conf >= 0.25:
+                    box_data.append(
+                        {"position": {"minX": xyxy[0], "minY": xyxy[1], "maxX": xyxy[2], "maxY": xyxy[3]},
+                         "class_id": cls,
+                         "box_caption": f"{classes[cls]} {conf:.3f}",
+                         "scores": {"class_score": conf},
+                         "domain": "pixel"})
+                    avg_conf_per_class[cls] += conf
+
+                    if cls in pred_class_count:
+                        pred_class_count[cls] += 1
+                    else:
+                        pred_class_count[cls] = 1
+                        
+        for pred_class in pred_class_count.keys():
+            avg_conf_per_class[pred_class] = avg_conf_per_class[pred_class] / pred_class_count[pred_class]
+
+        boxes = {"predictions": {"box_data": box_data, "class_labels": class_id_to_label}}
+
+        wandb_img = wandb.Image(sample_path, boxes=boxes, classes=wandb_classes)
+        self._eval_samples.append([sample_id, wandb_img, *avg_conf_per_class])
+    
+    def _log_eval_table(self, classes):
+        if self._eval_samples:
+            self._wandb_logger.log_table(key="eval_sample",
+                                         columns=["id", "prediction", *classes],
+                                         data=self._eval_samples
+                                        )
+            self._eval_samples = []

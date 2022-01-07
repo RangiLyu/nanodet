@@ -13,3 +13,4 @@ torch>=1.7
 torchmetrics
 torchvision
 tqdm
+wandb

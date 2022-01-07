@@ -41,7 +41,9 @@ def parse_args():
         "--local_rank", default=-1, type=int, help="node rank for distributed training"
     )
     parser.add_argument("--seed", type=int, default=None, help="random seed")
-    parser.add_argument('--use-wandb', action='store_true', help='use wandb logger')
+    parser.add_argument('--use-wandb', action='store_true', help="use wandb logger")
+    parser.add_argument(
+        "--eval-samples", type=int, default=16, help="number of evaluation samples to log")
     args = parser.parse_args()
     return args
 
@@ -62,7 +64,7 @@ def main(args):
 
     logger = NanoDetLightningLogger(cfg.save_dir,
                                     args.use_wandb,
-                                    num_eval_samples=50,
+                                    num_eval_samples=args.eval_samples,
                                     wandb_args={"config": cfg}, name="nanodet-testing")
     logger.dump_cfg(cfg)
 

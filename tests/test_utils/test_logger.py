@@ -7,7 +7,7 @@ from nanodet.util import NanoDetLightningLogger, cfg, load_config
 
 def test_logger():
     tmp_dir = tempfile.TemporaryDirectory()
-    logger = NanoDetLightningLogger(tmp_dir.name)
+    logger = NanoDetLightningLogger(tmp_dir.name, use_wandb=True, wandb_args={"anonymous":"must"})
 
     writer = logger.experiment
     assert isinstance(writer, SummaryWriter)

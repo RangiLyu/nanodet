@@ -180,7 +180,8 @@ class TrainingTask(LightningModule):
             self.logger.log_metrics(eval_results, self.current_epoch + 1)
         else:
             self.logger.info("Skip val on rank {}".format(self.local_rank))
-        self.logger._log_eval_table(all_results, self.cfg)
+        if self.logger._wandb_logger:
+            self.logger._log_eval_table(all_results, self.cfg)
 
     def test_step(self, batch, batch_idx):
         dets = self.predict(batch, batch_idx)

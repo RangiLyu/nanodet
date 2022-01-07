@@ -126,7 +126,8 @@ class NanoDetLightningLogger(LightningLoggerBase):
         self._experiment = None
         self._num_eval_samples = num_eval_samples
         self._id_to_name = None
-        self._wandb_logger = self._init_wandb(kwargs.pop("wandb_args",{})) if use_wandb else None
+        wandb_args = kwargs.pop("wandb_args",{})
+        self._wandb_logger = self._init_wandb(wandb_args) if use_wandb else None
         self._kwargs = kwargs
 
     @property

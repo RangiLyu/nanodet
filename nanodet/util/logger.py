@@ -22,7 +22,8 @@ from pytorch_lightning.loggers.base import rank_zero_experiment
 from pytorch_lightning.utilities import rank_zero_only
 from pytorch_lightning.utilities.cloud_io import get_filesystem
 from termcolor import colored
-from pytorch_lightning.loggers import WandbLogger 
+from pytorch_lightning.loggers import WandbLogger
+from nanodet.data.dataset import build_dataset
 import wandb
 
 from .path import mkdir
@@ -113,7 +114,7 @@ class AverageMeter(object):
 
 
 class NanoDetLightningLogger(LightningLoggerBase):
-    def __init__(self, save_dir="./", use_wandb=False, **kwargs):
+    def __init__(self, save_dir="./", use_wandb=False, num_eval_samples=16, **kwargs):
         super().__init__()
         self._name = kwargs.pop("name", None) or "NanoDet"
         self._version = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
@@ -123,10 +124,10 @@ class NanoDetLightningLogger(LightningLoggerBase):
         self._fs.makedirs(self.log_dir, exist_ok=True)
         self._init_logger()
         self._experiment = None
+        self._num_eval_samples = num_eval_samples
+        self._id_to_name = None
         self._wandb_logger = self._init_wandb(kwargs.pop("wandb_args",{})) if use_wandb else None
         self._kwargs = kwargs
-        self._eval_samples = [] # [['id', 'sample', 'avg_conf_per_class']]
-
 
     @property
     def name(self):
@@ -277,12 +278,25 @@ class NanoDetLightningLogger(LightningLoggerBase):
         boxes = {"predictions": {"box_data": box_data, "class_labels": class_id_to_label}}
 
         wandb_img = wandb.Image(sample_path, boxes=boxes, classes=wandb_classes)
-        self._eval_samples.append([sample_id, wandb_img, *avg_conf_per_class])
+        return [sample_id, wandb_img, *avg_conf_per_class]
     
-    def _log_eval_table(self, classes):
-        if self._eval_samples:
-            self._wandb_logger.log_table(key="eval_sample",
-                                         columns=["id", "prediction", *classes],
-                                         data=self._eval_samples
+    @rank_zero_only
+    def _log_eval_table(self, results, cfg):
+        max_len = min(len(results.keys()), self._num_eval_samples)
+        eval_table_rows = []
+        # create id to file name mappings
+        if max_len > 0 and self._id_to_name is None:
+            val_dataset = build_dataset(cfg.data.val, "test")
+            self._id_to_name = {data['img_info']['id']: data['img_info']['file_name'] for data in val_dataset}
+            
+        for res_id in list(results.keys())[:max_len]:
+            res = results[res_id]
+            file_path = os.path.join(cfg.data.val.img_path, self._id_to_name[res_id])
+            eval_table_rows.append(self._log_eval_sample(
+                    res_id, file_path, res, cfg.class_names
+            ))
+        if eval_table_rows:
+            self._wandb_logger.log_table(key="eval_samples",
+                                         columns=["id", "prediction", *cfg.class_names],
+                                         data=eval_table_rows
                                         )
-            self._eval_samples = []

@@ -60,7 +60,10 @@ def main(args):
     torch.backends.cudnn.benchmark = True
     mkdir(local_rank, cfg.save_dir)
 
-    logger = NanoDetLightningLogger(cfg.save_dir, args.use_wandb, wandb_args={"config": cfg})
+    logger = NanoDetLightningLogger(cfg.save_dir,
+                                    args.use_wandb,
+                                    num_eval_samples=50,
+                                    wandb_args={"config": cfg}, name="nanodet-testing")
     logger.dump_cfg(cfg)
 
     if args.seed is not None:

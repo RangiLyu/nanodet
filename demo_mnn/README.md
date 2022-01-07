@@ -37,13 +37,9 @@ since NanoDet is anchor free. We can adapt the shape of `dummy_input` in *./tool
 with different input sizes.
 
 Here are converted model
-[Google Drive](https://drive.google.com/drive/folders/1dEdAXkof_lCusYBNrgbGzdLFZbDPMiFn?usp=sharing).
+[Download Link](https://github.com/RangiLyu/nanodet/releases/download/v1.0.0-alpha-1/nanodet-plus-m_416_mnn.mnn).
 
 ## Build
-
-The python code *demo_mnn.py* can run directly and independently without main NanoDet repo.
-`NanoDetONNX` and `NanoDetTorch` are two classes used to check the similarity of MNN inference results
-with ONNX model and Pytorch model. They can be remove with no side effects.
 
 For C++ code, replace `libMNN.so` under *./mnn/lib* with the one you just compiled, modify OpenCV path at CMake file,
 and run
@@ -65,6 +61,7 @@ Note that a flag at `main.cpp` is used to control whether to show the detection 
 ### Python
 
 The multi-backend python demo is still working in progress.
+
 ### C++
 
 C++ inference interface is same with NCNN code, to detect images in a fold, run:

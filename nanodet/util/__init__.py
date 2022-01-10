@@ -7,7 +7,7 @@ from .check_point import (
 )
 from .config import cfg, load_config
 from .flops_counter import get_model_complexity_info
-from .logger import AverageMeter, Logger, MovingAverage, NanoDetLightningLogger
+from .logger import AverageMeter, Logger, MovingAverage, NanoDetLightningLogger, NanoDetWandbLogger
 from .misc import images_to_levels, multi_apply, unmap
 from .path import collect_files, mkdir
 from .rank_filter import rank_filter

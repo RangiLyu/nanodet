@@ -119,16 +119,11 @@ class NanoDetLightningLogger(LightningLoggerBase):
         self._name = kwargs.pop("name", None) or "NanoDet"
         self._version = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
         self.log_dir = os.path.join(save_dir, f"logs-{self._version}")
-
+        self._kwargs = kwargs
         self._fs = get_filesystem(save_dir)
         self._fs.makedirs(self.log_dir, exist_ok=True)
         self._init_logger()
         self._experiment = None
-        self._num_eval_samples = num_eval_samples
-        self._id_to_name = None
-        wandb_args = kwargs.pop("wandb_args",{})
-        self._wandb_logger = self._init_wandb(wandb_args) if use_wandb else None
-        self._kwargs = kwargs
 
     @property
     def name(self):
@@ -195,12 +190,6 @@ class NanoDetLightningLogger(LightningLoggerBase):
         # add the handlers to the logger
         self.logger.addHandler(fh)
         self.logger.addHandler(ch)
-    
-    @rank_zero_only
-    def _init_wandb(self, wandb_args) -> None:
-        wandb_logger = WandbLogger(project=self._name, **wandb_args)
-        wandb_logger.experiment._label(repo="nanodet")
-        return wandb_logger
 
     @rank_zero_only
     def info(self, string):
@@ -218,17 +207,12 @@ class NanoDetLightningLogger(LightningLoggerBase):
     @rank_zero_only
     def log_hyperparams(self, params):
         self.logger.info(f"hyperparams: {params}")
-        if self._wandb_logger:
-            self._wandb_logger.experiment.config.update(params)
 
     @rank_zero_only
     def log_metrics(self, metrics, step, prefix="Val_metrics/"):
         self.logger.info(f"{prefix}: {metrics}")
         for k, v in metrics.items():
             self.experiment.add_scalars(prefix + k, {"Val": v}, step)
-        if self._wandb_logger:
-            log_dict = {prefix + k: v for k, v in metrics.items()}
-            self._wandb_logger.log_metrics(log_dict, step=step)
 
     @rank_zero_only
     def save(self):
@@ -238,9 +222,44 @@ class NanoDetLightningLogger(LightningLoggerBase):
     def finalize(self, status):
         self.experiment.flush()
         self.experiment.close()
-        if self._wandb_logger:
-            self._wandb_logger.experiment.finish()
         self.save()
+    
+    @rank_zero_only
+    def log_val_results(self, results, cfg):
+        '''
+        A methoed to process and log insights/metrics/visualizations from 
+        validation results
+        '''
+        pass
+
+
+            
+class NanoDetWandbLogger(WandbLogger):
+    def __init__(self,save_dir="./", num_eval_samples=16, **kwargs):
+        super().__init__(save_dir=save_dir, **kwargs)
+        self._num_eval_samples = num_eval_samples
+        self._id_to_name = None
+    
+    @rank_zero_only
+    def info(self, string):
+        pass
+    
+    @rank_zero_only
+    def log_metrics(self, metrics, step, prefix=""):
+        self._prefix = prefix
+        super().log_metrics(metrics, step)
+        
+    @rank_zero_only
+    def log_val_results(self, results, cfg):
+        '''
+        A methoed to process and log insights/metrics/visualizations from 
+        validation results
+        '''
+        self._log_eval_table(results, cfg)
+        
+    @rank_zero_only
+    def dump_cfg(self, cfg_node):
+        pass
         
     def _log_eval_sample(self, sample_id, sample_path, preds, classes):
         """
@@ -281,6 +300,8 @@ class NanoDetLightningLogger(LightningLoggerBase):
         wandb_img = wandb.Image(sample_path, boxes=boxes, classes=wandb_classes)
         return [sample_id, wandb_img, *avg_conf_per_class]
     
+
+
     @rank_zero_only
     def _log_eval_table(self, results, cfg):
         max_len = min(len(results.keys()), self._num_eval_samples)
@@ -297,7 +318,7 @@ class NanoDetLightningLogger(LightningLoggerBase):
                     res_id, file_path, res, cfg.class_names
             ))
         if eval_table_rows:
-            self._wandb_logger.log_table(key="eval_samples",
+            self.log_table(key="eval_samples",
                                          columns=["id", "prediction", *cfg.class_names],
                                          data=eval_table_rows
                                         )

@@ -87,21 +87,16 @@ class TrainingTask(LightningModule):
                 batch_idx,
                 lr,
             )
-            self.scalar_summary("Train_loss/lr", "Train", lr, self.global_step)
             for loss_name in loss_states:
                 log_msg += "{}:{:.4f}| ".format(
                     loss_name, loss_states[loss_name].mean().item()
                 )
-                self.scalar_summary(
-                    "Train_loss/" + loss_name,
-                    "Train",
-                    loss_states[loss_name].mean().item(),
-                    self.global_step,
-                )
                 log_dict[loss_name] = loss_states[loss_name].mean().item()
             log_dict["lr"] = lr
-            self.logger.info(log_msg)
-            self.logger.log_metrics(log_dict, self.global_step, prefix="")
+            for logger in self.logger:
+                logger.info(log_msg)
+                logger.log_metrics(log_dict, self.global_step, prefix="Train/")
+            
         return loss
 
     def training_epoch_end(self, outputs: List[Any]) -> None:
@@ -128,8 +123,8 @@ class TrainingTask(LightningModule):
                 log_msg += "{}:{:.4f}| ".format(
                     loss_name, loss_states[loss_name].mean().item()
                 )
-            self.logger.info(log_msg)
-
+            for logger in self.logger:
+                logger.info(log_msg)
         dets = self.model.head.post_process(preds, batch)
         return dets
 
@@ -177,12 +172,14 @@ class TrainingTask(LightningModule):
                 warnings.warn(
                     "Warning! Save_key is not in eval results! Only save model last!"
                 )
-            self.logger.log_metrics(eval_results, self.current_epoch + 1)
+            
+            for logger in self.logger:
+                logger.log_metrics(eval_results, self.current_epoch + 1, "Val_metrics/")
+                logger.log_val_results(all_results, self.cfg)
         else:
-            self.logger.info("Skip val on rank {}".format(self.local_rank))
-        if self.logger._wandb_logger:
-            self.logger._log_eval_table(all_results, self.cfg)
-
+            for logger in self.logger:
+                logger.info("Skip val on rank {}".format(self.local_rank))
+        
     def test_step(self, batch, batch_idx):
         dets = self.predict(batch, batch_idx)
         return dets
@@ -210,7 +207,8 @@ class TrainingTask(LightningModule):
                     for k, v in eval_results.items():
                         f.write("{}: {}\n".format(k, v))
         else:
-            self.logger.info("Skip test on rank {}".format(self.local_rank))
+            for logger in self.logger:
+                logger.info("Skip test on rank {}".format(self.local_rank))
 
     def configure_optimizers(self):
         """
@@ -291,25 +289,14 @@ class TrainingTask(LightningModule):
         items.pop("loss", None)
         return items
 
-    def scalar_summary(self, tag, phase, value, step):
-        """
-        Write Tensorboard scalar summary log.
-        Args:
-            tag: Name for the tag
-            phase: 'Train' or 'Val'
-            value: Value to record
-            step: Step value to record
-
-        """
-        if self.local_rank < 1:
-            self.logger.experiment.add_scalars(tag, {phase: value}, step)
-
     def info(self, string):
-        self.logger.info(string)
+        for logger in self.logger:
+            logger.info(string)
 
     @rank_zero_only
     def save_model_state(self, path):
-        self.logger.info("Saving model to {}".format(path))
+        for logger in self.logger:
+            logger.info("Saving model to {}".format(path))
         state_dict = (
             self.weight_averager.state_dict()
             if self.weight_averager
@@ -324,7 +311,8 @@ class TrainingTask(LightningModule):
 
     def on_pretrain_routine_end(self) -> None:
         if "weight_averager" in self.cfg.model:
-            self.logger.info("Weight Averaging is enabled")
+            for logger in self.logger:
+                logger.info("Weight Averaging is enabled")
             if self.weight_averager and self.weight_averager.has_inited():
                 self.weight_averager.to(self.weight_averager.device)
                 return
@@ -352,14 +340,17 @@ class TrainingTask(LightningModule):
     def on_load_checkpoint(self, checkpointed_state: Dict[str, Any]) -> None:
         if self.weight_averager:
             avg_params = convert_avg_params(checkpointed_state)
+            info = ''
             if len(avg_params) != len(self.model.state_dict()):
-                self.logger.info(
+                info = (
                     "Weight averaging is enabled but average state does not"
                     "match the model"
-                )
+                    )
             else:
                 self.weight_averager = build_weight_averager(
                     self.cfg.model.weight_averager, device=self.device
                 )
                 self.weight_averager.load_state_dict(avg_params)
-                self.logger.info("Loaded average state from checkpoint.")
+                info = "Loaded average state from checkpoint."
+            for logger in self.logger:
+                logger.info(info)

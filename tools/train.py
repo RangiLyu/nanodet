@@ -26,6 +26,7 @@ from nanodet.evaluator import build_evaluator
 from nanodet.trainer.task import TrainingTask
 from nanodet.util import (
     NanoDetLightningLogger,
+    NanoDetWandbLogger,
     cfg,
     convert_old_model,
     load_config,
@@ -62,10 +63,7 @@ def main(args):
     torch.backends.cudnn.benchmark = True
     mkdir(local_rank, cfg.save_dir)
 
-    logger = NanoDetLightningLogger(cfg.save_dir,
-                                    args.use_wandb,
-                                    num_eval_samples=args.eval_samples,
-                                    wandb_args={"config": cfg}, name="nanodet-testing")
+    logger = NanoDetLightningLogger(cfg.save_dir)
     logger.dump_cfg(cfg)
 
     if args.seed is not None:
@@ -118,7 +116,9 @@ def main(args):
     )
 
     accelerator = None if len(cfg.device.gpu_ids) <= 1 else "ddp"
-
+    loggers = [logger]
+    if args.use_wandb:
+        loggers.append(NanoDetWandbLogger(save_dir="./", num_eval_samples=args.eval_samples, name="test", project="NnN"))
     trainer = pl.Trainer(
         default_root_dir=cfg.save_dir,
         max_epochs=cfg.schedule.total_epochs,
@@ -129,7 +129,7 @@ def main(args):
         num_sanity_val_steps=0,
         resume_from_checkpoint=model_resume_path,
         callbacks=[ProgressBar(refresh_rate=0)],  # disable tqdm bar
-        logger=logger,
+        logger=loggers,
         benchmark=True,
         gradient_clip_val=cfg.get("grad_clip", 0.0),
     )

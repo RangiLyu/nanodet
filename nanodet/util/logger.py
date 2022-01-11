@@ -114,16 +114,17 @@ class AverageMeter(object):
 
 
 class NanoDetLightningLogger(LightningLoggerBase):
-    def __init__(self, save_dir="./", use_wandb=False, num_eval_samples=16, **kwargs):
+    def __init__(self, save_dir="./", **kwargs):
         super().__init__()
-        self._name = kwargs.pop("name", None) or "NanoDet"
+        self._name = "NanoDet"
         self._version = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
         self.log_dir = os.path.join(save_dir, f"logs-{self._version}")
-        self._kwargs = kwargs
+        
         self._fs = get_filesystem(save_dir)
         self._fs.makedirs(self.log_dir, exist_ok=True)
         self._init_logger()
         self._experiment = None
+        self._kwargs = kwargs
 
     @property
     def name(self):

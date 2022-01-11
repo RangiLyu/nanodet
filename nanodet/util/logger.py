@@ -119,10 +119,11 @@ class NanoDetLightningLogger(LightningLoggerBase):
         self._name = "NanoDet"
         self._version = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
         self.log_dir = os.path.join(save_dir, f"logs-{self._version}")
-        
+
         self._fs = get_filesystem(save_dir)
         self._fs.makedirs(self.log_dir, exist_ok=True)
         self._init_logger()
+
         self._experiment = None
         self._kwargs = kwargs
 

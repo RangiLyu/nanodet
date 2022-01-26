@@ -44,6 +44,7 @@ class CocoDataset(BaseDataset):
         self.cat_ids = sorted(self.coco_api.getCatIds())
         self.cat2label = {cat_id: i for i, cat_id in enumerate(self.cat_ids)}
         self.cats = self.coco_api.loadCats(self.cat_ids)
+        self.class_names = [cat["name"] for cat in self.cats]
         self.img_ids = sorted(self.coco_api.imgs.keys())
         img_info = self.coco_api.loadImgs(self.img_ids)
         return img_info

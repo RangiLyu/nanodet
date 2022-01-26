@@ -1,13 +1,14 @@
 Cython
 matplotlib
 numpy
+omegaconf>=2.0.1
 onnx
 onnx-simplifier
 opencv-python
 pyaml
 pycocotools
 pytorch-lightning>=1.4.0
-omegaconf>=2.0.1
+tabulate
 tensorboard
 termcolor
 torch>=1.7

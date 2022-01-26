@@ -160,7 +160,7 @@ conda install pytorch torchvision cudatoolkit=11.1 -c pytorch -c conda-forge
 3. Install requirements
 
 ```shell script
-pip install Cython termcolor numpy tensorboard pycocotools matplotlib pyaml opencv-python tqdm pytorch-lightning torchmetrics
+pip install -r requirements.txt
 ```
 
 4. Setup NanoDet

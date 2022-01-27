@@ -157,17 +157,21 @@ Besides, We provide a notebook [here](./demo/demo-inference-with-pytorch.ipynb) 
 conda install pytorch torchvision cudatoolkit=11.1 -c pytorch -c conda-forge
 ```
 
-3. Install requirements
-
-```shell script
-pip install -r requirements.txt
-```
-
-4. Setup NanoDet
+3. Clone this repository
 
 ```shell script
 git clone https://github.com/RangiLyu/nanodet.git
 cd nanodet
+```
+
+4. Install requirements
+
+```shell script
+pip install -r requirements.txt
+```
+    
+5. Setup NanoDet
+```shell script
 python setup.py develop
 ```
 

@@ -34,8 +34,10 @@ class TIMMWrapper(nn.Module):
     ):
         try:
             import timm
-        except ImportError:
-            raise RuntimeError("timm is not installed, please install it first")
+        except ImportError as exc:
+            raise RuntimeError(
+                "timm is not installed, please install it first"
+            ) from exc
         super(TIMMWrapper, self).__init__()
         self.timm = timm.create_model(
             model_name=model_name,

@@ -53,6 +53,8 @@ git clone --recursive https://github.com/Tencent/ncnn.git
 
 Build NCNN following this tutorial: [Build for Linux / NVIDIA Jetson / Raspberry Pi](https://github.com/Tencent/ncnn/wiki/how-to-build#build-for-linux)
 
+Note: Don't forget to make install the ncnn after you finished compiling it.
+
 ### Step4.
 
 Set environment variables. Run:

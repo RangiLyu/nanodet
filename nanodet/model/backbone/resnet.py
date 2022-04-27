@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 import torch.nn as nn
 import torch.utils.model_zoo as model_zoo
 
@@ -15,7 +13,7 @@ model_urls = {
 
 
 def conv3x3(in_planes, out_planes, stride=1):
-    """3x3 convolution with padding"""
+    """3x3 convolution with padding."""
     return nn.Conv2d(
         in_planes, out_planes, kernel_size=3, stride=stride, padding=1, bias=False
     )
@@ -25,7 +23,7 @@ class BasicBlock(nn.Module):
     expansion = 1
 
     def __init__(self, inplanes, planes, stride=1, downsample=None, activation="ReLU"):
-        super(BasicBlock, self).__init__()
+        super().__init__()
         self.conv1 = conv3x3(inplanes, planes, stride)
         self.bn1 = nn.BatchNorm2d(planes)
         self.act = act_layers(activation)
@@ -57,7 +55,7 @@ class Bottleneck(nn.Module):
     expansion = 4
 
     def __init__(self, inplanes, planes, stride=1, downsample=None, activation="ReLU"):
-        super(Bottleneck, self).__init__()
+        super().__init__()
         self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=1, bias=False)
         self.bn1 = nn.BatchNorm2d(planes)
         self.conv2 = nn.Conv2d(
@@ -117,9 +115,9 @@ class ResNet(nn.Module):
     def __init__(
         self, depth, out_stages=(1, 2, 3, 4), activation="ReLU", pretrain=True
     ):
-        super(ResNet, self).__init__()
+        super().__init__()
         if depth not in self.resnet_spec:
-            raise KeyError("invalid resnet depth {}".format(depth))
+            raise KeyError(f"invalid resnet depth {depth}")
         assert set(out_stages).issubset((1, 2, 3, 4))
         self.activation = activation
         block, layers = self.resnet_spec[depth]
@@ -168,7 +166,7 @@ class ResNet(nn.Module):
         x = self.maxpool(x)
         output = []
         for i in range(1, 5):
-            res_layer = getattr(self, "layer{}".format(i))
+            res_layer = getattr(self, f"layer{i}")
             x = res_layer(x)
             if i in self.out_stages:
                 output.append(x)
@@ -177,9 +175,9 @@ class ResNet(nn.Module):
 
     def init_weights(self, pretrain=True):
         if pretrain:
-            url = model_urls["resnet{}".format(self.depth)]
+            url = model_urls[f"resnet{self.depth}"]
             pretrained_state_dict = model_zoo.load_url(url)
-            print("=> loading pretrained model {}".format(url))
+            print(f"=> loading pretrained model {url}")
             self.load_state_dict(pretrained_state_dict, strict=False)
         else:
             for m in self.modules():

@@ -114,7 +114,7 @@ class RepVGG(nn.Module):
         deploy=False,
         last_channel=None,
     ):
-        super(RepVGG, self).__init__()
+        super().__init__()
         # TODO: Update code to Xiaohan's repo
         model_name = "RepVGG-" + arch
         assert model_name in model_param
@@ -180,7 +180,7 @@ class RepVGG(nn.Module):
         x = self.stage0(x)
         output = []
         for i in range(1, 5):
-            stage = getattr(self, "stage{}".format(i))
+            stage = getattr(self, f"stage{i}")
             x = stage(x)
             if i in self.out_stages:
                 output.append(x)

@@ -26,8 +26,8 @@ from nanodet.util import Logger, cfg, load_config, load_model_weight
 def generate_ouput_names(head_cfg):
     cls_names, dis_names = [], []
     for stride in head_cfg.strides:
-        cls_names.append("cls_pred_stride_{}".format(stride))
-        dis_names.append("dis_pred_stride_{}".format(stride))
+        cls_names.append(f"cls_pred_stride_{stride}")
+        dis_names.append(f"dis_pred_stride_{stride}")
     return cls_names + dis_names
 
 

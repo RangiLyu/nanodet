@@ -29,11 +29,9 @@ def list_scatter(input, target_gpus, chunk_sizes):
 
 
 def scatter(inputs, target_gpus, dim=0, chunk_sizes=None):
-    """
-    Slices variables into approximately equal chunks and
-    distributes them across given GPUs. Duplicates
-    references to objects that are not variables. Does not
-    support Tensors.
+    """Slices variables into approximately equal chunks and distributes them across given GPUs.
+
+    Duplicates references to objects that are not variables. Does not support Tensors.
     """
 
     def scatter_map(obj):

@@ -7,8 +7,7 @@ from .base_assigner import BaseAssigner
 
 
 class DynamicSoftLabelAssigner(BaseAssigner):
-    """Computes matching between predictions and ground truth with
-    dynamic soft label assignment.
+    """Computes matching between predictions and ground truth with dynamic soft label assignment.
 
     Args:
         topk (int): Select top-k predictions to calculate dynamic k

@@ -23,7 +23,7 @@ from nanodet.model.arch import build_model
 from nanodet.util import load_model_weight
 
 
-class Predictor(object):
+class Predictor:
     def __init__(self, cfg, model_path, logger, device="cuda:0"):
         self.cfg = cfg
         self.device = device
@@ -67,4 +67,4 @@ class Predictor(object):
         self.model.head.show_result(
             meta["raw_img"], dets, class_names, score_thres=score_thres, show=True
         )
-        print("viz time: {:.3f}s".format(time.time() - time1))
+        print(f"viz time: {time.time() - time1:.3f}s")

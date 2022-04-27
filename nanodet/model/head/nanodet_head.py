@@ -21,9 +21,7 @@ from .gfl_head import GFLHead
 
 
 class NanoDetHead(GFLHead):
-    """
-    Modified from GFL, use same loss functions but much lightweight convolution heads
-    """
+    """Modified from GFL, use same loss functions but much lightweight convolution heads."""
 
     def __init__(
         self,
@@ -45,7 +43,7 @@ class NanoDetHead(GFLHead):
         self.share_cls_reg = share_cls_reg
         self.activation = activation
         self.ConvModule = ConvModule if conv_type == "Conv" else DepthwiseConvModule
-        super(NanoDetHead, self).__init__(
+        super().__init__(
             num_classes,
             loss,
             input_channel,
@@ -159,7 +157,7 @@ class NanoDetHead(GFLHead):
         return outputs
 
     def _forward_onnx(self, feats):
-        """only used for onnx export"""
+        """only used for onnx export."""
         outputs = []
         for x, cls_convs, reg_convs, gfl_cls, gfl_reg in zip(
             feats, self.cls_convs, self.reg_convs, self.gfl_cls, self.gfl_reg

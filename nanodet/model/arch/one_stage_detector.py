@@ -29,7 +29,7 @@ class OneStageDetector(nn.Module):
         fpn_cfg=None,
         head_cfg=None,
     ):
-        super(OneStageDetector, self).__init__()
+        super().__init__()
         self.backbone = build_backbone(backbone_cfg)
         if fpn_cfg is not None:
             self.fpn = build_fpn(fpn_cfg)
@@ -52,10 +52,10 @@ class OneStageDetector(nn.Module):
             preds = self(meta["img"])
             torch.cuda.synchronize()
             time2 = time.time()
-            print("forward time: {:.3f}s".format((time2 - time1)), end=" | ")
+            print(f"forward time: {time2 - time1:.3f}s", end=" | ")
             results = self.head.post_process(preds, meta)
             torch.cuda.synchronize()
-            print("decode time: {:.3f}s".format((time.time() - time2)), end=" | ")
+            print(f"decode time: {time.time() - time2:.3f}s", end=" | ")
         return results
 
     def forward_train(self, gt_meta):

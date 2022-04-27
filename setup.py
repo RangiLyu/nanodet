@@ -1,7 +1,13 @@
 #!/usr/bin/env python
 from setuptools import find_packages, setup
 
-from nanodet import __author__, __author_email__, __docs__, __homepage__, __version__
+from nanodet import (
+    __author__,
+    __author_email__,
+    __docs__,
+    __homepage__,
+    __version__,
+)
 
 if __name__ == "__main__":
     setup(

@@ -66,8 +66,8 @@ def multiclass_nms(
 
 
 def batched_nms(boxes, scores, idxs, nms_cfg, class_agnostic=False):
-    """Performs non-maximum suppression in a batched fashion.
-    Modified from https://github.com/pytorch/vision/blob
+    """Performs non-maximum suppression in a batched fashion. Modified from https://github.com/pytorch/vision/blob.
+
     /505cd6957711af790211896d32b40291bea1bc21/torchvision/ops/boxes.py#L39.
     In order to perform NMS independently per class, we add an offset to all
     the boxes. The offset is dependent only on the class idx, and is large

@@ -1,7 +1,10 @@
 import pytest
 import torch
 
-from nanodet.model.loss.gfocal_loss import DistributionFocalLoss, QualityFocalLoss
+from nanodet.model.loss.gfocal_loss import (
+    DistributionFocalLoss,
+    QualityFocalLoss,
+)
 
 
 def test_qfl():

@@ -8,7 +8,7 @@ def test_tan():
     """Tests TAN."""
     s = 64
     in_channels = [8, 16, 32]
-    feat_sizes = [s // 2 ** i for i in range(3)]  # [64, 32, 16]
+    feat_sizes = [s // 2**i for i in range(3)]  # [64, 32, 16]
     out_channels = 8
 
     with pytest.raises(AssertionError):
@@ -41,4 +41,4 @@ def test_tan():
     assert len(outs) == 3
     for i in range(3):
         assert outs[i].shape[1] == out_channels
-        assert outs[i].shape[2] == outs[i].shape[3] == s // (2 ** i)
+        assert outs[i].shape[2] == outs[i].shape[3] == s // (2**i)

@@ -28,14 +28,14 @@ def overlay_bbox_cv(img, dets, class_names, score_thresh):
         for bbox in dets[label]:
             score = bbox[-1]
             if score > score_thresh:
-                x0, y0, x1, y1 = [int(i) for i in bbox[:4]]
+                x0, y0, x1, y1 = (int(i) for i in bbox[:4])
                 all_box.append([label, x0, y0, x1, y1, score])
     all_box.sort(key=lambda v: v[5])
     for box in all_box:
         label, x0, y0, x1, y1, score = box
         # color = self.cmap(i)[:3]
         color = (_COLORS[label] * 255).astype(np.uint8).tolist()
-        text = "{}:{:.1f}%".format(class_names[label], score * 100)
+        text = f"{class_names[label]}:{score * 100:.1f}%"
         txt_color = (0, 0, 0) if np.mean(_COLORS[label]) > 0.5 else (255, 255, 255)
         font = cv2.FONT_HERSHEY_SIMPLEX
         txt_size = cv2.getTextSize(text, font, 0.5, 2)[0]
@@ -59,9 +59,8 @@ def rand_cmap(
     last_color_black=False,
     verbose=False,
 ):
-    """
-    Creates a random colormap to be used together with matplotlib.
-    Useful for segmentation tasks
+    """Creates a random colormap to be used together with matplotlib. Useful for segmentation tasks.
+
     :param nlabels: Number of labels (size of colormap)
     :param type: 'bright' for strong colors, 'soft' for pastel colors
     :param first_color_black: Option to use first color as black, True or False
@@ -135,11 +134,9 @@ def rand_cmap(
 
 
 class VisImage:
-    """
-    Visualize detection results.
+    """Visualize detection results.
 
-    Modified from Detectron2
-    https://github.com/facebookresearch/detectron2
+    Modified from Detectron2 https://github.com/facebookresearch/detectron2
     """
 
     def __init__(self, img, scale=1.0):
@@ -308,9 +305,7 @@ class Visualizer:
             self.draw_polycon(ploy.reshape(-1, 2), color, edge_color=None, alpha=alpha)
 
     def _jitter(self, color):
-        """
-        Randomly modifies given color to produce a slightly different color than
-        the color given.
+        """Randomly modifies given color to produce a slightly different color than the color given.
 
         Args:
             color (tuple[double]): a tuple of 3 elements, containing the RGB
@@ -336,7 +331,7 @@ class Visualizer:
                 if score >= self.score_thresh:
                     # color = self.cmap(i)[:3]
                     color = _COLORS[label]
-                    text = "{}:{:.1f}%".format(self.class_names[label], score * 100)
+                    text = f"{self.class_names[label]}:{score * 100:.1f}%"
                     self.draw_box(bbox[:4], alpha=1.0, edge_color=color, line_style="-")
                     text_pos = (x0, y0)
                     instance_area = (y1 - y0) * (x1 - x0)
@@ -410,7 +405,7 @@ class Visualizer:
                 )
 
                 x0, y0, x1, y1 = bbox
-                text = "{}:{:.1f}%".format(self.class_names[label], score * 100)
+                text = f"{self.class_names[label]}:{score * 100:.1f}%"
                 text_pos = np.median(binary_mask.nonzero(), axis=1)[::-1]
                 instance_area = (y1 - y0) * (x1 - x0)
                 if (
@@ -447,7 +442,7 @@ class Visualizer:
         font_size=None,
         color="g",
         horizontal_alignment="center",
-        rotation=0
+        rotation=0,
     ):
         """
         Args:

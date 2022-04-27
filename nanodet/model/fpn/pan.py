@@ -49,7 +49,7 @@ class PAN(FPN):
         norm_cfg=None,
         activation=None,
     ):
-        super(PAN, self).__init__(
+        super().__init__(
             in_channels,
             out_channels,
             num_outs,

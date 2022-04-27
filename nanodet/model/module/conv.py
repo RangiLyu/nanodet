@@ -1,7 +1,5 @@
-"""
-ConvModule refers from MMDetection
-RepVGGConvModule refers from RepVGG: Making VGG-style ConvNets Great Again
-"""
+"""ConvModule refers from MMDetection RepVGGConvModule refers from RepVGG: Making VGG-style ConvNets Great
+Again."""
 import warnings
 
 import numpy as np
@@ -52,7 +50,7 @@ class ConvModule(nn.Module):
         inplace=True,
         order=("conv", "norm", "act"),
     ):
-        super(ConvModule, self).__init__()
+        super().__init__()
         assert conv_cfg is None or isinstance(conv_cfg, dict)
         assert norm_cfg is None or isinstance(norm_cfg, dict)
         assert activation is None or isinstance(activation, str)
@@ -156,7 +154,7 @@ class DepthwiseConvModule(nn.Module):
         inplace=True,
         order=("depthwise", "dwnorm", "act", "pointwise", "pwnorm", "act"),
     ):
-        super(DepthwiseConvModule, self).__init__()
+        super().__init__()
         assert activation is None or isinstance(activation, str)
         self.activation = activation
         self.inplace = inplace
@@ -240,11 +238,8 @@ class DepthwiseConvModule(nn.Module):
 
 
 class RepVGGConvModule(nn.Module):
-    """
-    RepVGG Conv Block from paper RepVGG: Making VGG-style ConvNets Great Again
-    https://arxiv.org/abs/2101.03697
-    https://github.com/DingXiaoH/RepVGG
-    """
+    """RepVGG Conv Block from paper RepVGG: Making VGG-style ConvNets Great Again https://arxiv.org/abs/2101.03697
+    https://github.com/DingXiaoH/RepVGG."""
 
     def __init__(
         self,
@@ -260,7 +255,7 @@ class RepVGGConvModule(nn.Module):
         deploy=False,
         **kwargs
     ):
-        super(RepVGGConvModule, self).__init__()
+        super().__init__()
         assert activation is None or isinstance(activation, str)
         self.activation = activation
 

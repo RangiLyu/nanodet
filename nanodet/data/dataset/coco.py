@@ -24,8 +24,8 @@ from .base import BaseDataset
 
 class CocoDataset(BaseDataset):
     def get_data_info(self, ann_path):
-        """
-        Load basic information of dataset such as image path, label and so on.
+        """Load basic information of dataset such as image path, label and so on.
+
         :param ann_path: coco json file path
         :return: image info:
         [{'license': 2,
@@ -61,8 +61,8 @@ class CocoDataset(BaseDataset):
         return info
 
     def get_img_annotation(self, idx):
-        """
-        load per image annotation
+        """load per image annotation.
+
         :param idx: index in dataloader
         :return: annotation dict
         """
@@ -117,8 +117,8 @@ class CocoDataset(BaseDataset):
         return annotation
 
     def get_train_data(self, idx):
-        """
-        Load image and annotation
+        """Load image and annotation.
+
         :param idx:
         :return: meta-data (a dict containing image, annotation and other information)
         """
@@ -127,7 +127,7 @@ class CocoDataset(BaseDataset):
         image_path = os.path.join(self.img_path, file_name)
         img = cv2.imread(image_path)
         if img is None:
-            print("image {} read failed.".format(image_path))
+            print(f"image {image_path} read failed.")
             raise FileNotFoundError("Cant load image! Please check image path!")
         ann = self.get_img_annotation(idx)
         meta = dict(
@@ -148,9 +148,8 @@ class CocoDataset(BaseDataset):
         return meta
 
     def get_val_data(self, idx):
-        """
-        Currently no difference from get_train_data.
-        Not support TTA(testing time augmentation) yet.
+        """Currently no difference from get_train_data. Not support TTA(testing time augmentation) yet.
+
         :param idx:
         :return:
         """

@@ -23,12 +23,10 @@ from nanodet.util import Logger, cfg, load_config, load_model_weight
 
 def main(config, model_path: str, output_path: str, input_shape=(320, 320)):
     logger = Logger(local_rank=-1, save_dir=config.save_dir, use_tensorboard=False)
-
     # Create model and load weights
     model = build_model(config.model)
     checkpoint = torch.load(model_path, map_location=lambda storage, loc: storage)
     load_model_weight(model, checkpoint, logger)
-
     # Convert backbone weights for RepVGG models
     if config.model.arch.backbone.name == "RepVGG":
         deploy_config = config.model
@@ -37,7 +35,6 @@ def main(config, model_path: str, output_path: str, input_shape=(320, 320)):
         from nanodet.model.backbone.repvgg import repvgg_det_model_convert
 
         model = repvgg_det_model_convert(model, deploy_model)
-
     # TorchScript: tracing the model with dummy inputs
     with torch.no_grad():
         dummy_input = torch.zeros(

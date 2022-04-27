@@ -40,11 +40,10 @@ def get_model_complexity_info(
     flush=False,
     ost=sys.stdout,
 ):
-    """Get complexity information of a model.
-    This method can calculate FLOPs and parameter counts of a model with
-    corresponding input shape. It can also print complexity information for
-    each layer in a model.
-    Supported layers are listed as below:
+    """Get complexity information of a model. This method can calculate FLOPs and parameter counts of a model with
+    corresponding input shape. It can also print complexity information for each layer in a model. Supported layers
+    are listed as below:
+
         - Convolutions: ``nn.Conv1d``, ``nn.Conv2d``, ``nn.Conv3d``.
         - Activations: ``nn.ReLU``, ``nn.PReLU``, ``nn.ELU``, ``nn.LeakyReLU``,
             ``nn.ReLU6``.
@@ -132,21 +131,21 @@ def flops_to_string(flops, units="GFLOPs", precision=2):
         '3e-09 FLOPs'
     """
     if units is None:
-        if flops // 10 ** 9 > 0:
-            return str(round(flops / 10.0 ** 9, precision)) + " GFLOPs"
-        elif flops // 10 ** 6 > 0:
-            return str(round(flops / 10.0 ** 6, precision)) + " MFLOPs"
-        elif flops // 10 ** 3 > 0:
-            return str(round(flops / 10.0 ** 3, precision)) + " KFLOPs"
+        if flops // 10**9 > 0:
+            return str(round(flops / 10.0**9, precision)) + " GFLOPs"
+        elif flops // 10**6 > 0:
+            return str(round(flops / 10.0**6, precision)) + " MFLOPs"
+        elif flops // 10**3 > 0:
+            return str(round(flops / 10.0**3, precision)) + " KFLOPs"
         else:
             return str(flops) + " FLOPs"
     else:
         if units == "GFLOPs":
-            return str(round(flops / 10.0 ** 9, precision)) + " " + units
+            return str(round(flops / 10.0**9, precision)) + " " + units
         elif units == "MFLOPs":
-            return str(round(flops / 10.0 ** 6, precision)) + " " + units
+            return str(round(flops / 10.0**6, precision)) + " " + units
         elif units == "KFLOPs":
-            return str(round(flops / 10.0 ** 3, precision)) + " " + units
+            return str(round(flops / 10.0**3, precision)) + " " + units
         else:
             return str(flops) + " FLOPs"
 
@@ -170,17 +169,17 @@ def params_to_string(num_params, units=None, precision=2):
         '3e-09'
     """
     if units is None:
-        if num_params // 10 ** 6 > 0:
-            return str(round(num_params / 10 ** 6, precision)) + " M"
-        elif num_params // 10 ** 3:
-            return str(round(num_params / 10 ** 3, precision)) + " k"
+        if num_params // 10**6 > 0:
+            return str(round(num_params / 10**6, precision)) + " M"
+        elif num_params // 10**3:
+            return str(round(num_params / 10**3, precision)) + " k"
         else:
             return str(num_params)
     else:
         if units == "M":
-            return str(round(num_params / 10.0 ** 6, precision)) + " " + units
+            return str(round(num_params / 10.0**6, precision)) + " " + units
         elif units == "K":
-            return str(round(num_params / 10.0 ** 3, precision)) + " " + units
+            return str(round(num_params / 10.0**3, precision)) + " " + units
         else:
             return str(num_params)
 
@@ -265,11 +264,11 @@ def print_model_with_flops(
                 params_to_string(
                     accumulated_num_params, units="M", precision=precision
                 ),
-                "{:.3%} Params".format(accumulated_num_params / total_params),
+                f"{accumulated_num_params / total_params:.3%} Params",
                 flops_to_string(
                     accumulated_flops_cost, units=units, precision=precision
                 ),
-                "{:.3%} FLOPs".format(accumulated_flops_cost / total_flops),
+                f"{accumulated_flops_cost / total_flops:.3%} FLOPs",
                 self.original_extra_repr(),
             ]
         )
@@ -297,6 +296,7 @@ def print_model_with_flops(
 
 def get_model_parameters_number(model):
     """Calculate parameter number of a model.
+
     Args:
         model (nn.module): The model for parameter number calculation.
     Returns:
@@ -314,7 +314,7 @@ def add_flops_counting_methods(net_main_module):
     net_main_module.reset_flops_count = reset_flops_count.__get__(net_main_module)
     net_main_module.compute_average_flops_cost = compute_average_flops_cost.__get__(
         net_main_module
-    )  # noqa: E501
+    )
 
     net_main_module.reset_flops_count()
 
@@ -323,6 +323,7 @@ def add_flops_counting_methods(net_main_module):
 
 def compute_average_flops_cost(self):
     """Compute average FLOPs cost.
+
     A method to compute average FLOPs cost, which will be available after
     `add_flops_counting_methods()` is called on a desired net object.
     Returns:
@@ -339,9 +340,9 @@ def compute_average_flops_cost(self):
 
 def start_flops_count(self):
     """Activate the computation of mean flops consumption per image.
-    A method to activate the computation of mean flops consumption per image.
-    which will be available after ``add_flops_counting_methods()`` is called on
-    a desired net object. It should be called before running the network.
+
+    A method to activate the computation of mean flops consumption per image. which will be available after
+    ``add_flops_counting_methods()`` is called on a desired net object. It should be called before running the network.
     """
     add_batch_counter_hook_function(self)
 
@@ -360,9 +361,10 @@ def start_flops_count(self):
 
 def stop_flops_count(self):
     """Stop computing the mean flops consumption per image.
-    A method to stop computing the mean flops consumption per image, which will
-    be available after ``add_flops_counting_methods()`` is called on a desired
-    net object. It can be called to pause the computation whenever.
+
+    A method to stop computing the mean flops consumption per image, which will be available after
+    ``add_flops_counting_methods()`` is called on a desired net object. It can be called to pause the computation
+    whenever.
     """
     remove_batch_counter_hook_function(self)
     self.apply(remove_flops_counter_hook_function)
@@ -370,8 +372,9 @@ def stop_flops_count(self):
 
 def reset_flops_count(self):
     """Reset statistics computed so far.
-    A method to Reset computed statistics, which will be available after
-    `add_flops_counting_methods()` is called on a desired net object.
+
+    A method to Reset computed statistics, which will be available after `add_flops_counting_methods()` is called on a
+    desired net object.
     """
     add_batch_counter_variables_or_reset(self)
     self.apply(add_flops_counter_variable_or_reset)

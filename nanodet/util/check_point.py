@@ -50,10 +50,10 @@ def load_model_weight(model, checkpoint, logger):
                 )
                 state_dict[k] = model_state_dict[k]
         else:
-            logger.log("Drop parameter {}.".format(k))
+            logger.log(f"Drop parameter {k}.")
     for k in model_state_dict:
         if not (k in state_dict):
-            logger.log("No param {}.".format(k))
+            logger.log(f"No param {k}.")
             state_dict[k] = model_state_dict[k]
     model.load_state_dict(state_dict, strict=False)
 
@@ -98,6 +98,7 @@ def convert_old_model(old_model_dict):
 
 def convert_avg_params(checkpoint: Dict[str, Any]) -> Dict[str, Any]:
     """Converts average state dict to the format that can be loaded to a model.
+
     Args:
         checkpoint: model.
     Returns:

@@ -31,8 +31,8 @@ from ..model.weight_averager import build_weight_averager
 
 
 class TrainingTask(LightningModule):
-    """
-    Pytorch Lightning module of a general training task.
+    """Pytorch Lightning module of a general training task.
+
     Including training, evaluating and testing.
     Args:
         cfg: Training configurations
@@ -40,7 +40,7 @@ class TrainingTask(LightningModule):
     """
 
     def __init__(self, cfg, evaluator=None):
-        super(TrainingTask, self).__init__()
+        super().__init__()
         self.cfg = cfg
         self.model = build_model(cfg.model)
         self.evaluator = evaluator
@@ -131,13 +131,11 @@ class TrainingTask(LightningModule):
         return dets
 
     def validation_epoch_end(self, validation_step_outputs):
-        """
-        Called at the end of the validation epoch with the
-        outputs of all validation steps.Evaluating results
+        """Called at the end of the validation epoch with the outputs of all validation steps.Evaluating results
         and save best model.
+
         Args:
             validation_step_outputs: A list of val outputs
-
         """
         results = {}
         for res in validation_step_outputs:
@@ -166,16 +164,16 @@ class TrainingTask(LightningModule):
                 txt_path = os.path.join(best_save_path, "eval_results.txt")
                 if self.local_rank < 1:
                     with open(txt_path, "a") as f:
-                        f.write("Epoch:{}\n".format(self.current_epoch + 1))
+                        f.write(f"Epoch:{self.current_epoch + 1}\n")
                         for k, v in eval_results.items():
-                            f.write("{}: {}\n".format(k, v))
+                            f.write(f"{k}: {v}\n")
             else:
                 warnings.warn(
                     "Warning! Save_key is not in eval results! Only save model last!"
                 )
             self.logger.log_metrics(eval_results, self.current_epoch + 1)
         else:
-            self.logger.info("Skip val on rank {}".format(self.local_rank))
+            self.logger.info(f"Skip val on rank {self.local_rank}")
 
     def test_step(self, batch, batch_idx):
         dets = self.predict(batch, batch_idx)
@@ -202,14 +200,12 @@ class TrainingTask(LightningModule):
                 txt_path = os.path.join(self.cfg.save_dir, "eval_results.txt")
                 with open(txt_path, "a") as f:
                     for k, v in eval_results.items():
-                        f.write("{}: {}\n".format(k, v))
+                        f.write(f"{k}: {v}\n")
         else:
-            self.logger.info("Skip test on rank {}".format(self.local_rank))
+            self.logger.info(f"Skip test on rank {self.local_rank}")
 
     def configure_optimizers(self):
-        """
-        Prepare optimizer and learning-rate scheduler
-        to use in optimization.
+        """Prepare optimizer and learning-rate scheduler to use in optimization.
 
         Returns:
             optimizer
@@ -241,8 +237,8 @@ class TrainingTask(LightningModule):
         using_native_amp=None,
         using_lbfgs=None,
     ):
-        """
-        Performs a single optimization step (parameter update).
+        """Performs a single optimization step (parameter update).
+
         Args:
             epoch: Current epoch
             batch_idx: Index of current batch
@@ -286,14 +282,13 @@ class TrainingTask(LightningModule):
         return items
 
     def scalar_summary(self, tag, phase, value, step):
-        """
-        Write Tensorboard scalar summary log.
+        """Write Tensorboard scalar summary log.
+
         Args:
             tag: Name for the tag
             phase: 'Train' or 'Val'
             value: Value to record
             step: Step value to record
-
         """
         if self.local_rank < 1:
             self.logger.experiment.add_scalars(tag, {phase: value}, step)
@@ -303,7 +298,7 @@ class TrainingTask(LightningModule):
 
     @rank_zero_only
     def save_model_state(self, path):
-        self.logger.info("Saving model to {}".format(path))
+        self.logger.info(f"Saving model to {path}")
         state_dict = (
             self.weight_averager.state_dict()
             if self.weight_averager

@@ -19,8 +19,7 @@ from nanodet.util import util_mixins
 
 
 class AssignResult(util_mixins.NiceRepr):
-    """
-    Stores assignments between predicted and truth boxes.
+    """Stores assignments between predicted and truth boxes.
 
     Attributes:
         num_gts (int): the number of truth boxes considered when computing this

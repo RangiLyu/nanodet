@@ -29,9 +29,7 @@ class NanoDetPlus(OneStageDetector):
         head,
         detach_epoch=0,
     ):
-        super(NanoDetPlus, self).__init__(
-            backbone_cfg=backbone, fpn_cfg=fpn, head_cfg=head
-        )
+        super().__init__(backbone_cfg=backbone, fpn_cfg=fpn, head_cfg=head)
         self.aux_fpn = copy.deepcopy(self.fpn)
         self.aux_head = build_head(aux_head)
         self.detach_epoch = detach_epoch

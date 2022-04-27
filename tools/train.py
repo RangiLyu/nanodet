@@ -63,7 +63,7 @@ def main(args):
     logger.dump_cfg(cfg)
 
     if args.seed is not None:
-        logger.info("Set random seed to {}".format(args.seed))
+        logger.info(f"Set random seed to {args.seed}")
         pl.seed_everything(args.seed)
 
     logger.info("Setting up data...")
@@ -103,7 +103,7 @@ def main(args):
             )
             ckpt = convert_old_model(ckpt)
         load_model_weight(task.model, ckpt, logger)
-        logger.info("Loaded model weight from {}".format(cfg.schedule.load_model))
+        logger.info(f"Loaded model weight from {cfg.schedule.load_model}")
 
     model_resume_path = (
         os.path.join(cfg.save_dir, "model_last.ckpt")

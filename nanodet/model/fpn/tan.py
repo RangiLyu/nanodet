@@ -22,8 +22,7 @@ from ..module.transformer import TransformerBlock
 
 
 class TAN(nn.Module):
-    """
-    Transformer Attention Network.
+    """Transformer Attention Network.
 
     :param in_channels: Number of input channels per scale.
     :param out_channels: Number of output channel.
@@ -46,7 +45,7 @@ class TAN(nn.Module):
         dropout_ratio,
         activation="LeakyReLU",
     ):
-        super(TAN, self).__init__()
+        super().__init__()
         assert isinstance(in_channels, list)
         self.in_channels = in_channels
         self.out_channels = out_channels

@@ -1,6 +1,6 @@
-"""
-2020.06.09-Changed for building GhostNet
-Huawei Technologies Co., Ltd. <foss@huawei.com>
+"""2020.06.09-Changed for building GhostNet Huawei Technologies Co., Ltd.
+
+<foss@huawei.com>
 Creates a GhostNet Model as defined in:
 GhostNet: More Features from Cheap Operations By Kai Han, Yunhe Wang,
 Qi Tian, Jianyuan Guo, Chunjing Xu, Chang Xu.
@@ -21,15 +21,15 @@ from ..module.activation import act_layers
 
 def get_url(width_mult=1.0):
     if width_mult == 1.0:
-        return "https://raw.githubusercontent.com/huawei-noah/CV-Backbones/master/ghostnet_pytorch/models/state_dict_73.98.pth"  # noqa E501
+        return "https://raw.githubusercontent.com/huawei-noah/CV-Backbones/master/ghostnet_pytorch/models/state_dict_73.98.pth"  # E501
     else:
         logging.info("GhostNet only has 1.0 pretrain model. ")
         return None
 
 
 def _make_divisible(v, divisor, min_value=None):
-    """
-    This function is taken from the original tf repo.
+    """This function is taken from the original tf repo.
+
     It ensures that all layers have a channel number that is divisible by 8
     It can be seen here:
     https://github.com/tensorflow/models/blob/master/research/slim/nets/mobilenet/mobilenet.py
@@ -61,7 +61,7 @@ class SqueezeExcite(nn.Module):
         divisor=4,
         **_
     ):
-        super(SqueezeExcite, self).__init__()
+        super().__init__()
         self.gate_fn = gate_fn
         reduced_chs = _make_divisible((reduced_base_chs or in_chs) * se_ratio, divisor)
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
@@ -80,7 +80,7 @@ class SqueezeExcite(nn.Module):
 
 class ConvBnAct(nn.Module):
     def __init__(self, in_chs, out_chs, kernel_size, stride=1, activation="ReLU"):
-        super(ConvBnAct, self).__init__()
+        super().__init__()
         self.conv = nn.Conv2d(
             in_chs, out_chs, kernel_size, stride, kernel_size // 2, bias=False
         )
@@ -98,7 +98,7 @@ class GhostModule(nn.Module):
     def __init__(
         self, inp, oup, kernel_size=1, ratio=2, dw_size=3, stride=1, activation="ReLU"
     ):
-        super(GhostModule, self).__init__()
+        super().__init__()
         self.oup = oup
         init_channels = math.ceil(oup / ratio)
         new_channels = init_channels * (ratio - 1)
@@ -133,7 +133,7 @@ class GhostModule(nn.Module):
 
 
 class GhostBottleneck(nn.Module):
-    """Ghost bottleneck w/ optional SE"""
+    """Ghost bottleneck w/ optional SE."""
 
     def __init__(
         self,
@@ -145,7 +145,7 @@ class GhostBottleneck(nn.Module):
         activation="ReLU",
         se_ratio=0.0,
     ):
-        super(GhostBottleneck, self).__init__()
+        super().__init__()
         has_se = se_ratio is not None and se_ratio > 0.0
         self.stride = stride
 
@@ -224,7 +224,7 @@ class GhostNet(nn.Module):
         pretrain=True,
         act=None,
     ):
-        super(GhostNet, self).__init__()
+        super().__init__()
         assert set(out_stages).issubset(i for i in range(10))
         self.width_mult = width_mult
         self.out_stages = out_stages

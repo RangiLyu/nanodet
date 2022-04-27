@@ -106,6 +106,7 @@ venv.bak/
 .vscode
 .idea
 .DS_Store
+.dccache
 
 # custom
 *.pkl

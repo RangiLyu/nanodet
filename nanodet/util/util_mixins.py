@@ -1,9 +1,7 @@
-"""This module defines the :class:`NiceRepr` mixin class, which defines a
-``__repr__`` and ``__str__`` method that only depend on a custom ``__nice__``
-method, which you must define. This means you only have to overload one
-function instead of two.  Furthermore, if the object defines a ``__len__``
-method, then the ``__nice__`` method defaults to something sensible, otherwise
-it is treated as abstract and raises ``NotImplementedError``.
+"""This module defines the :class:`NiceRepr` mixin class, which defines a ``__repr__`` and ``__str__`` method that
+only depend on a custom ``__nice__`` method, which you must define. This means you only have to overload one
+function instead of two.  Furthermore, if the object defines a ``__len__`` method, then the ``__nice__`` method
+defaults to something sensible, otherwise it is treated as abstract and raises ``NotImplementedError``.
 
 To use simply have your object inherit from :class:`NiceRepr`
 (multi-inheritance should be ok).
@@ -38,9 +36,8 @@ Example:
 import warnings
 
 
-class NiceRepr(object):
-    """Inherit from this class and define ``__nice__`` to "nicely" print your
-    objects.
+class NiceRepr:
+    """Inherit from this class and define ``__nice__`` to "nicely" print your objects.
 
     Defines ``__str__`` and ``__repr__`` in terms of ``__nice__`` function
     Classes that inherit from :class:`NiceRepr` should redefine ``__nice__``.

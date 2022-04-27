@@ -22,10 +22,9 @@ from ..transform import Pipeline
 
 
 class BaseDataset(Dataset, metaclass=ABCMeta):
-    """
-    A base class of detection dataset. Referring from MMDetection.
-    A dataset should have images, annotations and preprocessing pipelines
-    NanoDet use [xmin, ymin, xmax, ymax] format for box and
+    """A base class of detection dataset. Referring from MMDetection. A dataset should have images, annotations and
+    preprocessing pipelines NanoDet use [xmin, ymin, xmax, ymax] format for box and.
+
      [[x0,y0], [x1,y1] ... [xn,yn]] format for key points.
     instance masks should decode into binary masks for each instance like
     {

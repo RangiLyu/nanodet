@@ -22,7 +22,7 @@ class TinyResBlock(nn.Module):
     def __init__(
         self, in_channels, kernel_size, norm_cfg, activation, res_type="concat"
     ):
-        super(TinyResBlock, self).__init__()
+        super().__init__()
         assert in_channels % 2 == 0
         assert res_type in ["concat", "add"]
         self.res_type = res_type
@@ -71,7 +71,7 @@ class CspBlock(nn.Module):
         norm_cfg=dict(type="BN", requires_grad=True),
         activation="LeakyReLU",
     ):
-        super(CspBlock, self).__init__()
+        super().__init__()
         assert in_channels % 2 == 0
         self.in_conv = ConvModule(
             in_channels,
@@ -112,7 +112,7 @@ class CustomCspNet(nn.Module):
         norm_cfg=dict(type="BN", requires_grad=True),
         activation="LeakyReLU",
     ):
-        super(CustomCspNet, self).__init__()
+        super().__init__()
         assert isinstance(net_cfg, list)
         assert set(out_stages).issubset(i for i in range(len(net_cfg)))
         self.out_stages = out_stages

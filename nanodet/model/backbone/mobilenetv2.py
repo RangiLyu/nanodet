@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 import warnings
 
 import torch.nn as nn
@@ -18,7 +16,7 @@ class ConvBNReLU(nn.Sequential):
         activation="ReLU",
     ):
         padding = (kernel_size - 1) // 2
-        super(ConvBNReLU, self).__init__(
+        super().__init__(
             nn.Conv2d(
                 in_planes,
                 out_planes,
@@ -35,7 +33,7 @@ class ConvBNReLU(nn.Sequential):
 
 class InvertedResidual(nn.Module):
     def __init__(self, inp, oup, stride, expand_ratio, activation="ReLU"):
-        super(InvertedResidual, self).__init__()
+        super().__init__()
         self.stride = stride
         assert stride in [1, 2]
 
@@ -81,7 +79,7 @@ class MobileNetV2(nn.Module):
         activation="ReLU",
         act=None,
     ):
-        super(MobileNetV2, self).__init__()
+        super().__init__()
         # TODO: support load torchvison pretrained weight
         assert set(out_stages).issubset(i for i in range(7))
         self.width_mult = width_mult
@@ -112,7 +110,7 @@ class MobileNetV2(nn.Module):
         )
         # building inverted residual blocks
         for i in range(7):
-            name = "stage{}".format(i)
+            name = f"stage{i}"
             setattr(self, name, self.build_mobilenet_stage(stage_num=i))
 
         self._initialize_weights()
@@ -158,7 +156,7 @@ class MobileNetV2(nn.Module):
         x = self.first_layer(x)
         output = []
         for i in range(0, 7):
-            stage = getattr(self, "stage{}".format(i))
+            stage = getattr(self, f"stage{i}")
             x = stage(x)
             if i in self.out_stages:
                 output.append(x)

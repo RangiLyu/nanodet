@@ -2,7 +2,11 @@ import pytest
 import torch
 import torch.nn as nn
 
-from nanodet.model.module.transformer import MLP, TransformerBlock, TransformerEncoder
+from nanodet.model.module.transformer import (
+    MLP,
+    TransformerBlock,
+    TransformerEncoder,
+)
 
 
 def test_mlp():

@@ -18,7 +18,7 @@ def test_ema():
 
     class DummyModel(nn.Module):
         def __init__(self):
-            super(DummyModel, self).__init__()
+            super().__init__()
             self.fc = nn.Linear(10, 10)
 
         def forward(self, x):

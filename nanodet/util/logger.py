@@ -57,9 +57,7 @@ class Logger:
                     "(applicable to PyTorch 1.1 or higher)"
                 ) from None
             if self.rank < 1:
-                logging.info(
-                    "Using Tensorboard, logs will be saved in {}".format(self.log_dir)
-                )
+                logging.info(f"Using Tensorboard, logs will be saved in {self.log_dir}")
                 self.writer = SummaryWriter(log_dir=self.log_dir)
 
     def log(self, string):
@@ -71,7 +69,7 @@ class Logger:
             self.writer.add_scalars(tag, {phase: value}, step)
 
 
-class MovingAverage(object):
+class MovingAverage:
     def __init__(self, val, window_size=50):
         self.window_size = window_size
         self.reset()
@@ -89,8 +87,8 @@ class MovingAverage(object):
         return np.mean(self.queue)
 
 
-class AverageMeter(object):
-    """Computes and stores the average and current value"""
+class AverageMeter:
+    """Computes and stores the average and current value."""
 
     def __init__(self, val):
         self.reset()

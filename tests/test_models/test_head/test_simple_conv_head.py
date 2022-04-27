@@ -19,5 +19,5 @@ def test_simple_conv_head_forward():
     head = build_head(cfg)
     feat = [torch.rand(1, 1, 320 // stride, 320 // stride) for stride in [8, 16, 32]]
     out = head.forward(feat)
-    num_points = sum([(320 // stride) ** 2 for stride in [8, 16, 32]])
+    num_points = sum((320 // stride) ** 2 for stride in [8, 16, 32])
     assert out.shape == (1, num_points, 80 + (8 + 1) * 4)

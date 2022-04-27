@@ -36,7 +36,7 @@ def collate_function(batch):
         if torch.utils.data.get_worker_info() is not None:
             # If we're in a background process, concatenate directly into a
             # shared memory tensor to avoid an extra copy
-            numel = sum([x.numel() for x in batch])
+            numel = sum(x.numel() for x in batch)
             storage = elem.storage()._new_shared(numel)
             out = elem.new(storage)
         return torch.stack(batch, 0, out=out)
@@ -72,8 +72,10 @@ def collate_function(batch):
 
 
 def naive_collate(batch):
-    """Only collate dict value in to a list. E.g. meta data dict and img_info
-    dict will be collated."""
+    """Only collate dict value in to a list.
+
+    E.g. meta data dict and img_info dict will be collated.
+    """
 
     elem = batch[0]
     if isinstance(elem, dict):

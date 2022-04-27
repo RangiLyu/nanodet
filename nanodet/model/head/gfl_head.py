@@ -35,6 +35,7 @@ def reduce_mean(tensor):
 
 class Integral(nn.Module):
     """A fixed layer for calculating integral result from distribution.
+
     This layer calculates the target location by :math: `sum{P(y_i) * y_i}`,
     P(y_i) denotes the softmax vector that represents the discrete distribution
     y_i denotes the discrete set, usually {0, 1, 2, ..., reg_max}
@@ -45,15 +46,15 @@ class Integral(nn.Module):
     """
 
     def __init__(self, reg_max=16):
-        super(Integral, self).__init__()
+        super().__init__()
         self.reg_max = reg_max
         self.register_buffer(
             "project", torch.linspace(0, self.reg_max, self.reg_max + 1)
         )
 
     def forward(self, x):
-        """Forward feature from the regression head to get integral result of
-        bounding box location.
+        """Forward feature from the regression head to get integral result of bounding box location.
+
         Args:
             x (Tensor): Features of the regression head, shape (N, 4*(n+1)),
                 n is self.reg_max.
@@ -68,8 +69,7 @@ class Integral(nn.Module):
 
 
 class GFLHead(nn.Module):
-    """Generalized Focal Loss: Learning Qualified and Distributed Bounding
-    Boxes for Dense Object Detection.
+    """Generalized Focal Loss: Learning Qualified and Distributed Bounding Boxes for Dense Object Detection.
 
     GFL head structure is similar with ATSS, however GFL uses
     1) joint representation for classification and localization quality, and
@@ -107,7 +107,7 @@ class GFLHead(nn.Module):
         reg_max=16,
         **kwargs
     ):
-        super(GFLHead, self).__init__()
+        super().__init__()
         self.num_classes = num_classes
         self.in_channels = input_channel
         self.feat_channels = feat_channels
@@ -369,8 +369,8 @@ class GFLHead(nn.Module):
         gt_labels_list,
         device,
     ):
-        """
-        Assign target for a batch of images.
+        """Assign target for a batch of images.
+
         :param batch_size: num of images in one batch
         :param featmap_sizes: A list of all grid cell boxes in all image
         :param gt_bboxes_list: A list of ground truth boxes in all image
@@ -427,8 +427,8 @@ class GFLHead(nn.Module):
         if any([labels is None for labels in all_labels]):
             return None
         # sampled cells of all images
-        num_total_pos = sum([max(inds.numel(), 1) for inds in pos_inds_list])
-        num_total_neg = sum([max(inds.numel(), 1) for inds in neg_inds_list])
+        num_total_pos = sum(max(inds.numel(), 1) for inds in pos_inds_list)
+        num_total_neg = sum(max(inds.numel(), 1) for inds in neg_inds_list)
         # merge list of targets tensors into one batch then split to multi levels
         mlvl_cls_preds = images_to_levels([c for c in cls_preds], num_level_cells)
         mlvl_reg_preds = images_to_levels([r for r in reg_preds], num_level_cells)
@@ -452,8 +452,8 @@ class GFLHead(nn.Module):
     def target_assign_single_img(
         self, grid_cells, num_level_cells, gt_bboxes, gt_bboxes_ignore, gt_labels
     ):
-        """
-        Using ATSS Assigner to assign target on one image.
+        """Using ATSS Assigner to assign target on one image.
+
         :param grid_cells: Grid cell boxes of all pixels on feature map
         :param num_level_cells: numbers of grid cells on each level's feature map
         :param gt_bboxes: Ground truth boxes
@@ -637,8 +637,8 @@ class GFLHead(nn.Module):
     def get_single_level_center_point(
         self, featmap_size, stride, dtype, device, flatten=True
     ):
-        """
-        Generate pixel centers of a single stage feature map.
+        """Generate pixel centers of a single stage feature map.
+
         :param featmap_size: height and width of the feature map
         :param stride: down sample stride of the feature map
         :param dtype: data type of the tensors
@@ -656,8 +656,8 @@ class GFLHead(nn.Module):
         return y, x
 
     def get_grid_cells(self, featmap_size, scale, stride, dtype, device):
-        """
-        Generate grid cells of a feature map for target assignment.
+        """Generate grid cells of a feature map for target assignment.
+
         :param featmap_size: Size of a single level feature map.
         :param scale: Grid cell scale.
         :param stride: Down sample stride of the feature map.
@@ -681,8 +681,8 @@ class GFLHead(nn.Module):
         return grid_cells
 
     def grid_cells_to_center(self, grid_cells):
-        """
-        Get center location of each gird cell
+        """Get center location of each gird cell.
+
         :param grid_cells: grid cells of a feature map
         :return: center points
         """
@@ -691,7 +691,7 @@ class GFLHead(nn.Module):
         return torch.stack([cells_cx, cells_cy], dim=-1)
 
     def _forward_onnx(self, feats):
-        """only used for onnx export"""
+        """only used for onnx export."""
         outputs = []
         for x, scale in zip(feats, self.scales):
             cls_feat = x

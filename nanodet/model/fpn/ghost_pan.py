@@ -41,7 +41,7 @@ class GhostBlocks(nn.Module):
         use_res=False,
         activation="LeakyReLU",
     ):
-        super(GhostBlocks, self).__init__()
+        super().__init__()
         self.use_res = use_res
         if use_res:
             self.reduce_conv = ConvModule(
@@ -109,7 +109,7 @@ class GhostPAN(nn.Module):
         norm_cfg=dict(type="BN"),
         activation="LeakyReLU",
     ):
-        super(GhostPAN, self).__init__()
+        super().__init__()
         assert num_extra_level >= 0
         assert num_blocks >= 1
         self.in_channels = in_channels

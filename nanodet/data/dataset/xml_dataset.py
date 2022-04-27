@@ -36,9 +36,8 @@ def get_file_list(path, type=".xml"):
 
 class CocoXML(COCO):
     def __init__(self, annotation):
-        """
-        Constructor of Microsoft COCO helper class for
-        reading and visualizing annotations.
+        """Constructor of Microsoft COCO helper class for reading and visualizing annotations.
+
         :param annotation: annotation dict
         :return:
         """
@@ -56,18 +55,18 @@ class CocoXML(COCO):
 class XMLDataset(CocoDataset):
     def __init__(self, class_names, **kwargs):
         self.class_names = class_names
-        super(XMLDataset, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def xml_to_coco(self, ann_path):
-        """
-        convert xml annotations to coco_api
+        """convert xml annotations to coco_api.
+
         :param ann_path:
         :return:
         """
         logging.info("loading annotations into memory...")
         tic = time.time()
         ann_file_names = get_file_list(ann_path, type=".xml")
-        logging.info("Found {} annotation files.".format(len(ann_file_names)))
+        logging.info(f"Found {len(ann_file_names)} annotation files.")
         image_info = []
         categories = []
         annotations = []
@@ -129,15 +128,13 @@ class XMLDataset(CocoDataset):
             "categories": categories,
             "annotations": annotations,
         }
-        logging.info(
-            "Load {} xml files and {} boxes".format(len(image_info), len(annotations))
-        )
-        logging.info("Done (t={:0.2f}s)".format(time.time() - tic))
+        logging.info(f"Load {len(image_info)} xml files and {len(annotations)} boxes")
+        logging.info(f"Done (t={time.time() - tic:0.2f}s)")
         return coco_dict
 
     def get_data_info(self, ann_path):
-        """
-        Load basic information of dataset such as image path, label and so on.
+        """Load basic information of dataset such as image path, label and so on.
+
         :param ann_path: coco json file path
         :return: image info:
         [{'file_name': '000000000139.jpg',

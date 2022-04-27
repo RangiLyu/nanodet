@@ -32,7 +32,7 @@ class FPN(nn.Module):
         norm_cfg=None,
         activation=None,
     ):
-        super(FPN, self).__init__()
+        super().__init__()
         assert isinstance(in_channels, list)
         self.in_channels = in_channels
         self.out_channels = out_channels

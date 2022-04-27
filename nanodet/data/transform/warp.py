@@ -104,8 +104,8 @@ def get_translate_matrix(translate, width, height):
 
 
 def get_resize_matrix(raw_shape, dst_shape, keep_ratio):
-    """
-    Get resize matrix for resizing raw img to input size
+    """Get resize matrix for resizing raw img to input size.
+
     :param raw_shape: (width, height) of raw image
     :param dst_shape: (width, height) of input image
     :param keep_ratio: whether keep original ratio
@@ -241,7 +241,7 @@ def get_minimum_dst_shape(
     dst_shape: Tuple[int, int],
     divisible: Optional[int] = None,
 ) -> Tuple[int, int]:
-    """Calculate minimum dst shape"""
+    """Calculate minimum dst shape."""
     src_w, src_h = src_shape
     dst_w, dst_h = dst_shape
 
@@ -260,9 +260,8 @@ def get_minimum_dst_shape(
 
 
 class ShapeTransform:
-    """Shape transforms including resize, random perspective, random scale,
-    random stretch, random rotation, random shear, random translate,
-    and random flip.
+    """Shape transforms including resize, random perspective, random scale, random stretch, random rotation, random
+    shear, random translate, and random flip.
 
     Args:
         keep_ratio: Whether to keep aspect ratio of the image.

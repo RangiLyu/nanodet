@@ -128,7 +128,7 @@ data:
 In `data` you need to set your train and validate dataset.
 
 `name`: Dataset format name. You can create your own dataset format in `nanodet/data/dataset`.
-`input_size`: [width, height]
+`input_size`: \[width, height\]
 `keep_ratio`: whether to maintain the original image ratio when resizing to input size
 `multi_scale`: Scaling range for multi-scale training. Set to None to turn off.
 `pipeline`: data preprocessing and augmentation pipeline
@@ -142,7 +142,7 @@ device:
     batchsize_per_gpu: 160
 ```
 
-`gpu_ids`: CUDA device id. For multi-gpu training, set [0, 1, 2...].
+`gpu_ids`: CUDA device id. For multi-gpu training, set \[0, 1, 2...\].
 
 `workers_per_gpu`: how many dataloader processes for each gpu
 
@@ -201,6 +201,6 @@ Currently only support coco eval.
 
 `save_key`: Metric of best model. Support mAP, AP50, AP75....
 
-****
+______________________________________________________________________
 
 `class_names`: used in visualization

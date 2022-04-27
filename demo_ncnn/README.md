@@ -6,21 +6,27 @@ This project provides NanoDet image inference, webcam inference and benchmark us
 # How to build
 
 ## Windows
+
 ### Step1.
+
 Download and Install Visual Studio from https://visualstudio.microsoft.com/vs/community/
 
 ### Step2.
+
 Download and install OpenCV from https://github.com/opencv/opencv/releases
 
 ### Step3 (Optional).
+
 Download and install Vulkan SDK from https://vulkan.lunarg.com/sdk/home
 
 ### Step4.
+
 Clone NCNN repository
 
-``` shell script
+```shell script
 git clone --recursive https://github.com/Tencent/ncnn.git
 ```
+
 Build NCNN following this tutorial: [Build for Windows x64 using VS2017](https://github.com/Tencent/ncnn/wiki/how-to-build#build-for-windows-x64-using-visual-studio-community-2017)
 
 ### Step5.
@@ -29,7 +35,7 @@ Add `ncnn_DIR` = `YOUR_NCNN_PATH/build/install/lib/cmake/ncnn` to system environ
 
 Build project: Open x64 Native Tools Command Prompt for VS 2019 or 2017
 
-``` cmd
+```cmd
 mkdir -p build
 cd build
 cmake ..
@@ -39,15 +45,18 @@ msbuild nanodet_demo.vcxproj /p:configuration=release /p:platform=x64
 ## Linux
 
 ### Step1.
+
 Build and install OpenCV from https://github.com/opencv/opencv
 
 ### Step2(Optional).
+
 Download Vulkan SDK from https://vulkan.lunarg.com/sdk/home
 
 ### Step3.
+
 Clone NCNN repository
 
-``` shell script
+```shell script
 git clone --recursive https://github.com/Tencent/ncnn.git
 ```
 
@@ -57,13 +66,13 @@ Build NCNN following this tutorial: [Build for Linux / NVIDIA Jetson / Raspberry
 
 Set environment variables. Run:
 
-``` shell script
+```shell script
 export ncnn_DIR=YOUR_NCNN_PATH/build/install/lib/cmake/ncnn
 ```
 
 Build project
 
-``` shell script
+```shell script
 mkdir build
 cd build
 cmake ..
@@ -73,7 +82,8 @@ make
 # Run demo
 
 Download NanoDet ncnn model.
-* [NanoDet-Plus ncnn model download link](https://drive.google.com/file/d/1cuVBJiFKwyq1-l3AwHoP2boTesUQP-6K/view?usp=sharing)
+
+- [NanoDet-Plus ncnn model download link](https://drive.google.com/file/d/1cuVBJiFKwyq1-l3AwHoP2boTesUQP-6K/view?usp=sharing)
 
 Unzip the file and rename the file to `nanodet.param` and `nanodet.bin`, then copy them to demo program folder (`demo_ncnn/build`).
 
@@ -100,8 +110,10 @@ Unzip the file and rename the file to `nanodet.param` and `nanodet.bin`, then co
 ```shell script
 ./nanodet_demo 3 0
 ```
+
 ![bench_mark](benchmark.jpg)
-****
+
+______________________________________________________________________
 
 Notice:
 
@@ -113,12 +125,12 @@ Linux:
 export OMP_THREAD_LIMIT=4
 ```
 
-Model               |Resolution|COCO mAP  | CPU Latency (i7-8700) | ARM CPU Latency (4*A76) | Vulkan GPU Latency (GTX1060) |
-:------------------:|:--------:|:--------:|:---------------------:|:-----------------------:|:---------------------:|
-NanoDet-Plus-m      | 320*320  |   27.0   | 10.32ms / 96.9FPS     | 11.97ms / 83.5FPS       | 3.40ms / 294.1FPS       |
-NanoDet-Plus-m      | 416*416  |   30.4   | 17.98ms / 55.6FPS     | 19.77ms / 50.6FPS       | 4.27ms / 234.2FPS       |
-NanoDet-Plus-m-1.5x | 320*320  |   29.9   | 12.87ms / 77.7FPS     | 15.90ms / 62.9FPS       | 3.78ms / 264.6FPS       |
-NanoDet-Plus-m-1.5x | 416*416  |   34.1   | 22.53ms / 44.4FPS     | 25.49ms / 39.2FPS       | 4.79ms / 208.8FPS       |
+|        Model        | Resolution | COCO mAP | CPU Latency (i7-8700) | ARM CPU Latency (4\*A76) | Vulkan GPU Latency (GTX1060) |
+| :-----------------: | :--------: | :------: | :-------------------: | :----------------------: | :--------------------------: |
+|   NanoDet-Plus-m    |  320\*320  |   27.0   |   10.32ms / 96.9FPS   |    11.97ms / 83.5FPS     |      3.40ms / 294.1FPS       |
+|   NanoDet-Plus-m    |  416\*416  |   30.4   |   17.98ms / 55.6FPS   |    19.77ms / 50.6FPS     |      4.27ms / 234.2FPS       |
+| NanoDet-Plus-m-1.5x |  320\*320  |   29.9   |   12.87ms / 77.7FPS   |    15.90ms / 62.9FPS     |      3.78ms / 264.6FPS       |
+| NanoDet-Plus-m-1.5x |  416\*416  |   34.1   |   22.53ms / 44.4FPS   |    25.49ms / 39.2FPS     |      4.79ms / 208.8FPS       |
 
 # Custom model
 

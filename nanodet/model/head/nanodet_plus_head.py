@@ -5,7 +5,12 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from nanodet.util import bbox2distance, distance2bbox, multi_apply, overlay_bbox_cv
+from nanodet.util import (
+    bbox2distance,
+    distance2bbox,
+    multi_apply,
+    overlay_bbox_cv,
+)
 
 from ...data.transform.warp import warp_boxes
 from ..loss.gfocal_loss import DistributionFocalLoss, QualityFocalLoss
@@ -57,7 +62,7 @@ class NanoDetPlusHead(nn.Module):
         assigner_cfg=dict(topk=13),
         **kwargs
     ):
-        super(NanoDetPlusHead, self).__init__()
+        super().__init__()
         self.num_classes = num_classes
         self.in_channels = input_channel
         self.feat_channels = feat_channels
@@ -278,8 +283,8 @@ class NanoDetPlusHead(nn.Module):
     def target_assign_single_img(
         self, cls_preds, center_priors, decoded_bboxes, gt_bboxes, gt_labels
     ):
-        """Compute classification, regression, and objectness targets for
-        priors in a single image.
+        """Compute classification, regression, and objectness targets for priors in a single image.
+
         Args:
             cls_preds (Tensor): Classification predictions of one image,
                 a 2D-Tensor with shape [num_priors, num_classes]
@@ -362,7 +367,9 @@ class NanoDetPlusHead(nn.Module):
         return pos_inds, neg_inds, pos_gt_bboxes, pos_assigned_gt_inds
 
     def post_process(self, preds, meta):
-        """Prediction results post processing. Decode bboxes and rescale
+        """Prediction results post processing.
+
+        Decode bboxes and rescale
         to original image size.
         Args:
             preds (Tensor): Prediction output.
@@ -479,6 +486,7 @@ class NanoDetPlusHead(nn.Module):
         self, batch_size, featmap_size, stride, dtype, device
     ):
         """Generate centers of a single stage feature map.
+
         Args:
             batch_size (int): Number of images in one batch.
             featmap_size (tuple[int]): height and width of the feature map
@@ -499,7 +507,7 @@ class NanoDetPlusHead(nn.Module):
         return proiors.unsqueeze(0).repeat(batch_size, 1, 1)
 
     def _forward_onnx(self, feats):
-        """only used for onnx export"""
+        """only used for onnx export."""
         outputs = []
         for feat, cls_convs, gfl_cls in zip(
             feats,

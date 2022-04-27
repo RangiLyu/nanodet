@@ -29,8 +29,8 @@ logger = logging.getLogger("NanoDet")
 
 
 def xyxy2xywh(bbox):
-    """
-    change bbox to coco format
+    """change bbox to coco format.
+
     :param bbox: [x1, y1, x2, y2]
     :return: [x, y, w, h]
     """
@@ -86,7 +86,7 @@ class CocoDetectionEvaluator:
             for key in self.metric_names:
                 empty_eval_results[key] = 0
             return empty_eval_results
-        json_path = os.path.join(save_dir, "results{}.json".format(rank))
+        json_path = os.path.join(save_dir, f"results{rank}.json")
         json.dump(results_json, open(json_path, "w"))
         coco_dets = self.coco_api.loadRes(json_path)
         coco_eval = COCOeval(

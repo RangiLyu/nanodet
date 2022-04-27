@@ -20,7 +20,7 @@ class SimpleConvHead(nn.Module):
         reg_max=16,
         **kwargs
     ):
-        super(SimpleConvHead, self).__init__()
+        super().__init__()
         self.num_classes = num_classes
         self.in_channels = input_channel
         self.feat_channels = feat_channels

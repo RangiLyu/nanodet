@@ -271,7 +271,7 @@ def diou_loss(pred, target, eps=1e-7):
     cw = enclose_wh[:, 0]
     ch = enclose_wh[:, 1]
 
-    c2 = cw ** 2 + ch ** 2 + eps
+    c2 = cw**2 + ch**2 + eps
 
     b1_x1, b1_y1 = pred[:, 0], pred[:, 1]
     b1_x2, b1_y2 = pred[:, 2], pred[:, 3]
@@ -326,7 +326,7 @@ def ciou_loss(pred, target, eps=1e-7):
     cw = enclose_wh[:, 0]
     ch = enclose_wh[:, 1]
 
-    c2 = cw ** 2 + ch ** 2 + eps
+    c2 = cw**2 + ch**2 + eps
 
     b1_x1, b1_y1 = pred[:, 0], pred[:, 1]
     b1_x2, b1_y2 = pred[:, 2], pred[:, 3]
@@ -340,11 +340,11 @@ def ciou_loss(pred, target, eps=1e-7):
     right = ((b2_y1 + b2_y2) - (b1_y1 + b1_y2)) ** 2 / 4
     rho2 = left + right
 
-    factor = 4 / math.pi ** 2
+    factor = 4 / math.pi**2
     v = factor * torch.pow(torch.atan(w2 / h2) - torch.atan(w1 / h1), 2)
 
     # CIoU
-    cious = ious - (rho2 / c2 + v ** 2 / (1 - ious + v))
+    cious = ious - (rho2 / c2 + v**2 / (1 - ious + v))
     loss = 1 - cious
     return loss
 
@@ -361,7 +361,7 @@ class IoULoss(nn.Module):
     """
 
     def __init__(self, eps=1e-6, reduction="mean", loss_weight=1.0):
-        super(IoULoss, self).__init__()
+        super().__init__()
         self.eps = eps
         self.reduction = reduction
         self.loss_weight = loss_weight
@@ -412,7 +412,7 @@ class IoULoss(nn.Module):
 
 class BoundedIoULoss(nn.Module):
     def __init__(self, beta=0.2, eps=1e-3, reduction="mean", loss_weight=1.0):
-        super(BoundedIoULoss, self).__init__()
+        super().__init__()
         self.beta = beta
         self.eps = eps
         self.reduction = reduction
@@ -448,7 +448,7 @@ class BoundedIoULoss(nn.Module):
 
 class GIoULoss(nn.Module):
     def __init__(self, eps=1e-6, reduction="mean", loss_weight=1.0):
-        super(GIoULoss, self).__init__()
+        super().__init__()
         self.eps = eps
         self.reduction = reduction
         self.loss_weight = loss_weight
@@ -482,7 +482,7 @@ class GIoULoss(nn.Module):
 
 class DIoULoss(nn.Module):
     def __init__(self, eps=1e-6, reduction="mean", loss_weight=1.0):
-        super(DIoULoss, self).__init__()
+        super().__init__()
         self.eps = eps
         self.reduction = reduction
         self.loss_weight = loss_weight
@@ -516,7 +516,7 @@ class DIoULoss(nn.Module):
 
 class CIoULoss(nn.Module):
     def __init__(self, eps=1e-6, reduction="mean", loss_weight=1.0):
-        super(CIoULoss, self).__init__()
+        super().__init__()
         self.eps = eps
         self.reduction = reduction
         self.loss_weight = loss_weight

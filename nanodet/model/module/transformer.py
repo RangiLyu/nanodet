@@ -22,7 +22,7 @@ class MLP(nn.Module):
     def __init__(
         self, in_dim, hidden_dim=None, out_dim=None, drop=0.0, activation="GELU"
     ):
-        super(MLP, self).__init__()
+        super().__init__()
         out_dim = out_dim or in_dim
         hidden_dim = hidden_dim or in_dim
         self.fc1 = nn.Linear(in_dim, hidden_dim)
@@ -40,8 +40,8 @@ class MLP(nn.Module):
 
 
 class TransformerEncoder(nn.Module):
-    """
-    Encoder layer of transformer
+    """Encoder layer of transformer.
+
     :param dim: feature dimension
     :param num_heads: number of attention heads
     :param mlp_ratio: hidden layer dimension expand ratio in MLP
@@ -59,7 +59,7 @@ class TransformerEncoder(nn.Module):
         activation="GELU",
         kv_bias=False,
     ):
-        super(TransformerEncoder, self).__init__()
+        super().__init__()
         self.norm1 = nn.LayerNorm(dim)
 
         # embed_dim must be divisible by num_heads
@@ -86,8 +86,8 @@ class TransformerEncoder(nn.Module):
 
 
 class TransformerBlock(nn.Module):
-    """
-    Block of transformer encoder layers. Used in vision task.
+    """Block of transformer encoder layers. Used in vision task.
+
     :param in_channels: input channels
     :param out_channels: output channels
     :param num_heads: number of attention heads
@@ -109,7 +109,7 @@ class TransformerBlock(nn.Module):
         kv_bias=False,
         activation="GELU",
     ):
-        super(TransformerBlock, self).__init__()
+        super().__init__()
 
         # out_channels must be divisible by num_heads
         assert out_channels // num_heads * num_heads == out_channels

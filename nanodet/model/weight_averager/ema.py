@@ -11,7 +11,7 @@ import torch
 import torch.nn as nn
 
 
-class ExpMovingAverager(object):
+class ExpMovingAverager:
     """Exponential Moving Average.
 
     Args:

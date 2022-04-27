@@ -10,7 +10,7 @@ this fold are same as *demo_ncnn*.
 
 Just run:
 
-``` shell
+```shell
 pip install MNN
 ```
 
@@ -26,9 +26,9 @@ Please follow the [official document](https://www.yuque.com/mnn/en/build_linux) 
     python tools/export_onnx.py --cfg_path ${CONFIG_PATH} --model_path ${PYTORCH_MODEL_PATH}
    ```
 
-2. Convert to MNN
+1. Convert to MNN
 
-   ``` shell
+   ```shell
    python -m MNN.tools.mnnconvert -f ONNX --modelFile sim.onnx --MNNModel nanodet.mnn
    ```
 
@@ -44,7 +44,7 @@ Here are converted model
 For C++ code, replace `libMNN.so` under *./mnn/lib* with the one you just compiled, modify OpenCV path at CMake file,
 and run
 
-``` shell
+```shell
 mkdir build && cd build
 cmake ..
 make
@@ -52,7 +52,7 @@ make
 
 Note that a flag at `main.cpp` is used to control whether to show the detection result or save it into a fold.
 
-``` c++
+```c++
 #define __SAVE_RESULT__ // if defined save drawed results to ../results, else show it in windows
 ```
 
@@ -66,13 +66,13 @@ The multi-backend python demo is still working in progress.
 
 C++ inference interface is same with NCNN code, to detect images in a fold, run:
 
-``` shell
+```shell
 ./nanodet-mnn "1" "../imgs/*.jpg"
 ```
 
 For speed benchmark
 
-``` shell
+```shell
 ./nanodet-mnn "3" "0"
 ```
 

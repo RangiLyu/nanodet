@@ -17,11 +17,11 @@ efficientnet_lite_params = {
 }
 
 model_urls = {
-    "efficientnet_lite0": "https://github.com/RangiLyu/EfficientNet-Lite/releases/download/v1.0/efficientnet_lite0.pth",  # noqa: E501
-    "efficientnet_lite1": "https://github.com/RangiLyu/EfficientNet-Lite/releases/download/v1.0/efficientnet_lite1.pth",  # noqa: E501
-    "efficientnet_lite2": "https://github.com/RangiLyu/EfficientNet-Lite/releases/download/v1.0/efficientnet_lite2.pth",  # noqa: E501
-    "efficientnet_lite3": "https://github.com/RangiLyu/EfficientNet-Lite/releases/download/v1.0/efficientnet_lite3.pth",  # noqa: E501
-    "efficientnet_lite4": "https://github.com/RangiLyu/EfficientNet-Lite/releases/download/v1.0/efficientnet_lite4.pth",  # noqa: E501
+    "efficientnet_lite0": "https://github.com/RangiLyu/EfficientNet-Lite/releases/download/v1.0/efficientnet_lite0.pth",
+    "efficientnet_lite1": "https://github.com/RangiLyu/EfficientNet-Lite/releases/download/v1.0/efficientnet_lite1.pth",
+    "efficientnet_lite2": "https://github.com/RangiLyu/EfficientNet-Lite/releases/download/v1.0/efficientnet_lite2.pth",
+    "efficientnet_lite3": "https://github.com/RangiLyu/EfficientNet-Lite/releases/download/v1.0/efficientnet_lite3.pth",
+    "efficientnet_lite4": "https://github.com/RangiLyu/EfficientNet-Lite/releases/download/v1.0/efficientnet_lite4.pth",
 }
 
 
@@ -69,7 +69,7 @@ class MBConvBlock(nn.Module):
         has_se=False,
         activation="ReLU6",
     ):
-        super(MBConvBlock, self).__init__()
+        super().__init__()
 
         self._momentum = 0.01
         self._epsilon = 1e-3
@@ -160,7 +160,7 @@ class EfficientNetLite(nn.Module):
     def __init__(
         self, model_name, out_stages=(2, 4, 6), activation="ReLU6", pretrain=True
     ):
-        super(EfficientNetLite, self).__init__()
+        super().__init__()
         assert set(out_stages).issubset(i for i in range(0, 7))
         assert model_name in efficientnet_lite_params
 
@@ -279,7 +279,7 @@ class EfficientNetLite(nn.Module):
             url = model_urls[self.model_name]
             if url is not None:
                 pretrained_state_dict = model_zoo.load_url(url)
-                print("=> loading pretrained model {}".format(url))
+                print(f"=> loading pretrained model {url}")
                 self.load_state_dict(pretrained_state_dict, strict=False)
 
     def load_pretrain(self, path):

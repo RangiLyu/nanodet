@@ -21,9 +21,11 @@ Export TorchScript model using `tools/export_torchscript.py`:
 ```shell
 python ./tools/export_torchscript.py --cfg_path ${CONFIG_PATH} --model_path ${PYTORCH_MODEL_PATH} --input_shape ${MO}
 ```
+
 ## Build
 
 ### Linux
+
 ```shell
 mkdir build
 cd build

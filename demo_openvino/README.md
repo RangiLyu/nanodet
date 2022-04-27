@@ -16,22 +16,23 @@ Follow the official Get Started Guides: https://docs.openvinotoolkit.org/latest/
 ### Windows:
 
 Run this command in cmd. (Every time before using OpenVINO)
+
 ```cmd
 <INSTSLL_DIR>\openvino_2021\bin\setupvars.bat
 ```
 
-
 Or set the system environment variables once for all:
 
-Name                  |Value
-:--------------------:|:--------:
-INTEL_OPENVINO_DIR | <INSTSLL_DIR>\openvino_2021
-INTEL_CVSDK_DIR | %INTEL_OPENVINO_DIR%
-InferenceEngine_DIR | %INTEL_OPENVINO_DIR%\deployment_tools\inference_engine\share
-HDDL_INSTALL_DIR | %INTEL_OPENVINO_DIR%\deployment_tools\inference_engine\external\hddl
-ngraph_DIR | %INTEL_OPENVINO_DIR%\deployment_tools\ngraph\cmake
+|        Name         |                                  Value                                   |
+| :-----------------: | :----------------------------------------------------------------------: |
+| INTEL_OPENVINO_DIR  |                      \<INSTSLL_DIR>\\openvino_2021                       |
+|   INTEL_CVSDK_DIR   |                           %INTEL_OPENVINO_DIR%                           |
+| InferenceEngine_DIR |     %INTEL_OPENVINO_DIR%\\deployment_tools\\inference_engine\\share      |
+|  HDDL_INSTALL_DIR   | %INTEL_OPENVINO_DIR%\\deployment_tools\\inference_engine\\external\\hddl |
+|     ngraph_DIR      |          %INTEL_OPENVINO_DIR%\\deployment_tools\\ngraph\\cmake           |
 
-And add this to ```Path```
+And add this to `Path`
+
 ```
 %INTEL_OPENVINO_DIR%\deployment_tools\inference_engine\bin\intel64\Debug;%INTEL_OPENVINO_DIR%\deployment_tools\inference_engine\bin\intel64\Release;%HDDL_INSTALL_DIR%\bin;%INTEL_OPENVINO_DIR%\deployment_tools\inference_engine\external\tbb\bin;%INTEL_OPENVINO_DIR%\deployment_tools\ngraph\lib
 ```
@@ -64,9 +65,9 @@ source /opt/intel/openvino_2021/bin/setupvars.sh
    python ./tools/export_onnx.py --cfg_path ${CONFIG_PATH} --model_path ${PYTORCH_MODEL_PATH}
    ```
 
-2. Convert to OpenVINO
+1. Convert to OpenVINO
 
-   ``` shell
+   ```shell
    cd <INSTSLL_DIR>/openvino_2021/deployment_tools/model_optimizer
    ```
 
@@ -77,6 +78,7 @@ source /opt/intel/openvino_2021/bin/setupvars.sh
    ```
 
    Then convert model. Notice: mean_values and scale_values should be the same with your training settings in YAML config file.
+
    ```shell
    python3 mo.py --input_model ${ONNX_MODEL} --mean_values [103.53,116.28,123.675] --scale_values [57.375,57.12,58.395] --output output --data_type FP32 --output_dir ${OUTPUT_DIR}
    ```
@@ -94,6 +96,7 @@ msbuild nanodet_demo.vcxproj /p:configuration=release /p:platform=x64
 ```
 
 ### Linux
+
 ```shell
 source /opt/intel/openvino_2021/bin/setupvars.sh
 mkdir build
@@ -101,7 +104,6 @@ cd build
 cmake ..
 make
 ```
-
 
 ## Run demo
 
@@ -135,12 +137,12 @@ Then run these commands:
 ./nanodet_demo 3 0
 ```
 
-Model               |Resolution|COCO mAP  | CPU Latency (i7-8700) |
-:------------------:|:--------:|:--------:|:---------------------:|
-NanoDet-Plus-m      | 320*320  |   27.0   | 5.25ms / 190FPS       |
-NanoDet-Plus-m      | 416*416  |   30.4   | 8.32ms / 120FPS       |
-NanoDet-Plus-m-1.5x | 320*320  |   29.9   | 7.21ms / 139FPS       |
-NanoDet-Plus-m-1.5x | 416*416  |   34.1   | 11.50ms / 87FPS       |
+|        Model        | Resolution | COCO mAP | CPU Latency (i7-8700) |
+| :-----------------: | :--------: | :------: | :-------------------: |
+|   NanoDet-Plus-m    |  320\*320  |   27.0   |    5.25ms / 190FPS    |
+|   NanoDet-Plus-m    |  416\*416  |   30.4   |    8.32ms / 120FPS    |
+| NanoDet-Plus-m-1.5x |  320\*320  |   29.9   |    7.21ms / 139FPS    |
+| NanoDet-Plus-m-1.5x |  416\*416  |   34.1   |    11.50ms / 87FPS    |
 
 ## Custom model
 

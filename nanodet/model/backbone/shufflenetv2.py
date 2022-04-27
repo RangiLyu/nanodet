@@ -5,8 +5,8 @@ import torch.utils.model_zoo as model_zoo
 from ..module.activation import act_layers
 
 model_urls = {
-    "shufflenetv2_0.5x": "https://download.pytorch.org/models/shufflenetv2_x0.5-f707e7126e.pth",  # noqa: E501
-    "shufflenetv2_1.0x": "https://download.pytorch.org/models/shufflenetv2_x1-5666bf0f80.pth",  # noqa: E501
+    "shufflenetv2_0.5x": "https://download.pytorch.org/models/shufflenetv2_x0.5-f707e7126e.pth",
+    "shufflenetv2_1.0x": "https://download.pytorch.org/models/shufflenetv2_x1-5666bf0f80.pth",
     "shufflenetv2_1.5x": None,
     "shufflenetv2_2.0x": None,
 }
@@ -30,7 +30,7 @@ def channel_shuffle(x, groups):
 
 class ShuffleV2Block(nn.Module):
     def __init__(self, inp, oup, stride, activation="ReLU"):
-        super(ShuffleV2Block, self).__init__()
+        super().__init__()
 
         if not (1 <= stride <= 3):
             raise ValueError("illegal stride value")
@@ -111,7 +111,7 @@ class ShuffleNetV2(nn.Module):
         activation="ReLU",
         pretrain=True,
     ):
-        super(ShuffleNetV2, self).__init__()
+        super().__init__()
         # out_stages can only be a subset of (2, 3, 4)
         assert set(out_stages).issubset((2, 3, 4))
 
@@ -146,7 +146,7 @@ class ShuffleNetV2(nn.Module):
 
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
 
-        stage_names = ["stage{}".format(i) for i in [2, 3, 4]]
+        stage_names = [f"stage{i}" for i in [2, 3, 4]]
         for name, repeats, output_channels in zip(
             stage_names, self.stage_repeats, self._stage_out_channels[1:]
         ):
@@ -178,7 +178,7 @@ class ShuffleNetV2(nn.Module):
         x = self.maxpool(x)
         output = []
         for i in range(2, 5):
-            stage = getattr(self, "stage{}".format(i))
+            stage = getattr(self, f"stage{i}")
             x = stage(x)
             if i in self.out_stages:
                 output.append(x)
@@ -200,8 +200,8 @@ class ShuffleNetV2(nn.Module):
                     nn.init.constant_(m.bias, 0.0001)
                 nn.init.constant_(m.running_mean, 0)
         if pretrain:
-            url = model_urls["shufflenetv2_{}".format(self.model_size)]
+            url = model_urls[f"shufflenetv2_{self.model_size}"]
             if url is not None:
                 pretrained_state_dict = model_zoo.load_url(url)
-                print("=> loading pretrained model {}".format(url))
+                print(f"=> loading pretrained model {url}")
                 self.load_state_dict(pretrained_state_dict, strict=False)

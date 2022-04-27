@@ -29,7 +29,7 @@ def test_nanodet_plus_head_loss():
     feat = [torch.rand(1, 1, 320 // stride, 320 // stride) for stride in [8, 16, 32]]
 
     preds = head.forward(feat)
-    num_points = sum([(320 // stride) ** 2 for stride in [8, 16, 32]])
+    num_points = sum((320 // stride) ** 2 for stride in [8, 16, 32])
     assert preds.shape == (1, num_points, 80 + (8 + 1) * 4)
 
     head_cfg = dict(
@@ -54,7 +54,7 @@ def test_nanodet_plus_head_loss():
     head = build_head(cfg)
 
     preds = head.forward(feat)
-    num_points = sum([(320 // stride) ** 2 for stride in [8, 16, 32]])
+    num_points = sum((320 // stride) ** 2 for stride in [8, 16, 32])
     assert preds.shape == (1, num_points, 20 + (5 + 1) * 4)
 
     # Test that empty ground truth encourages the network to predict background

@@ -26,6 +26,7 @@ from nanodet.evaluator import build_evaluator
 from nanodet.trainer.task import TrainingTask
 from nanodet.util import (
     NanoDetLightningLogger,
+    NanoDetWandbLogger,
     cfg,
     convert_old_model,
     load_config,
@@ -41,6 +42,9 @@ def parse_args():
         "--local_rank", default=-1, type=int, help="node rank for distributed training"
     )
     parser.add_argument("--seed", type=int, default=None, help="random seed")
+    parser.add_argument('--use-wandb', action='store_true', help="use wandb logger")
+    parser.add_argument(
+        "--eval-samples", type=int, default=16, help="number of evaluation samples to log")
     args = parser.parse_args()
     return args
 
@@ -112,7 +116,9 @@ def main(args):
     )
 
     accelerator = None if len(cfg.device.gpu_ids) <= 1 else "ddp"
-
+    loggers = [logger]
+    if args.use_wandb:
+        loggers.append(NanoDetWandbLogger(save_dir="./", num_eval_samples=args.eval_samples, name="test", project="NnN"))
     trainer = pl.Trainer(
         default_root_dir=cfg.save_dir,
         max_epochs=cfg.schedule.total_epochs,
@@ -123,7 +129,7 @@ def main(args):
         num_sanity_val_steps=0,
         resume_from_checkpoint=model_resume_path,
         callbacks=[ProgressBar(refresh_rate=0)],  # disable tqdm bar
-        logger=logger,
+        logger=loggers,
         benchmark=True,
         gradient_clip_val=cfg.get("grad_clip", 0.0),
     )

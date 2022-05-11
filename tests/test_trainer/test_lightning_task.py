@@ -13,7 +13,7 @@ class DummyTrainer(nn.Module):
     global_step = 0
     local_rank = 0
     use_ddp = False
-    logger = NanoDetLightningLogger(tempfile.TemporaryDirectory().name)
+    logger = [NanoDetLightningLogger(tempfile.TemporaryDirectory().name)]
 
     def save_checkpoint(self, *args, **kwargs):
         pass

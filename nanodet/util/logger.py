@@ -22,6 +22,9 @@ from pytorch_lightning.loggers.base import rank_zero_experiment
 from pytorch_lightning.utilities import rank_zero_only
 from pytorch_lightning.utilities.cloud_io import get_filesystem
 from termcolor import colored
+from pytorch_lightning.loggers import WandbLogger
+from nanodet.data.dataset import build_dataset
+import wandb
 
 from .path import mkdir
 
@@ -153,7 +156,6 @@ class NanoDetLightningLogger(LightningLoggerBase):
                 "the dependencies to use torch.utils.tensorboard "
                 "(applicable to PyTorch 1.1 or higher)"
             ) from None
-
         self._experiment = SummaryWriter(log_dir=self.log_dir, **self._kwargs)
         return self._experiment
 
@@ -209,10 +211,10 @@ class NanoDetLightningLogger(LightningLoggerBase):
         self.logger.info(f"hyperparams: {params}")
 
     @rank_zero_only
-    def log_metrics(self, metrics, step):
-        self.logger.info(f"Val_metrics: {metrics}")
+    def log_metrics(self, metrics, step, prefix="Val_metrics/"):
+        self.logger.info(f"{prefix}: {metrics}")
         for k, v in metrics.items():
-            self.experiment.add_scalars("Val_metrics/" + k, {"Val": v}, step)
+            self.experiment.add_scalars(prefix + k, {"Val": v}, step)
 
     @rank_zero_only
     def save(self):
@@ -223,3 +225,102 @@ class NanoDetLightningLogger(LightningLoggerBase):
         self.experiment.flush()
         self.experiment.close()
         self.save()
+    
+    @rank_zero_only
+    def log_val_results(self, results, cfg):
+        '''
+        A methoed to process and log insights/metrics/visualizations from 
+        validation results
+        '''
+        pass
+
+
+            
+class NanoDetWandbLogger(WandbLogger):
+    def __init__(self,save_dir="./", num_eval_samples=16, **kwargs):
+        super().__init__(save_dir=save_dir, **kwargs)
+        self._num_eval_samples = num_eval_samples
+        self._id_to_name = None
+    
+    @rank_zero_only
+    def info(self, string):
+        pass
+    
+    @rank_zero_only
+    def log_metrics(self, metrics, step, prefix=""):
+        self._prefix = prefix
+        super().log_metrics(metrics, step)
+        
+    @rank_zero_only
+    def log_val_results(self, results, cfg):
+        '''
+        A methoed to process and log insights/metrics/visualizations from 
+        validation results
+        '''
+        self._log_eval_table(results, cfg)
+        
+    @rank_zero_only
+    def dump_cfg(self, cfg_node):
+        pass
+        
+    def _log_eval_sample(self, sample_id, sample_path, preds, classes):
+        """
+        Creates one validation image sample
+        Args:
+            sample_id (int): 
+            sample_path (Path):
+            preds (Dict[int,List[float]]):
+            classes (List[str]):
+        """
+        
+        wandb_classes = wandb.Classes([{'id': id, 'name': name} for id, name in enumerate(classes)])
+        class_id_to_label = {k: v for k, v in enumerate(classes)}
+        box_data = []
+        avg_conf_per_class = [0] * len(classes)
+        pred_class_count = {}
+        for cls in preds:
+            for *xyxy, conf in preds[cls]:
+                if conf >= 0.25:
+                    box_data.append(
+                        {"position": {"minX": xyxy[0], "minY": xyxy[1], "maxX": xyxy[2], "maxY": xyxy[3]},
+                         "class_id": cls,
+                         "box_caption": f"{classes[cls]} {conf:.3f}",
+                         "scores": {"class_score": conf},
+                         "domain": "pixel"})
+                    avg_conf_per_class[cls] += conf
+
+                    if cls in pred_class_count:
+                        pred_class_count[cls] += 1
+                    else:
+                        pred_class_count[cls] = 1
+                        
+        for pred_class in pred_class_count.keys():
+            avg_conf_per_class[pred_class] = avg_conf_per_class[pred_class] / pred_class_count[pred_class]
+
+        boxes = {"predictions": {"box_data": box_data, "class_labels": class_id_to_label}}
+
+        wandb_img = wandb.Image(sample_path, boxes=boxes, classes=wandb_classes)
+        return [sample_id, wandb_img, *avg_conf_per_class]
+    
+
+
+    @rank_zero_only
+    def _log_eval_table(self, results, cfg):
+        max_len = min(len(results.keys()), self._num_eval_samples)
+        eval_table_rows = []
+        # create id to file name mappings
+        if max_len > 0 and self._id_to_name is None:
+            val_dataset = build_dataset(cfg.data.val, "test")
+            self._id_to_name = {data['img_info']['id']: data['img_info']['file_name'] for data in val_dataset}
+            
+        for res_id in list(results.keys())[:max_len]:
+            res = results[res_id]
+            file_path = os.path.join(cfg.data.val.img_path, self._id_to_name[res_id])
+            eval_table_rows.append(self._log_eval_sample(
+                    res_id, file_path, res, cfg.class_names
+            ))
+        if eval_table_rows:
+            self.log_table(key="eval_samples",
+                                         columns=["id", "prediction", *cfg.class_names],
+                                         data=eval_table_rows
+                                        )

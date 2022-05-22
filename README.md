@@ -223,7 +223,7 @@ NanoDet-RepVGG        | RepVGG-A0          | 416*416  |  27.8  | 11.3G | 6.75M |
 
     Copy and modify an example yml config file in config/ folder.
 
-    Change ***save_path*** to where you want to save model.
+    Change ***save_dir*** to where you want to save model.
 
     Change ***num_classes*** in ***model->arch->head***.
 

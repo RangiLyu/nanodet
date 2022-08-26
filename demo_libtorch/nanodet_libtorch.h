@@ -22,11 +22,11 @@ public:
 
 private:
     torch::Tensor preprocess(cv::Mat& image);
-    void decode_infer(torch::Tensor& cls_pred, torch::Tensor& dis_pred, int stage_idx, float threshold, std::vector<std::vector<BoxInfo>>& results);
+    void decode_infer(torch::Tensor& cls_pred, torch::Tensor& dis_pred, float threshold, std::vector<std::vector<BoxInfo>>& results);
     BoxInfo disPred2Bbox(const float*& dfl_det, int label, float score, int x, int y, int stride);
     static void nms(std::vector<BoxInfo>& result, float nms_threshold);
-    std::vector<int> strides_{ 8, 16, 32 };
-    int input_size_ = 320;
+    std::vector<int> strides_{ 8, 16, 32, 64 };
+    int input_size_ = 416;
     int num_class_ = 80;
     int reg_max_ = 7;
 

@@ -46,11 +46,11 @@ def test_build_norm_layer():
             cfg = dict(type=type_name)
             if type_name == "GN":
                 cfg["num_groups"] = 2
-            name, layer = build_norm_layer(cfg, 3, postfix=postfix)
+            name, layer = build_norm_layer(cfg, 4, postfix=postfix)
             assert name == abbr_mapping[type_name] + str(postfix)
             assert isinstance(layer, module)
             if type_name == "GN":
-                assert layer.num_channels == 3
+                assert layer.num_channels == 4
                 assert layer.num_groups == cfg["num_groups"]
             elif type_name != "LN":
-                assert layer.num_features == 3
+                assert layer.num_features == 4

@@ -68,18 +68,15 @@ torch::Tensor NanoDet::preprocess(cv::Mat& image)
 std::vector<BoxInfo> NanoDet::detect(cv::Mat image, float score_threshold, float nms_threshold)
 {
     auto input = preprocess(image);
-    auto outputs = this->Net.forward({input}).toTuple();
+    auto outputs = this->Net.forward({input}).toTensor();
 
-    auto cls_preds = outputs->elements()[0].toTensorVector();
-    auto box_preds = outputs->elements()[1].toTensorVector();
+    torch::Tensor cls_preds = outputs.index({ "...",torch::indexing::Slice(0,this->num_class_) });
+    torch::Tensor box_preds = outputs.index({ "...",torch::indexing::Slice(this->num_class_ , torch::indexing::None) });
 
     std::vector<std::vector<BoxInfo>> results;
     results.resize(this->num_class_);
 
-    for (int i = 0; i < (int)strides_.size(); i++)
-    {
-        this->decode_infer(cls_preds[i], box_preds[i], i, score_threshold, results);
-    }
+    this->decode_infer(cls_preds, box_preds, score_threshold, results);
 
     std::vector<BoxInfo> dets;
     for (int i = 0; i < (int)results.size(); i++)
@@ -94,36 +91,42 @@ std::vector<BoxInfo> NanoDet::detect(cv::Mat image, float score_threshold, float
     return dets;
 }
 
-void NanoDet::decode_infer(torch::Tensor& cls_pred, torch::Tensor& dis_pred, int stage_idx, float threshold, std::vector<std::vector<BoxInfo>>& results)
+void NanoDet::decode_infer(torch::Tensor& cls_pred, torch::Tensor& dis_pred, float threshold, std::vector<std::vector<BoxInfo>>& results)
 {
-    int stride = this->strides_[stage_idx];
-    int feature_h = this->input_size_ / stride;
-    int feature_w = this->input_size_ / stride;
-    // cv::Mat debug_heatmap = cv::Mat::zeros(feature_h, feature_w, CV_8UC3);
-    for (int idx = 0; idx < feature_h * feature_w; idx++)
+    int total_idx = 0;
+    for (int stage_idx = 0; stage_idx < (int)strides_.size(); stage_idx++)
     {
-        int row = idx / feature_w;
-        int col = idx % feature_w;
-        float score = -0.0f;
-        int cur_label = 0;
-        for (int label = 0; label < this->num_class_; label++)
+        int stride = this->strides_[stage_idx];
+        int feature_h = ceil(double(this->input_size_) / stride);
+        int feature_w = ceil(double(this->input_size_) / stride);
+        // cv::Mat debug_heatmap = cv::Mat::zeros(feature_h, feature_w, CV_8UC3);
+
+        for (int idx = total_idx; idx < feature_h * feature_w + total_idx; idx++)
         {
-            float cur_score = cls_pred[0][idx][label].item<float>();
-            if ( cur_score > score)
+            int row = (idx - total_idx) / feature_w;
+            int col = (idx - total_idx) % feature_w;
+            float score = -0.0f;
+            int cur_label = 0;
+            for (int label = 0; label < this->num_class_; label++)
             {
-                score = cur_score;
-                cur_label = label;
+                float cur_score = cls_pred[0][idx][label].item<float>();
+                if (cur_score > score)
+                {
+                    score = cur_score;
+                    cur_label = label;
+                }
+            }
+            if (score > threshold)
+            {
+                //std::cout << "label:" << cur_label << " score:" << score << std::endl;
+                auto cur_dis = dis_pred[0][idx].contiguous();
+                const float* bbox_pred = cur_dis.data<float>();
+                results[cur_label].push_back(this->disPred2Bbox(bbox_pred, cur_label, score, col, row, stride));
+                // debug_heatmap.at<cv::Vec3b>(row, col)[0] = 255;
+                // cv::imshow("debug", debug_heatmap);
             }
         }
-        if (score > threshold)
-        {
-            //std::cout << "label:" << cur_label << " score:" << score << std::endl;
-            auto cur_dis = dis_pred[0][idx].contiguous();
-            const float* bbox_pred = cur_dis.data<float>();
-            results[cur_label].push_back(this->disPred2Bbox(bbox_pred, cur_label, score, col, row, stride));
-            // debug_heatmap.at<cv::Vec3b>(row, col)[0] = 255;
-            // cv::imshow("debug", debug_heatmap);
-        }
+        total_idx += feature_h * feature_w;
     }
     // cv::waitKey(0);
 }

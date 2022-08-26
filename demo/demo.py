@@ -131,7 +131,7 @@ def main():
         )
         mkdir(local_rank, save_folder)
         save_path = (
-            os.path.join(save_folder, args.path.split("/")[-1])
+            os.path.join(save_folder, args.path.replace("\\", "/").split("/")[-1])
             if args.demo == "video"
             else os.path.join(save_folder, "camera.mp4")
         )

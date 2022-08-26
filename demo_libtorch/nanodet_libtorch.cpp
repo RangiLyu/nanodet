@@ -100,7 +100,7 @@ void NanoDet::decode_infer(torch::Tensor& cls_pred, torch::Tensor& dis_pred, flo
         int feature_h = ceil(double(this->input_size_) / stride);
         int feature_w = ceil(double(this->input_size_) / stride);
         // cv::Mat debug_heatmap = cv::Mat::zeros(feature_h, feature_w, CV_8UC3);
-        
+
         for (int idx = total_idx; idx < feature_h * feature_w + total_idx; idx++)
         {
             int row = (idx - total_idx) / feature_w;

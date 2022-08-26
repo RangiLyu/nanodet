@@ -8,7 +8,7 @@ def test_pan():
     """Tests PAN."""
     s = 64
     in_channels = [8, 16, 32, 64]
-    feat_sizes = [s // 2 ** i for i in range(4)]  # [64, 32, 16, 8]
+    feat_sizes = [s // 2**i for i in range(4)]  # [64, 32, 16, 8]
     out_channels = 8
     # `num_outs` is not equal to len(in_channels) - start_level
     with pytest.raises(AssertionError):

@@ -18,7 +18,7 @@ import warnings
 
 import pytorch_lightning as pl
 import torch
-from pytorch_lightning.callbacks import ProgressBar
+from pytorch_lightning.callbacks import TQDMProgressBar
 
 from nanodet.data.collate import naive_collate
 from nanodet.data.dataset import build_dataset
@@ -110,21 +110,24 @@ def main(args):
         if "resume" in cfg.schedule
         else None
     )
-
-    accelerator = None if len(cfg.device.gpu_ids) <= 1 else "ddp"
+    if cfg.device.gpu_ids == -1:
+        logger.info("Using CPU training")
+        accelerator, devices = "cpu", None
+    else:
+        accelerator, devices = "gpu", cfg.device.gpu_ids
 
     trainer = pl.Trainer(
         default_root_dir=cfg.save_dir,
         max_epochs=cfg.schedule.total_epochs,
-        gpus=cfg.device.gpu_ids,
         check_val_every_n_epoch=cfg.schedule.val_intervals,
         accelerator=accelerator,
+        devices=devices,
         log_every_n_steps=cfg.log.interval,
         num_sanity_val_steps=0,
         resume_from_checkpoint=model_resume_path,
-        callbacks=[ProgressBar(refresh_rate=0)],  # disable tqdm bar
+        callbacks=[TQDMProgressBar(refresh_rate=0)],  # disable tqdm bar
         logger=logger,
-        benchmark=True,
+        benchmark=cfg.get("cudnn_benchmark", True),
         gradient_clip_val=cfg.get("grad_clip", 0.0),
     )
 

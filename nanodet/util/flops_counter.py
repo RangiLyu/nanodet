@@ -132,21 +132,21 @@ def flops_to_string(flops, units="GFLOPs", precision=2):
         '3e-09 FLOPs'
     """
     if units is None:
-        if flops // 10 ** 9 > 0:
-            return str(round(flops / 10.0 ** 9, precision)) + " GFLOPs"
-        elif flops // 10 ** 6 > 0:
-            return str(round(flops / 10.0 ** 6, precision)) + " MFLOPs"
-        elif flops // 10 ** 3 > 0:
-            return str(round(flops / 10.0 ** 3, precision)) + " KFLOPs"
+        if flops // 10**9 > 0:
+            return str(round(flops / 10.0**9, precision)) + " GFLOPs"
+        elif flops // 10**6 > 0:
+            return str(round(flops / 10.0**6, precision)) + " MFLOPs"
+        elif flops // 10**3 > 0:
+            return str(round(flops / 10.0**3, precision)) + " KFLOPs"
         else:
             return str(flops) + " FLOPs"
     else:
         if units == "GFLOPs":
-            return str(round(flops / 10.0 ** 9, precision)) + " " + units
+            return str(round(flops / 10.0**9, precision)) + " " + units
         elif units == "MFLOPs":
-            return str(round(flops / 10.0 ** 6, precision)) + " " + units
+            return str(round(flops / 10.0**6, precision)) + " " + units
         elif units == "KFLOPs":
-            return str(round(flops / 10.0 ** 3, precision)) + " " + units
+            return str(round(flops / 10.0**3, precision)) + " " + units
         else:
             return str(flops) + " FLOPs"
 
@@ -170,17 +170,17 @@ def params_to_string(num_params, units=None, precision=2):
         '3e-09'
     """
     if units is None:
-        if num_params // 10 ** 6 > 0:
-            return str(round(num_params / 10 ** 6, precision)) + " M"
-        elif num_params // 10 ** 3:
-            return str(round(num_params / 10 ** 3, precision)) + " k"
+        if num_params // 10**6 > 0:
+            return str(round(num_params / 10**6, precision)) + " M"
+        elif num_params // 10**3:
+            return str(round(num_params / 10**3, precision)) + " k"
         else:
             return str(num_params)
     else:
         if units == "M":
-            return str(round(num_params / 10.0 ** 6, precision)) + " " + units
+            return str(round(num_params / 10.0**6, precision)) + " " + units
         elif units == "K":
-            return str(round(num_params / 10.0 ** 3, precision)) + " " + units
+            return str(round(num_params / 10.0**3, precision)) + " " + units
         else:
             return str(num_params)
 

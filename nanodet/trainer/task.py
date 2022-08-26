@@ -316,7 +316,7 @@ class TrainingTask(LightningModule):
         if self.current_epoch > 0:
             self.lr_scheduler.last_epoch = self.current_epoch - 1
 
-    def on_pretrain_routine_end(self) -> None:
+    def on_fit_start(self) -> None:
         if "weight_averager" in self.cfg.model:
             self.logger.info("Weight Averaging is enabled")
             if self.weight_averager and self.weight_averager.has_inited():
@@ -327,10 +327,10 @@ class TrainingTask(LightningModule):
             )
             self.weight_averager.load_from(self.model)
 
-    def on_epoch_start(self):
+    def on_train_epoch_start(self):
         self.model.set_epoch(self.current_epoch)
 
-    def on_train_batch_end(self, outputs, batch, batch_idx, dataloader_idx) -> None:
+    def on_train_batch_end(self, outputs, batch, batch_idx) -> None:
         if self.weight_averager:
             self.weight_averager.update(self.model, self.global_step)
 

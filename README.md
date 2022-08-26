@@ -73,6 +73,8 @@ MobileDet      | 320*320 |   25.6   | -                    | -                  
 
 ## NEWS!!!
 
+* [2022.08.26] Upgrade to [pytorch-lightning-1.7](https://lightning.ai/). The minimum PyTorch version is upgraded to 1.9. To use previous version of PyTorch, please install [NanoDet <= v1.0.0-alpha-1](https://github.com/RangiLyu/nanodet/tags)
+
 * [2021.12.25] **NanoDet-Plus** release! Adding **AGM**(Assign Guidance Module) & **DSLA**(Dynamic Soft Label Assigner) to improve **7 mAP** with only a little cost.
 
 Find more update notes in [Update notes](docs/update.md).
@@ -139,7 +141,7 @@ Besides, We provide a notebook [here](./demo/demo-inference-with-pytorch.ipynb) 
 * Linux or MacOS
 * CUDA >= 10.0
 * Python >= 3.6
-* Pytorch >= 1.7
+* Pytorch >= 1.9
 * experimental support Windows (Notice: Windows not support distributed training before pytorch1.7)
 
 ### Step
@@ -169,7 +171,7 @@ cd nanodet
 ```shell script
 pip install -r requirements.txt
 ```
-    
+
 5. Setup NanoDet
 ```shell script
 python setup.py develop

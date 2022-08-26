@@ -7,11 +7,11 @@ onnx-simplifier
 opencv-python
 pyaml
 pycocotools
-pytorch-lightning>=1.4.0
+pytorch-lightning>=1.7.0
 tabulate
 tensorboard
 termcolor
-torch>=1.7
+torch>=1.9
 torchmetrics
 torchvision
 tqdm

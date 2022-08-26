@@ -13,7 +13,7 @@ class DummyTrainer(nn.Module):
     global_step = 0
     local_rank = 0
     use_ddp = False
-    logger = NanoDetLightningLogger(tempfile.TemporaryDirectory().name)
+    loggers = [NanoDetLightningLogger(tempfile.TemporaryDirectory().name)]
 
     def save_checkpoint(self, *args, **kwargs):
         pass
@@ -24,7 +24,7 @@ class DummyRunner:
         self.task = task
 
     def test(self):
-        self.task.trainer = DummyTrainer()
+        self.task._trainer = DummyTrainer()
 
         optimizer = self.task.configure_optimizers()
 

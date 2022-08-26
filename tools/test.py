@@ -83,10 +83,16 @@ def main(args):
         ckpt = convert_old_model(ckpt)
     task.load_state_dict(ckpt["state_dict"])
 
+    if cfg.device.gpu_ids == -1:
+        logger.info("Using CPU training")
+        accelerator, devices = "cpu", None
+    else:
+        accelerator, devices = "gpu", cfg.device.gpu_ids
+
     trainer = pl.Trainer(
         default_root_dir=cfg.save_dir,
-        gpus=cfg.device.gpu_ids,
-        accelerator="ddp",
+        accelerator=accelerator,
+        devices=devices,
         log_every_n_steps=cfg.log.interval,
         num_sanity_val_steps=0,
         logger=logger,

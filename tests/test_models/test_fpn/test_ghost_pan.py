@@ -8,7 +8,7 @@ def test_ghost_pan():
     """Tests GhostPAN."""
     s = 64
     in_channels = [8, 16, 32, 64]
-    feat_sizes = [s // 2 ** i for i in range(4)]  # [64, 32, 16, 8]
+    feat_sizes = [s // 2**i for i in range(4)]  # [64, 32, 16, 8]
     out_channels = 8
     # `num_extra_level` >= 0
     with pytest.raises(AssertionError):
@@ -34,7 +34,7 @@ def test_ghost_pan():
     assert len(outs) == len(in_channels) + 1
     for i in range(len(in_channels)):
         assert outs[i].shape[1] == out_channels
-        assert outs[i].shape[2] == outs[i].shape[3] == s // (2 ** i)
+        assert outs[i].shape[2] == outs[i].shape[3] == s // (2**i)
     assert outs[-1].shape[1] == out_channels
     assert outs[-1].shape[2] == outs[-1].shape[3] == s // 2 ** len(in_channels)
 
@@ -61,6 +61,6 @@ def test_ghost_pan():
     assert len(outs) == len(in_channels) + 1
     for i in range(len(in_channels)):
         assert outs[i].shape[1] == out_channels
-        assert outs[i].shape[2] == outs[i].shape[3] == s // (2 ** i)
+        assert outs[i].shape[2] == outs[i].shape[3] == s // (2**i)
     assert outs[-1].shape[1] == out_channels
     assert outs[-1].shape[2] == outs[-1].shape[3] == s // 2 ** len(in_channels)

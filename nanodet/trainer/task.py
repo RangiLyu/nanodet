@@ -78,12 +78,17 @@ class TrainingTask(LightningModule):
 
         # log train losses
         if self.global_step % self.cfg.log.interval == 0:
+            memory = (
+                torch.cuda.memory_reserved() / 1e9 if torch.cuda.is_available() else 0
+            )
             lr = self.optimizers().param_groups[0]["lr"]
-            log_msg = "Train|Epoch{}/{}|Iter{}({})| lr:{:.2e}| ".format(
+            log_msg = "Train|Epoch{}/{}|Iter{}({}/{})| mem:{:.3g}G| lr:{:.2e}| ".format(
                 self.current_epoch + 1,
                 self.cfg.schedule.total_epochs,
                 self.global_step,
-                batch_idx,
+                batch_idx + 1,
+                self.trainer.num_training_batches,
+                memory,
                 lr,
             )
             self.scalar_summary("Train_loss/lr", "Train", lr, self.global_step)
@@ -113,12 +118,17 @@ class TrainingTask(LightningModule):
             preds, loss, loss_states = self.model.forward_train(batch)
 
         if batch_idx % self.cfg.log.interval == 0:
+            memory = (
+                torch.cuda.memory_reserved() / 1e9 if torch.cuda.is_available() else 0
+            )
             lr = self.optimizers().param_groups[0]["lr"]
-            log_msg = "Val|Epoch{}/{}|Iter{}({})| lr:{:.2e}| ".format(
+            log_msg = "Val|Epoch{}/{}|Iter{}({}/{})| mem:{:.3g}G| lr:{:.2e}| ".format(
                 self.current_epoch + 1,
                 self.cfg.schedule.total_epochs,
                 self.global_step,
-                batch_idx,
+                batch_idx + 1,
+                sum(self.trainer.num_val_batches),
+                memory,
                 lr,
             )
             for loss_name in loss_states:

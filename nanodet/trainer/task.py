@@ -24,6 +24,7 @@ from pytorch_lightning import LightningModule
 from pytorch_lightning.utilities import rank_zero_only
 
 from nanodet.data.batch_process import stack_batch_img
+from nanodet.optim import build_optimizer
 from nanodet.util import convert_avg_params, gather_results, mkdir
 
 from ..model.arch import build_model
@@ -225,9 +226,7 @@ class TrainingTask(LightningModule):
             optimizer
         """
         optimizer_cfg = copy.deepcopy(self.cfg.schedule.optimizer)
-        name = optimizer_cfg.pop("name")
-        build_optimizer = getattr(torch.optim, name)
-        optimizer = build_optimizer(params=self.parameters(), **optimizer_cfg)
+        optimizer = build_optimizer(self.model, optimizer_cfg)
 
         schedule_cfg = copy.deepcopy(self.cfg.schedule.lr_schedule)
         name = schedule_cfg.pop("name")

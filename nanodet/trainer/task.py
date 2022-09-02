@@ -288,13 +288,6 @@ class TrainingTask(LightningModule):
         optimizer.step(closure=optimizer_closure)
         optimizer.zero_grad()
 
-    def get_progress_bar_dict(self):
-        # don't show the version number
-        items = super().get_progress_bar_dict()
-        items.pop("v_num", None)
-        items.pop("loss", None)
-        return items
-
     def scalar_summary(self, tag, phase, value, step):
         """
         Write Tensorboard scalar summary log.

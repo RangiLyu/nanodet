@@ -1,22 +1,11 @@
 import tempfile
+from unittest.mock import Mock
 
 import numpy as np
 import torch
-import torch.nn as nn
 
 from nanodet.trainer.task import TrainingTask
 from nanodet.util import NanoDetLightningLogger, cfg, load_config
-
-
-class DummyTrainer(nn.Module):
-    current_epoch = 0
-    global_step = 0
-    local_rank = 0
-    use_ddp = False
-    loggers = [NanoDetLightningLogger(tempfile.TemporaryDirectory().name)]
-
-    def save_checkpoint(self, *args, **kwargs):
-        pass
 
 
 class DummyRunner:
@@ -24,7 +13,14 @@ class DummyRunner:
         self.task = task
 
     def test(self):
-        self.task._trainer = DummyTrainer()
+        trainer = Mock()
+        trainer.current_epoch = 0
+        trainer.global_step = 0
+        trainer.local_rank = 0
+        trainer.use_ddp = False
+        trainer.loggers = [NanoDetLightningLogger(tempfile.TemporaryDirectory().name)]
+        trainer.num_val_batches = [1]
+        self.task._trainer = trainer
 
         optimizer = self.task.configure_optimizers()
 

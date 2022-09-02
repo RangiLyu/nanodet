@@ -112,9 +112,9 @@ def main(args):
     )
     if cfg.device.gpu_ids == -1:
         logger.info("Using CPU training")
-        accelerator, devices = "cpu", None
+        accelerator, devices, strategy = "cpu", None, None
     else:
-        accelerator, devices = "gpu", cfg.device.gpu_ids
+        accelerator, devices, strategy = "gpu", cfg.device.gpu_ids, "ddp"
 
     trainer = pl.Trainer(
         default_root_dir=cfg.save_dir,
@@ -129,6 +129,7 @@ def main(args):
         logger=logger,
         benchmark=cfg.get("cudnn_benchmark", True),
         gradient_clip_val=cfg.get("grad_clip", 0.0),
+        strategy=strategy,
     )
 
     trainer.fit(task, train_dataloader, val_dataloader)

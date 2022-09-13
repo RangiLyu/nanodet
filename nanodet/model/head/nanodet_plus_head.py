@@ -83,7 +83,7 @@ class NanoDetPlusHead(nn.Module):
             loss_weight=self.loss_cfg.loss_dfl.loss_weight
         )
         #self.loss_bbox = GIoULoss(loss_weight=self.loss_cfg.loss_bbox.loss_weight)
-        # read bbox function from configure file
+        #globals
         self.loss_bbox = globals()[(str)(self.loss_cfg.loss_bbox.name)](loss_weight=self.loss_cfg.loss_bbox.loss_weight)
         self._init_layers()
         self.init_weights()

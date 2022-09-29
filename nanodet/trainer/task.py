@@ -24,6 +24,7 @@ from pytorch_lightning import LightningModule
 from pytorch_lightning.utilities import rank_zero_only
 
 from nanodet.data.batch_process import stack_batch_img
+from nanodet.optim import build_optimizer
 from nanodet.util import convert_avg_params, gather_results, mkdir
 
 from ..model.arch import build_model
@@ -81,7 +82,7 @@ class TrainingTask(LightningModule):
             memory = (
                 torch.cuda.memory_reserved() / 1e9 if torch.cuda.is_available() else 0
             )
-            lr = self.optimizers().param_groups[0]["lr"]
+            lr = self.trainer.optimizers[0].param_groups[0]["lr"]
             log_msg = "Train|Epoch{}/{}|Iter{}({}/{})| mem:{:.3g}G| lr:{:.2e}| ".format(
                 self.current_epoch + 1,
                 self.cfg.schedule.total_epochs,
@@ -108,7 +109,6 @@ class TrainingTask(LightningModule):
 
     def training_epoch_end(self, outputs: List[Any]) -> None:
         self.trainer.save_checkpoint(os.path.join(self.cfg.save_dir, "model_last.ckpt"))
-        self.lr_scheduler.step()
 
     def validation_step(self, batch, batch_idx):
         batch = self._preprocess_batch_input(batch)
@@ -121,7 +121,7 @@ class TrainingTask(LightningModule):
             memory = (
                 torch.cuda.memory_reserved() / 1e9 if torch.cuda.is_available() else 0
             )
-            lr = self.optimizers().param_groups[0]["lr"]
+            lr = self.trainer.optimizers[0].param_groups[0]["lr"]
             log_msg = "Val|Epoch{}/{}|Iter{}({}/{})| mem:{:.3g}G| lr:{:.2e}| ".format(
                 self.current_epoch + 1,
                 self.cfg.schedule.total_epochs,
@@ -225,20 +225,17 @@ class TrainingTask(LightningModule):
             optimizer
         """
         optimizer_cfg = copy.deepcopy(self.cfg.schedule.optimizer)
-        name = optimizer_cfg.pop("name")
-        build_optimizer = getattr(torch.optim, name)
-        optimizer = build_optimizer(params=self.parameters(), **optimizer_cfg)
+        optimizer = build_optimizer(self.model, optimizer_cfg)
 
         schedule_cfg = copy.deepcopy(self.cfg.schedule.lr_schedule)
         name = schedule_cfg.pop("name")
         build_scheduler = getattr(torch.optim.lr_scheduler, name)
-        self.lr_scheduler = build_scheduler(optimizer=optimizer, **schedule_cfg)
-        # lr_scheduler = {'scheduler': self.lr_scheduler,
-        #                 'interval': 'epoch',
-        #                 'frequency': 1}
-        # return [optimizer], [lr_scheduler]
-
-        return optimizer
+        scheduler = {
+            "scheduler": build_scheduler(optimizer=optimizer, **schedule_cfg),
+            "interval": "epoch",
+            "frequency": 1,
+        }
+        return dict(optimizer=optimizer, lr_scheduler=scheduler)
 
     def optimizer_step(
         self,
@@ -266,23 +263,19 @@ class TrainingTask(LightningModule):
         # warm up lr
         if self.trainer.global_step <= self.cfg.schedule.warmup.steps:
             if self.cfg.schedule.warmup.name == "constant":
-                warmup_lr = (
-                    self.cfg.schedule.optimizer.lr * self.cfg.schedule.warmup.ratio
-                )
+                k = self.cfg.schedule.warmup.ratio
             elif self.cfg.schedule.warmup.name == "linear":
-                k = (1 - self.trainer.global_step / self.cfg.schedule.warmup.steps) * (
-                    1 - self.cfg.schedule.warmup.ratio
-                )
-                warmup_lr = self.cfg.schedule.optimizer.lr * (1 - k)
+                k = 1 - (
+                    1 - self.trainer.global_step / self.cfg.schedule.warmup.steps
+                ) * (1 - self.cfg.schedule.warmup.ratio)
             elif self.cfg.schedule.warmup.name == "exp":
                 k = self.cfg.schedule.warmup.ratio ** (
                     1 - self.trainer.global_step / self.cfg.schedule.warmup.steps
                 )
-                warmup_lr = self.cfg.schedule.optimizer.lr * k
             else:
                 raise Exception("Unsupported warm up type!")
             for pg in optimizer.param_groups:
-                pg["lr"] = warmup_lr
+                pg["lr"] = pg["initial_lr"] * k
 
         # update params
         optimizer.step(closure=optimizer_closure)
@@ -315,10 +308,6 @@ class TrainingTask(LightningModule):
         torch.save({"state_dict": state_dict}, path)
 
     # ------------Hooks-----------------
-    def on_train_start(self) -> None:
-        if self.current_epoch > 0:
-            self.lr_scheduler.last_epoch = self.current_epoch - 1
-
     def on_fit_start(self) -> None:
         if "weight_averager" in self.cfg.model:
             self.logger.info("Weight Averaging is enabled")

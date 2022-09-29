@@ -28,6 +28,7 @@ from nanodet.util import (
     NanoDetLightningLogger,
     cfg,
     convert_old_model,
+    env_utils,
     load_config,
     load_model_weight,
     mkdir,
@@ -114,7 +115,11 @@ def main(args):
         logger.info("Using CPU training")
         accelerator, devices, strategy = "cpu", None, None
     else:
-        accelerator, devices, strategy = "gpu", cfg.device.gpu_ids, "ddp"
+        accelerator, devices, strategy = "gpu", cfg.device.gpu_ids, None
+
+    if devices and len(devices) > 1:
+        strategy = "ddp"
+        env_utils.set_multi_processing(distributed=True)
 
     trainer = pl.Trainer(
         default_root_dir=cfg.save_dir,

@@ -20,18 +20,14 @@ class DummyRunner:
         trainer.use_ddp = False
         trainer.loggers = [NanoDetLightningLogger(tempfile.TemporaryDirectory().name)]
         trainer.num_val_batches = [1]
+
+        optimizer = self.task.configure_optimizers()["optimizer"]
+
+        trainer.optimizers = [optimizer]
         self.task._trainer = trainer
-
-        optimizer = self.task.configure_optimizers()
-
-        def optimizers():
-            return optimizer
-
-        self.task.optimizers = optimizers
 
         self.task.on_train_start()
         assert self.task.current_epoch == 0
-        assert self.task.lr_scheduler.last_epoch == 0
 
         dummy_batch = {
             "img": torch.randn((2, 3, 32, 32)),
@@ -58,7 +54,6 @@ class DummyRunner:
 
         self.task.optimizer_step(optimizer=optimizer)
         self.task.training_epoch_end([])
-        assert self.task.lr_scheduler.last_epoch == 1
 
         self.task.validation_step(dummy_batch, 0)
         self.task.validation_epoch_end([])

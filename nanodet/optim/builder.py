@@ -25,6 +25,7 @@ def build_optimizer(model, config):
     config = copy.deepcopy(config)
     param_dict = {}
     no_norm_decay = config.pop("no_norm_decay", False)
+    no_bias_decay = config.pop("no_bias_decay", False)
     param_level_cfg = config.pop("param_level_cfg", {})
     base_lr = config.get("lr", None)
     base_wd = config.get("weight_decay", None)
@@ -57,6 +58,11 @@ def build_optimizer(model, config):
             if isinstance(m, NORMS):
                 param_dict[m.bias].update({"weight_decay": 0})
                 param_dict[m.weight].update({"weight_decay": 0})
+    if no_bias_decay:
+        # update bias decay
+        for name, m in model.named_modules():
+            if hasattr(m, "bias"):
+                param_dict[m.bias].update({"weight_decay": 0})
 
     # convert param dict to optimizer's param groups
     param_groups = []

@@ -312,7 +312,7 @@ class NanoDetPlusHead(nn.Module):
             return labels, label_scores, bbox_targets, dist_targets, 0
 
         assign_result = self.assigner.assign(
-            cls_preds.sigmoid(), center_priors, decoded_bboxes, gt_bboxes, gt_labels
+            cls_preds, center_priors, decoded_bboxes, gt_bboxes, gt_labels
         )
         pos_inds, neg_inds, pos_gt_bboxes, pos_assigned_gt_inds = self.sample(
             assign_result, gt_bboxes

@@ -91,9 +91,9 @@ class DynamicSoftLabelAssigner(BaseAssigner):
         valid_pred_scores = valid_pred_scores.unsqueeze(1).repeat(1, num_gt, 1)
 
         soft_label = gt_onehot_label * pairwise_ious[..., None]
-        scale_factor = soft_label - valid_pred_scores
+        scale_factor = soft_label - valid_pred_scores.sigmoid()
 
-        cls_cost = F.binary_cross_entropy(
+        cls_cost = F.binary_cross_entropy_with_logits(
             valid_pred_scores, soft_label, reduction="none"
         ) * scale_factor.abs().pow(2.0)
 

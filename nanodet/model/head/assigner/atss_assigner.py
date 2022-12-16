@@ -33,8 +33,9 @@ class ATSSAssigner(BaseAssigner):
         topk (float): number of bbox selected in each level
     """
 
-    def __init__(self, topk):
+    def __init__(self, topk,ignore_iof_thr=-1):
         self.topk = topk
+        self.ignore_iof_thr = ignore_iof_thr
 
     # https://github.com/sfzhang15/ATSS/blob/master/atss_core/modeling/rpn/atss/loss.py
 
@@ -105,6 +106,15 @@ class ATSSAssigner(BaseAssigner):
             (bboxes_points[:, None, :] - gt_points[None, :, :]).pow(2).sum(-1).sqrt()
         )
 
+        if (self.ignore_iof_thr > 0 and gt_bboxes_ignore is not None
+                and gt_bboxes_ignore.numel() > 0 and bboxes.numel() > 0):
+            ignore_overlaps = bbox_overlaps(
+                bboxes, gt_bboxes_ignore, mode='iof')
+            ignore_max_overlaps, _ = ignore_overlaps.max(dim=1)
+            ignore_idxs = ignore_max_overlaps > self.ignore_iof_thr
+            distances[ignore_idxs, :] = INF
+            assigned_gt_inds[ignore_idxs] = -1
+        
         # Selecting candidates based on the center distance
         candidate_idxs = []
         start_idx = 0

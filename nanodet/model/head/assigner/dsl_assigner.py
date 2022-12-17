@@ -16,9 +16,10 @@ class DynamicSoftLabelAssigner(BaseAssigner):
         iou_factor (float): The scale factor of iou cost. Default 3.0.
     """
 
-    def __init__(self, topk=13, iou_factor=3.0):
+    def __init__(self, topk=13, iou_factor=3.0,ignore_iof_thr=-1):
         self.topk = topk
         self.iou_factor = iou_factor
+        self.ignore_iof_thr = ignore_iof_thr
 
     def assign(
         self,
@@ -26,6 +27,7 @@ class DynamicSoftLabelAssigner(BaseAssigner):
         priors,
         decoded_bboxes,
         gt_bboxes,
+        gt_bboxes_ignore,
         gt_labels,
     ):
         """Assign gt to priors with dynamic soft label assignment.
@@ -100,7 +102,7 @@ class DynamicSoftLabelAssigner(BaseAssigner):
         cls_cost = cls_cost.sum(dim=-1)
 
         cost_matrix = cls_cost + iou_cost * self.iou_factor
-
+        
         matched_pred_ious, matched_gt_inds = self.dynamic_k_matching(
             cost_matrix, pairwise_ious, num_gt, valid_mask
         )
@@ -113,6 +115,15 @@ class DynamicSoftLabelAssigner(BaseAssigner):
             (num_bboxes,), -INF, dtype=torch.float32
         )
         max_overlaps[valid_mask] = matched_pred_ious
+        
+        if (self.ignore_iof_thr > 0 and gt_bboxes_ignore is not None
+                and gt_bboxes_ignore.numel() > 0 and num_bboxes > 0):
+            ignore_overlaps = bbox_overlaps(
+                valid_decoded_bbox, gt_bboxes_ignore, mode='iof')
+            ignore_max_overlaps, _ = ignore_overlaps.max(dim=1)
+            ignore_idxs = ignore_max_overlaps > self.ignore_iof_thr
+            assigned_gt_inds[ignore_idxs] = -1
+        
         return AssignResult(
             num_gt, assigned_gt_inds, max_overlaps, labels=assigned_labels
         )

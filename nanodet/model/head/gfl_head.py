@@ -466,7 +466,8 @@ class GFLHead(nn.Module):
         device = grid_cells.device
         gt_bboxes = torch.from_numpy(gt_bboxes).to(device)
         gt_labels = torch.from_numpy(gt_labels).to(device)
-
+        gt_bboxes_ignore = torch.from_numpy(gt_bboxes_ignore).to(device)
+        
         assign_result = self.assigner.assign(
             grid_cells, num_level_cells, gt_bboxes, gt_bboxes_ignore, gt_labels
         )

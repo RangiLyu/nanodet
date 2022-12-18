@@ -129,8 +129,11 @@ class CocoDataset(BaseDataset):
             raise FileNotFoundError("Cant load image! Please check image path!")
         ann = self.get_img_annotation(idx)
         meta = dict(
-            img=img, img_info=img_info, gt_bboxes=ann["bboxes"], 
-            gt_labels=ann["labels"],gt_bboxes_ignore=ann["bboxes_ignore"]
+            img=img,
+            img_info=img_info,
+            gt_bboxes=ann["bboxes"],
+            gt_labels=ann["labels"],
+            gt_bboxes_ignore=ann["bboxes_ignore"],
         )
         if self.use_instance_mask:
             meta["gt_masks"] = ann["masks"]

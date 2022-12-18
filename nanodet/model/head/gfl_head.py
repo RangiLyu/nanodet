@@ -127,7 +127,7 @@ class GFLHead(nn.Module):
         else:
             self.cls_out_channels = num_classes + 1
 
-        self.assigner = ATSSAssigner(topk=9,ignore_iof_thr=ignore_iof_thr)
+        self.assigner = ATSSAssigner(topk=9, ignore_iof_thr=ignore_iof_thr)
         self.distribution_project = Integral(self.reg_max)
 
         self.loss_qfl = QualityFocalLoss(
@@ -467,7 +467,7 @@ class GFLHead(nn.Module):
         gt_bboxes = torch.from_numpy(gt_bboxes).to(device)
         gt_labels = torch.from_numpy(gt_labels).to(device)
         gt_bboxes_ignore = torch.from_numpy(gt_bboxes_ignore).to(device)
-        
+
         assign_result = self.assigner.assign(
             grid_cells, num_level_cells, gt_bboxes, gt_bboxes_ignore, gt_labels
         )

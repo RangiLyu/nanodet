@@ -232,7 +232,14 @@ class NanoDetPlusHead(nn.Module):
 
     def _get_loss_from_assign(self, cls_preds, reg_preds, decoded_bboxes, assign):
         device = cls_preds.device
-        labels, label_scores, label_weights, bbox_targets, dist_targets, num_pos = assign
+        (
+            labels,
+            label_scores,
+            label_weights,
+            bbox_targets,
+            dist_targets,
+            num_pos,
+        ) = assign
         num_total_samples = max(
             reduce_mean(torch.tensor(sum(num_pos)).to(device)).item(), 1.0
         )
@@ -245,8 +252,10 @@ class NanoDetPlusHead(nn.Module):
         reg_preds = reg_preds.reshape(-1, 4 * (self.reg_max + 1))
         decoded_bboxes = decoded_bboxes.reshape(-1, 4)
         loss_qfl = self.loss_qfl(
-            cls_preds, (labels, label_scores),
-            weight=label_weights, avg_factor=num_total_samples
+            cls_preds,
+            (labels, label_scores),
+            weight=label_weights,
+            avg_factor=num_total_samples,
         )
 
         pos_inds = torch.nonzero(
@@ -281,7 +290,13 @@ class NanoDetPlusHead(nn.Module):
 
     @torch.no_grad()
     def target_assign_single_img(
-        self, cls_preds, center_priors, decoded_bboxes, gt_bboxes,gt_bboxes_ignore, gt_labels
+        self,
+        cls_preds,
+        center_priors,
+        decoded_bboxes,
+        gt_bboxes,
+        gt_bboxes_ignore,
+        gt_labels,
     ):
         """Compute classification, regression, and objectness targets for
         priors in a single image.
@@ -299,7 +314,6 @@ class NanoDetPlusHead(nn.Module):
                 with shape [num_gts].
         """
 
-        
         device = center_priors.device
         gt_bboxes = torch.from_numpy(gt_bboxes).to(device)
         gt_bboxes_ignore = torch.from_numpy(gt_bboxes_ignore).to(device)
@@ -308,21 +322,26 @@ class NanoDetPlusHead(nn.Module):
         gt_bboxes_ignore = gt_bboxes_ignore.to(decoded_bboxes.dtype)
 
         assign_result = self.assigner.assign(
-            cls_preds.sigmoid(), center_priors, decoded_bboxes, gt_bboxes,gt_bboxes_ignore, gt_labels
+            cls_preds.sigmoid(),
+            center_priors,
+            decoded_bboxes,
+            gt_bboxes,
+            gt_bboxes_ignore,
+            gt_labels,
         )
         pos_inds, neg_inds, pos_gt_bboxes, pos_assigned_gt_inds = self.sample(
             assign_result, gt_bboxes
         )
-        
+
         num_priors = center_priors.size(0)
         bbox_targets = torch.zeros_like(center_priors)
         dist_targets = torch.zeros_like(center_priors)
         labels = center_priors.new_full(
             (num_priors,), self.num_classes, dtype=torch.long
         )
-        label_weights = center_priors.new_zeros(num_priors,dtype=torch.float)
+        label_weights = center_priors.new_zeros(num_priors, dtype=torch.float)
         label_scores = center_priors.new_zeros(labels.shape, dtype=torch.float)
-        
+
         num_pos_per_img = pos_inds.size(0)
         pos_ious = assign_result.max_overlaps[pos_inds]
 

@@ -31,6 +31,7 @@ def test_gfl_head_loss():
     meta = dict(
         img=torch.rand((2, 3, 64, 64)),
         gt_bboxes=[np.random.random((0, 4))],
+        gt_bboxes_ignore=[np.random.random((0, 4))],
         gt_labels=[np.array([])],
     )
     loss, empty_gt_losses = head.loss(preds, meta)
@@ -52,9 +53,15 @@ def test_gfl_head_loss():
     gt_bboxes = [
         np.array([[23.6667, 23.8757, 238.6326, 151.8874]], dtype=np.float32),
     ]
+    gt_bboxes_ignore = [
+        np.array([[29.6667, 29.8757, 244.6326, 160.8874]], dtype=np.float32),
+    ]
     gt_labels = [np.array([2])]
     meta = dict(
-        img=torch.rand((2, 3, 64, 64)), gt_bboxes=gt_bboxes, gt_labels=gt_labels
+        img=torch.rand((2, 3, 64, 64)),
+        gt_bboxes=gt_bboxes,
+        gt_labels=gt_labels,
+        gt_bboxes_ignore=gt_bboxes_ignore,
     )
     loss, one_gt_losses = head.loss(preds, meta)
     onegt_qfl_loss = one_gt_losses["loss_qfl"]

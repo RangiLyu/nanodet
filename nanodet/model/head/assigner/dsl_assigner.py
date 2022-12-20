@@ -14,6 +14,8 @@ class DynamicSoftLabelAssigner(BaseAssigner):
         topk (int): Select top-k predictions to calculate dynamic k
             best matchs for each gt. Default 13.
         iou_factor (float): The scale factor of iou cost. Default 3.0.
+        ignore_iof_thr (int): whether ignore max overlaps or not.
+            Default -1 (1 or -1).
     """
 
     def __init__(self, topk=13, iou_factor=3.0, ignore_iof_thr=-1):
@@ -27,8 +29,8 @@ class DynamicSoftLabelAssigner(BaseAssigner):
         priors,
         decoded_bboxes,
         gt_bboxes,
-        gt_bboxes_ignore,
         gt_labels,
+        gt_bboxes_ignore=None,
     ):
         """Assign gt to priors with dynamic soft label assignment.
         Args:
@@ -40,6 +42,8 @@ class DynamicSoftLabelAssigner(BaseAssigner):
                 [num_priors, 4] in [tl_x, tl_y, br_x, br_y] format.
             gt_bboxes (Tensor): Ground truth bboxes of one image, a 2D-Tensor
                 with shape [num_gts, 4] in [tl_x, tl_y, br_x, br_y] format.
+            gt_bboxes_ignore (Tensor, optional): Ground truth bboxes that are
+                labelled as `ignored`, e.g., crowd boxes in COCO.
             gt_labels (Tensor): Ground truth labels of one image, a Tensor
                 with shape [num_gts].
 

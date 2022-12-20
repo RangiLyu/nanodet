@@ -23,14 +23,16 @@ from .base_assigner import BaseAssigner
 class ATSSAssigner(BaseAssigner):
     """Assign a corresponding gt bbox or background to each bbox.
 
-    Each proposals will be assigned with `0` or a positive integer
+    Each proposals will be assigned with `-1`, `0` or a positive integer
     indicating the ground truth index.
-
+    - -1: ignore sample, will be masked in loss calculation
     - 0: negative sample, no assigned gt
     - positive integer: positive sample, index (1-based) of assigned gt
 
     Args:
         topk (float): number of bbox selected in each level
+        ignore_iof_thr (float): whether ignore max overlaps or not.
+            Default -1 ([0,1] or -1).
     """
 
     def __init__(self, topk, ignore_iof_thr=-1):

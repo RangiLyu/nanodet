@@ -158,11 +158,15 @@ class NanoDetPlusHead(nn.Module):
             loss (Tensor): Loss tensor.
             loss_states (dict): State dict of each loss.
         """
-        gt_bboxes = gt_meta["gt_bboxes"]
-        gt_labels = gt_meta["gt_labels"]
-        gt_bboxes_ignore = gt_meta["gt_bboxes_ignore"]
         device = preds.device
         batch_size = preds.shape[0]
+        gt_bboxes = gt_meta["gt_bboxes"]
+        gt_labels = gt_meta["gt_labels"]
+
+        gt_bboxes_ignore = gt_meta["gt_bboxes_ignore"]
+        if gt_bboxes_ignore is None:
+            gt_bboxes_ignore = [None for _ in range(batch_size)]
+
         input_height, input_width = gt_meta["img"].shape[2:]
         featmap_sizes = [
             (math.ceil(input_height / stride), math.ceil(input_width) / stride)
@@ -202,8 +206,8 @@ class NanoDetPlusHead(nn.Module):
                 center_priors,
                 aux_decoded_bboxes.detach(),
                 gt_bboxes,
-                gt_bboxes_ignore,
                 gt_labels,
+                gt_bboxes_ignore,
             )
         else:
             # use self prediction to assign
@@ -213,8 +217,8 @@ class NanoDetPlusHead(nn.Module):
                 center_priors,
                 decoded_bboxes.detach(),
                 gt_bboxes,
-                gt_bboxes_ignore,
                 gt_labels,
+                gt_bboxes_ignore,
             )
 
         loss, loss_states = self._get_loss_from_assign(
@@ -295,8 +299,8 @@ class NanoDetPlusHead(nn.Module):
         center_priors,
         decoded_bboxes,
         gt_bboxes,
-        gt_bboxes_ignore,
         gt_labels,
+        gt_bboxes_ignore=None,
     ):
         """Compute classification, regression, and objectness targets for
         priors in a single image.
@@ -312,22 +316,26 @@ class NanoDetPlusHead(nn.Module):
                 with shape [num_gts, 4] in [tl_x, tl_y, br_x, br_y] format.
             gt_labels (Tensor): Ground truth labels of one image, a Tensor
                 with shape [num_gts].
+            gt_bboxes_ignore (Tensor, optional): Ground truth bboxes that are
+                labelled as `ignored`, e.g., crowd boxes in COCO.
         """
 
         device = center_priors.device
         gt_bboxes = torch.from_numpy(gt_bboxes).to(device)
-        gt_bboxes_ignore = torch.from_numpy(gt_bboxes_ignore).to(device)
         gt_labels = torch.from_numpy(gt_labels).to(device)
         gt_bboxes = gt_bboxes.to(decoded_bboxes.dtype)
-        gt_bboxes_ignore = gt_bboxes_ignore.to(decoded_bboxes.dtype)
+
+        if gt_bboxes_ignore is not None:
+            gt_bboxes_ignore = torch.from_numpy(gt_bboxes_ignore).to(device)
+            gt_bboxes_ignore = gt_bboxes_ignore.to(decoded_bboxes.dtype)
 
         assign_result = self.assigner.assign(
             cls_preds.sigmoid(),
             center_priors,
             decoded_bboxes,
             gt_bboxes,
-            gt_bboxes_ignore,
             gt_labels,
+            gt_bboxes_ignore,
         )
         pos_inds, neg_inds, pos_gt_bboxes, pos_assigned_gt_inds = self.sample(
             assign_result, gt_bboxes

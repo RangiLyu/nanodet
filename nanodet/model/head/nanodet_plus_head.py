@@ -158,10 +158,15 @@ class NanoDetPlusHead(nn.Module):
             loss (Tensor): Loss tensor.
             loss_states (dict): State dict of each loss.
         """
-        gt_bboxes = gt_meta["gt_bboxes"]
-        gt_labels = gt_meta["gt_labels"]
         device = preds.device
         batch_size = preds.shape[0]
+        gt_bboxes = gt_meta["gt_bboxes"]
+        gt_labels = gt_meta["gt_labels"]
+
+        gt_bboxes_ignore = gt_meta["gt_bboxes_ignore"]
+        if gt_bboxes_ignore is None:
+            gt_bboxes_ignore = [None for _ in range(batch_size)]
+
         input_height, input_width = gt_meta["img"].shape[2:]
         featmap_sizes = [
             (math.ceil(input_height / stride), math.ceil(input_width) / stride)
@@ -202,6 +207,7 @@ class NanoDetPlusHead(nn.Module):
                 aux_decoded_bboxes.detach(),
                 gt_bboxes,
                 gt_labels,
+                gt_bboxes_ignore,
             )
         else:
             # use self prediction to assign
@@ -212,6 +218,7 @@ class NanoDetPlusHead(nn.Module):
                 decoded_bboxes.detach(),
                 gt_bboxes,
                 gt_labels,
+                gt_bboxes_ignore,
             )
 
         loss, loss_states = self._get_loss_from_assign(
@@ -229,19 +236,30 @@ class NanoDetPlusHead(nn.Module):
 
     def _get_loss_from_assign(self, cls_preds, reg_preds, decoded_bboxes, assign):
         device = cls_preds.device
-        labels, label_scores, bbox_targets, dist_targets, num_pos = assign
+        (
+            labels,
+            label_scores,
+            label_weights,
+            bbox_targets,
+            dist_targets,
+            num_pos,
+        ) = assign
         num_total_samples = max(
             reduce_mean(torch.tensor(sum(num_pos)).to(device)).item(), 1.0
         )
 
         labels = torch.cat(labels, dim=0)
         label_scores = torch.cat(label_scores, dim=0)
+        label_weights = torch.cat(label_weights, dim=0)
         bbox_targets = torch.cat(bbox_targets, dim=0)
         cls_preds = cls_preds.reshape(-1, self.num_classes)
         reg_preds = reg_preds.reshape(-1, 4 * (self.reg_max + 1))
         decoded_bboxes = decoded_bboxes.reshape(-1, 4)
         loss_qfl = self.loss_qfl(
-            cls_preds, (labels, label_scores), avg_factor=num_total_samples
+            cls_preds,
+            (labels, label_scores),
+            weight=label_weights,
+            avg_factor=num_total_samples,
         )
 
         pos_inds = torch.nonzero(
@@ -276,7 +294,13 @@ class NanoDetPlusHead(nn.Module):
 
     @torch.no_grad()
     def target_assign_single_img(
-        self, cls_preds, center_priors, decoded_bboxes, gt_bboxes, gt_labels
+        self,
+        cls_preds,
+        center_priors,
+        decoded_bboxes,
+        gt_bboxes,
+        gt_labels,
+        gt_bboxes_ignore=None,
     ):
         """Compute classification, regression, and objectness targets for
         priors in a single image.
@@ -292,31 +316,40 @@ class NanoDetPlusHead(nn.Module):
                 with shape [num_gts, 4] in [tl_x, tl_y, br_x, br_y] format.
             gt_labels (Tensor): Ground truth labels of one image, a Tensor
                 with shape [num_gts].
+            gt_bboxes_ignore (Tensor, optional): Ground truth bboxes that are
+                labelled as `ignored`, e.g., crowd boxes in COCO.
         """
 
-        num_priors = center_priors.size(0)
         device = center_priors.device
         gt_bboxes = torch.from_numpy(gt_bboxes).to(device)
         gt_labels = torch.from_numpy(gt_labels).to(device)
-        num_gts = gt_labels.size(0)
         gt_bboxes = gt_bboxes.to(decoded_bboxes.dtype)
 
+        if gt_bboxes_ignore is not None:
+            gt_bboxes_ignore = torch.from_numpy(gt_bboxes_ignore).to(device)
+            gt_bboxes_ignore = gt_bboxes_ignore.to(decoded_bboxes.dtype)
+
+        assign_result = self.assigner.assign(
+            cls_preds.sigmoid(),
+            center_priors,
+            decoded_bboxes,
+            gt_bboxes,
+            gt_labels,
+            gt_bboxes_ignore,
+        )
+        pos_inds, neg_inds, pos_gt_bboxes, pos_assigned_gt_inds = self.sample(
+            assign_result, gt_bboxes
+        )
+
+        num_priors = center_priors.size(0)
         bbox_targets = torch.zeros_like(center_priors)
         dist_targets = torch.zeros_like(center_priors)
         labels = center_priors.new_full(
             (num_priors,), self.num_classes, dtype=torch.long
         )
+        label_weights = center_priors.new_zeros(num_priors, dtype=torch.float)
         label_scores = center_priors.new_zeros(labels.shape, dtype=torch.float)
-        # No target
-        if num_gts == 0:
-            return labels, label_scores, bbox_targets, dist_targets, 0
 
-        assign_result = self.assigner.assign(
-            cls_preds.sigmoid(), center_priors, decoded_bboxes, gt_bboxes, gt_labels
-        )
-        pos_inds, neg_inds, pos_gt_bboxes, pos_assigned_gt_inds = self.sample(
-            assign_result, gt_bboxes
-        )
         num_pos_per_img = pos_inds.size(0)
         pos_ious = assign_result.max_overlaps[pos_inds]
 
@@ -329,9 +362,13 @@ class NanoDetPlusHead(nn.Module):
             dist_targets = dist_targets.clamp(min=0, max=self.reg_max - 0.1)
             labels[pos_inds] = gt_labels[pos_assigned_gt_inds]
             label_scores[pos_inds] = pos_ious
+            label_weights[pos_inds] = 1.0
+        if len(neg_inds) > 0:
+            label_weights[neg_inds] = 1.0
         return (
             labels,
             label_scores,
+            label_weights,
             bbox_targets,
             dist_targets,
             num_pos_per_img,

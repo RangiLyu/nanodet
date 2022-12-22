@@ -42,6 +42,12 @@ class DummyRunner:
                     [[1.0, 2.0, 3.0, 4.0], [1.0, 2.0, 3.0, 4.0]], dtype=np.float32
                 ),
             ],
+            "gt_bboxes_ignore": [
+                np.array([[3.0, 4.0, 5.0, 6.0]], dtype=np.float32),
+                np.array(
+                    [[7.0, 8.0, 9.0, 10.0], [7.0, 8.0, 9.0, 10.0]], dtype=np.float32
+                ),
+            ],
             "gt_labels": [np.array([1]), np.array([1, 2])],
             "warp_matrix": [np.eye(3), np.eye(3)],
         }

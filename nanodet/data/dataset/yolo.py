@@ -108,6 +108,8 @@ class YoloDataset(CocoDataset):
                 bbox = locations[0:2]
 
                 bbox[0] -= bbox[1] * 0.5
+
+                bbox = np.round(bbox * np.array([width, height])).astype(int)
                 x, y = bbox[0][0], bbox[0][1]
                 w, h = bbox[1][0], bbox[1][1]
 

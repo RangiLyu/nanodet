@@ -35,6 +35,7 @@ class CocoYolo(COCO):
         :return:
         """
         # load dataset
+        super().__init__()
         self.dataset, self.anns, self.cats, self.imgs = dict(), dict(), dict(), dict()
         self.imgToAnns, self.catToImgs = defaultdict(list), defaultdict(list)
         dataset = annotation

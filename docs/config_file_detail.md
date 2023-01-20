@@ -143,6 +143,7 @@ device:
     gpu_ids: [0]
     workers_per_gpu: 12
     batchsize_per_gpu: 160
+    precision: 32
 ```
 
 `gpu_ids`: CUDA device id. For multi-gpu training, set [0, 1, 2...].
@@ -150,6 +151,8 @@ device:
 `workers_per_gpu`: how many dataloader processes for each gpu
 
 `batchsize_per_gpu`: amount of images in one batch for each gpu
+
+`precision`: Training precision. The default value `32` means FP32 training. Set to `16` to enable AMP training.
 
 ## schedule
 

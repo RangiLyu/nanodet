@@ -34,16 +34,16 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        torch: [1.9.0, 1.10.1, 1.11.0, 1.12.1]
+        torch: [1.10.1, 1.11.0, 1.12.1, 1.13.1]
         include:
-          - torch: 1.9.0
-            torchvision: 0.10.0
           - torch: 1.10.1
             torchvision: 0.11.2
           - torch: 1.11.0
             torchvision: 0.12.0
           - torch: 1.12.1
             torchvision: 0.13.1
+          - torch: 1.13.1
+            torchvision: 0.14.1
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -56,7 +56,7 @@ jobs:
           python -m pip install -U pip
           python -m pip install ninja opencv-python-headless onnx pytest-xdist codecov
           python -m pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
-          python -m pip install Cython termcolor numpy tensorboard pycocotools matplotlib pyaml opencv-python tqdm pytorch-lightning==1.8.0 torchmetrics codecov flake8 pytest timm
+          python -m pip install Cython termcolor numpy tensorboard pycocotools matplotlib pyaml opencv-python tqdm pytorch-lightning torchmetrics codecov flake8 pytest timm
           python -m pip install -r requirements.txt
       - name: Setup
         run: rm -rf .eggs && python setup.py develop

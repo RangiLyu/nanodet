@@ -141,8 +141,7 @@ Besides, We provide a notebook [here](./demo/demo-inference-with-pytorch.ipynb) 
 * Linux or MacOS
 * CUDA >= 10.0
 * Python >= 3.6
-* Pytorch >= 1.9
-* experimental support Windows (Notice: Windows not support distributed training before pytorch1.7)
+* Pytorch >= 1.10
 
 ### Step
 

@@ -330,7 +330,7 @@ class NanoDetPlusHead(nn.Module):
             gt_bboxes_ignore = gt_bboxes_ignore.to(decoded_bboxes.dtype)
 
         assign_result = self.assigner.assign(
-            cls_preds.sigmoid(),
+            cls_preds,
             center_priors,
             decoded_bboxes,
             gt_bboxes,

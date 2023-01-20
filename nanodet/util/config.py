@@ -14,6 +14,7 @@ cfg.data = CfgNode(new_allowed=True)
 cfg.data.train = CfgNode(new_allowed=True)
 cfg.data.val = CfgNode(new_allowed=True)
 cfg.device = CfgNode(new_allowed=True)
+cfg.device.precision = 32
 # train
 cfg.schedule = CfgNode(new_allowed=True)
 

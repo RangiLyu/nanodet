@@ -113,9 +113,19 @@ def main(args):
     )
     if cfg.device.gpu_ids == -1:
         logger.info("Using CPU training")
-        accelerator, devices, strategy, precision = "cpu", None, None, cfg.device.precision
+        accelerator, devices, strategy, precision = (
+            "cpu",
+            None,
+            None,
+            cfg.device.precision,
+        )
     else:
-        accelerator, devices, strategy, precision = "gpu", cfg.device.gpu_ids, None, cfg.device.precision
+        accelerator, devices, strategy, precision = (
+            "gpu",
+            cfg.device.gpu_ids,
+            None,
+            cfg.device.precision,
+        )
 
     if devices and len(devices) > 1:
         strategy = "ddp"

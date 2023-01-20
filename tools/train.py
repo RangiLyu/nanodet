@@ -113,9 +113,19 @@ def main(args):
     )
     if cfg.device.gpu_ids == -1:
         logger.info("Using CPU training")
-        accelerator, devices, strategy = "cpu", None, None
+        accelerator, devices, strategy, precision = (
+            "cpu",
+            None,
+            None,
+            cfg.device.precision,
+        )
     else:
-        accelerator, devices, strategy = "gpu", cfg.device.gpu_ids, None
+        accelerator, devices, strategy, precision = (
+            "gpu",
+            cfg.device.gpu_ids,
+            None,
+            cfg.device.precision,
+        )
 
     if devices and len(devices) > 1:
         strategy = "ddp"
@@ -135,6 +145,7 @@ def main(args):
         benchmark=cfg.get("cudnn_benchmark", True),
         gradient_clip_val=cfg.get("grad_clip", 0.0),
         strategy=strategy,
+        precision=precision,
     )
 
     trainer.fit(task, train_dataloader, val_dataloader)

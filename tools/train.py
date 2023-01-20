@@ -139,7 +139,6 @@ def main(args):
         devices=devices,
         log_every_n_steps=cfg.log.interval,
         num_sanity_val_steps=0,
-        resume_from_checkpoint=model_resume_path,
         callbacks=[TQDMProgressBar(refresh_rate=0)],  # disable tqdm bar
         logger=logger,
         benchmark=cfg.get("cudnn_benchmark", True),
@@ -148,7 +147,7 @@ def main(args):
         precision=precision,
     )
 
-    trainer.fit(task, train_dataloader, val_dataloader)
+    trainer.fit(task, train_dataloader, val_dataloader, ckpt_path=model_resume_path)
 
 
 if __name__ == "__main__":

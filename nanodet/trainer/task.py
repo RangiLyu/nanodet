@@ -245,7 +245,6 @@ class TrainingTask(LightningModule):
         optimizer_idx=None,
         optimizer_closure=None,
         on_tpu=None,
-        using_native_amp=None,
         using_lbfgs=None,
     ):
         """
@@ -257,7 +256,6 @@ class TrainingTask(LightningModule):
             optimizer_idx: If you used multiple optimizers this indexes into that list.
             optimizer_closure: closure for all optimizers
             on_tpu: true if TPU backward is required
-            using_native_amp: True if using native amp
             using_lbfgs: True if the matching optimizer is lbfgs
         """
         # warm up lr

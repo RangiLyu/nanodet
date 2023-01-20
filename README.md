@@ -73,6 +73,8 @@ MobileDet      | 320*320 |   25.6   | -                    | -                  
 
 ## NEWS!!!
 
+* [2023.01.20] Upgrade to [pytorch-lightning-1.9](https://github.com/Lightning-AI/lightning/releases/tag/1.9.0). The minimum PyTorch version is upgraded to 1.10. Support FP16 training(Thanks @crisp-snakey).
+
 * [2022.08.26] Upgrade to [pytorch-lightning-1.7](https://lightning.ai/). The minimum PyTorch version is upgraded to 1.9. To use previous version of PyTorch, please install [NanoDet <= v1.0.0-alpha-1](https://github.com/RangiLyu/nanodet/tags)
 
 * [2021.12.25] **NanoDet-Plus** release! Adding **AGM**(Assign Guidance Module) & **DSLA**(Dynamic Soft Label Assigner) to improve **7 mAP** with only a little cost.

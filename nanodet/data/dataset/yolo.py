@@ -16,7 +16,7 @@ import logging
 import os
 import time
 from collections import defaultdict
-from typing import Sequence, Optional
+from typing import Optional, Sequence
 
 import cv2
 import numpy as np
@@ -52,8 +52,10 @@ class YoloDataset(CocoDataset):
         super(YoloDataset, self).__init__(**kwargs)
 
     @staticmethod
-    def _find_image(image_prefix: str,
-                    image_types: Sequence[str] = (".png", ".jpg", ".jpeg", ".bmp", ".tiff")) -> Optional[str]:
+    def _find_image(
+        image_prefix: str,
+        image_types: Sequence[str] = (".png", ".jpg", ".jpeg", ".bmp", ".tiff"),
+    ) -> Optional[str]:
         for image_type in image_types:
             path = f"{image_prefix}{image_type}"
             if os.path.exists(path):
@@ -114,7 +116,9 @@ class YoloDataset(CocoDataset):
                 w, h = bbox[1][0], bbox[1][1]
 
                 if cat_id >= len(self.class_names):
-                    logging.warning(f"Category {cat_id} is not defined in config ({txt_name})")
+                    logging.warning(
+                        f"Category {cat_id} is not defined in config ({txt_name})"
+                    )
                     continue
 
                 if w < 0 or h < 0:
@@ -124,7 +128,7 @@ class YoloDataset(CocoDataset):
                     )
                     continue
 
-                coco_box = [max(x, 0), max(x, 0), min(w, width), min(h, height)]
+                coco_box = [max(x, 0), max(y, 0), min(w, width), min(h, height)]
                 ann = {
                     "image_id": idx + 1,
                     "bbox": coco_box,

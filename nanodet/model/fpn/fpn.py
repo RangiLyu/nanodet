@@ -76,16 +76,20 @@ class FPN(nn.Module):
         assert len(inputs) == len(self.in_channels)
 
         # build laterals
-        laterals = [
+        laterals_ = [
             lateral_conv(inputs[i + self.start_level])
             for i, lateral_conv in enumerate(self.lateral_convs)
         ]
 
         # build top-down path
-        used_backbone_levels = len(laterals)
+        used_backbone_levels = len(laterals_)
+        laterals = [laterals_[-1]]
         for i in range(used_backbone_levels - 1, 0, -1):
-            laterals[i - 1] += F.interpolate(
-                laterals[i], scale_factor=2, mode="bilinear"
+            laterals.insert(
+                0,
+                laterals_[i - 1] + F.interpolate(
+                    laterals_[i], scale_factor=2, mode="bilinear"
+                )
             )
 
         # build outputs

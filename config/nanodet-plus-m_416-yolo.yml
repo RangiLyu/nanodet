@@ -1,0 +1,134 @@
+# nanodet-plus-m_416
+# COCO mAP(0.5:0.95) = 0.304
+#             AP_50  = 0.459
+#             AP_75  = 0.317
+#           AP_small = 0.106
+#               AP_m = 0.322
+#               AP_l = 0.477
+save_dir: workspace/nanodet-plus-m_416
+model:
+  weight_averager:
+    name: ExpMovingAverager
+    decay: 0.9998
+  arch:
+    name: NanoDetPlus
+    detach_epoch: 10
+    backbone:
+      name: ShuffleNetV2
+      model_size: 1.0x
+      out_stages: [2,3,4]
+      activation: LeakyReLU
+    fpn:
+      name: GhostPAN
+      in_channels: [116, 232, 464]
+      out_channels: 96
+      kernel_size: 5
+      num_extra_level: 1
+      use_depthwise: True
+      activation: LeakyReLU
+    head:
+      name: NanoDetPlusHead
+      num_classes: 80
+      input_channel: 96
+      feat_channels: 96
+      stacked_convs: 2
+      kernel_size: 5
+      strides: [8, 16, 32, 64]
+      activation: LeakyReLU
+      reg_max: 7
+      norm_cfg:
+        type: BN
+      loss:
+        loss_qfl:
+          name: QualityFocalLoss
+          use_sigmoid: True
+          beta: 2.0
+          loss_weight: 1.0
+        loss_dfl:
+          name: DistributionFocalLoss
+          loss_weight: 0.25
+        loss_bbox:
+          name: GIoULoss
+          loss_weight: 2.0
+    # Auxiliary head, only use in training time.
+    aux_head:
+      name: SimpleConvHead
+      num_classes: 80
+      input_channel: 192
+      feat_channels: 192
+      stacked_convs: 4
+      strides: [8, 16, 32, 64]
+      activation: LeakyReLU
+      reg_max: 7
+
+class_names:  &class_names ['person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus',
+              'train', 'truck', 'boat', 'traffic_light', 'fire_hydrant',
+              'stop_sign', 'parking_meter', 'bench', 'bird', 'cat', 'dog',
+              'horse', 'sheep', 'cow', 'elephant', 'bear', 'zebra', 'giraffe',
+              'backpack', 'umbrella', 'handbag', 'tie', 'suitcase', 'frisbee',
+              'skis', 'snowboard', 'sports_ball', 'kite', 'baseball_bat',
+              'baseball_glove', 'skateboard', 'surfboard', 'tennis_racket',
+              'bottle', 'wine_glass', 'cup', 'fork', 'knife', 'spoon', 'bowl',
+              'banana', 'apple', 'sandwich', 'orange', 'broccoli', 'carrot',
+              'hot_dog', 'pizza', 'donut', 'cake', 'chair', 'couch',
+              'potted_plant', 'bed', 'dining_table', 'toilet', 'tv', 'laptop',
+              'mouse', 'remote', 'keyboard', 'cell_phone', 'microwave',
+              'oven', 'toaster', 'sink', 'refrigerator', 'book', 'clock',
+              'vase', 'scissors', 'teddy_bear', 'hair_drier', 'toothbrush']
+
+data:
+  train:
+    name: YoloDataset
+    img_path: coco/train2017
+    ann_path: coco/train2017
+    class_names: *class_names
+    input_size: [416,416] #[w,h]
+    keep_ratio: False
+    pipeline:
+      perspective: 0.0
+      scale: [0.6, 1.4]
+      stretch: [[0.8, 1.2], [0.8, 1.2]]
+      rotation: 0
+      shear: 0
+      translate: 0.2
+      flip: 0.5
+      brightness: 0.2
+      contrast: [0.6, 1.4]
+      saturation: [0.5, 1.2]
+      normalize: [[103.53, 116.28, 123.675], [57.375, 57.12, 58.395]]
+  val:
+    name: YoloDataset
+    img_path: coco/val2017
+    ann_path: coco/val2017
+    class_names: *class_names
+    input_size: [416,416] #[w,h]
+    keep_ratio: False
+    pipeline:
+      normalize: [[103.53, 116.28, 123.675], [57.375, 57.12, 58.395]]
+device:
+  gpu_ids: [0]
+  workers_per_gpu: 10
+  batchsize_per_gpu: 96
+schedule:
+#  resume:
+#  load_model:
+  optimizer:
+    name: AdamW
+    lr: 0.001
+    weight_decay: 0.05
+  warmup:
+    name: linear
+    steps: 500
+    ratio: 0.0001
+  total_epochs: 300
+  lr_schedule:
+    name: CosineAnnealingLR
+    T_max: 300
+    eta_min: 0.00005
+  val_intervals: 10
+grad_clip: 35
+evaluator:
+  name: CocoDetectionEvaluator
+  save_key: mAP
+log:
+  interval: 50

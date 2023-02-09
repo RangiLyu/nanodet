@@ -87,9 +87,8 @@ class FPN(nn.Module):
         for i in range(used_backbone_levels - 1, 0, -1):
             laterals.insert(
                 0,
-                laterals_[i - 1] + F.interpolate(
-                    laterals_[i], scale_factor=2, mode="bilinear"
-                )
+                laterals_[i - 1]
+                + F.interpolate(laterals_[i], scale_factor=2, mode="bilinear"),
             )
 
         # build outputs

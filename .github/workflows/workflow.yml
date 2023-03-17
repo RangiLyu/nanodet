@@ -11,10 +11,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Python 3.8
+      - name: Set up Python 3.10
         uses: actions/setup-python@v2
         with:
-          python-version: 3.8
+          python-version: 3.10
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -34,23 +34,17 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        torch: [1.10.1, 1.11.0, 1.12.1, 1.13.1]
+        torch: [2.0.0]
         include:
-          - torch: 1.10.1
-            torchvision: 0.11.2
-          - torch: 1.11.0
-            torchvision: 0.12.0
-          - torch: 1.12.1
-            torchvision: 0.13.1
-          - torch: 1.13.1
-            torchvision: 0.14.1
+          - torch: 2.0.0
+            torchvision: 0.15.0
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Set up Python 3.8
+      - name: Set up Python 3.10
         uses: actions/setup-python@v2
         with:
-          python-version: 3.8
+          python-version: 3.10
       - name: Install dependencies
         run: |
           python -m pip install -U pip
@@ -67,7 +61,7 @@ jobs:
           coverage report -m
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2
-        if: matrix.torch == '1.12.1'
+        if: matrix.torch == '2.0.0'
         with:
           file: ./coverage.xml
           flags: unittests

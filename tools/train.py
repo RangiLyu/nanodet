@@ -116,14 +116,14 @@ def main(args):
         accelerator, devices, strategy, precision = (
             "cpu",
             None,
-            None,
+            "auto",
             cfg.device.precision,
         )
     else:
         accelerator, devices, strategy, precision = (
             "gpu",
             cfg.device.gpu_ids,
-            None,
+            "auto",
             cfg.device.precision,
         )
 

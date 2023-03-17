@@ -141,9 +141,9 @@ Besides, We provide a notebook [here](./demo/demo-inference-with-pytorch.ipynb) 
 ### Requirements
 
 * Linux or MacOS
-* CUDA >= 10.0
-* Python >= 3.6
-* Pytorch >= 1.10
+* CUDA >= 10.2
+* Python >= 3.7
+* Pytorch >= 1.10.0, <2.0.0
 
 ### Step
 

@@ -64,7 +64,7 @@ class YoloDataset(CocoDataset):
 
     def yolo_to_coco(self, ann_path):
         """
-        convert xml annotations to coco_api
+        convert yolo annotations to coco_api
         :param ann_path:
         :return:
         """

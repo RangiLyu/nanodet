@@ -52,7 +52,7 @@ class TrainingTask(LightningModule):
             self.weight_averager = build_weight_averager(
                 cfg.model.weight_averager, device=self.device
             )
-            self.avg_model = copy.deepcopy(self.model)
+            self.avg_model = copy.deepcopy(self.model).requires_grad_(False)
 
         self.validation_step_outputs = []  # save validation results
         self.test_step_outputs = []  # save test results

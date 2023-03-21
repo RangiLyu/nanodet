@@ -16,7 +16,7 @@ import copy
 import json
 import os
 import warnings
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 import torch
 import torch.distributed as dist
@@ -52,7 +52,10 @@ class TrainingTask(LightningModule):
             self.weight_averager = build_weight_averager(
                 cfg.model.weight_averager, device=self.device
             )
-            self.avg_model = copy.deepcopy(self.model)
+            self.avg_model = copy.deepcopy(self.model).requires_grad_(False)
+
+        self.validation_step_outputs = []  # save validation results
+        self.test_step_outputs = []  # save test results
 
     def _preprocess_batch_input(self, batch):
         batch_imgs = batch["img"]
@@ -107,9 +110,6 @@ class TrainingTask(LightningModule):
 
         return loss
 
-    def training_epoch_end(self, outputs: List[Any]) -> None:
-        self.trainer.save_checkpoint(os.path.join(self.cfg.save_dir, "model_last.ckpt"))
-
     def validation_step(self, batch, batch_idx):
         batch = self._preprocess_batch_input(batch)
         if self.weight_averager is not None:
@@ -138,83 +138,13 @@ class TrainingTask(LightningModule):
             self.logger.info(log_msg)
 
         dets = self.model.head.post_process(preds, batch)
+        self.validation_step_outputs.append(dets)
         return dets
-
-    def validation_epoch_end(self, validation_step_outputs):
-        """
-        Called at the end of the validation epoch with the
-        outputs of all validation steps.Evaluating results
-        and save best model.
-        Args:
-            validation_step_outputs: A list of val outputs
-
-        """
-        results = {}
-        for res in validation_step_outputs:
-            results.update(res)
-        all_results = (
-            gather_results(results)
-            if dist.is_available() and dist.is_initialized()
-            else results
-        )
-        if all_results:
-            eval_results = self.evaluator.evaluate(
-                all_results, self.cfg.save_dir, rank=self.local_rank
-            )
-            metric = eval_results[self.cfg.evaluator.save_key]
-            # save best model
-            if metric > self.save_flag:
-                self.save_flag = metric
-                best_save_path = os.path.join(self.cfg.save_dir, "model_best")
-                mkdir(self.local_rank, best_save_path)
-                self.trainer.save_checkpoint(
-                    os.path.join(best_save_path, "model_best.ckpt")
-                )
-                self.save_model_state(
-                    os.path.join(best_save_path, "nanodet_model_best.pth")
-                )
-                txt_path = os.path.join(best_save_path, "eval_results.txt")
-                if self.local_rank < 1:
-                    with open(txt_path, "a") as f:
-                        f.write("Epoch:{}\n".format(self.current_epoch + 1))
-                        for k, v in eval_results.items():
-                            f.write("{}: {}\n".format(k, v))
-            else:
-                warnings.warn(
-                    "Warning! Save_key is not in eval results! Only save model last!"
-                )
-            self.logger.log_metrics(eval_results, self.current_epoch + 1)
-        else:
-            self.logger.info("Skip val on rank {}".format(self.local_rank))
 
     def test_step(self, batch, batch_idx):
         dets = self.predict(batch, batch_idx)
+        self.test_step_outputs.append(dets)
         return dets
-
-    def test_epoch_end(self, test_step_outputs):
-        results = {}
-        for res in test_step_outputs:
-            results.update(res)
-        all_results = (
-            gather_results(results)
-            if dist.is_available() and dist.is_initialized()
-            else results
-        )
-        if all_results:
-            res_json = self.evaluator.results2json(all_results)
-            json_path = os.path.join(self.cfg.save_dir, "results.json")
-            json.dump(res_json, open(json_path, "w"))
-
-            if self.cfg.test_mode == "val":
-                eval_results = self.evaluator.evaluate(
-                    all_results, self.cfg.save_dir, rank=self.local_rank
-                )
-                txt_path = os.path.join(self.cfg.save_dir, "eval_results.txt")
-                with open(txt_path, "a") as f:
-                    for k, v in eval_results.items():
-                        f.write("{}: {}\n".format(k, v))
-        else:
-            self.logger.info("Skip test on rank {}".format(self.local_rank))
 
     def configure_optimizers(self):
         """
@@ -237,16 +167,7 @@ class TrainingTask(LightningModule):
         }
         return dict(optimizer=optimizer, lr_scheduler=scheduler)
 
-    def optimizer_step(
-        self,
-        epoch=None,
-        batch_idx=None,
-        optimizer=None,
-        optimizer_idx=None,
-        optimizer_closure=None,
-        on_tpu=None,
-        using_lbfgs=None,
-    ):
+    def optimizer_step(self, epoch, batch_idx, optimizer, optimizer_closure):
         """
         Performs a single optimization step (parameter update).
         Args:
@@ -277,7 +198,6 @@ class TrainingTask(LightningModule):
 
         # update params
         optimizer.step(closure=optimizer_closure)
-        optimizer.zero_grad()
 
     def scalar_summary(self, tag, phase, value, step):
         """
@@ -320,6 +240,9 @@ class TrainingTask(LightningModule):
     def on_train_epoch_start(self):
         self.model.set_epoch(self.current_epoch)
 
+    def on_train_epoch_end(self) -> None:
+        self.trainer.save_checkpoint(os.path.join(self.cfg.save_dir, "model_last.ckpt"))
+
     def on_train_batch_end(self, outputs, batch, batch_idx) -> None:
         if self.weight_averager:
             self.weight_averager.update(self.model, self.global_step)
@@ -328,10 +251,77 @@ class TrainingTask(LightningModule):
         if self.weight_averager:
             self.weight_averager.apply_to(self.avg_model)
 
+    def on_validation_epoch_end(self):
+        results = {}
+        for res in self.validation_step_outputs:
+            results.update(res)
+        all_results = (
+            gather_results(results)
+            if dist.is_available() and dist.is_initialized()
+            else results
+        )
+        if all_results:
+            eval_results = self.evaluator.evaluate(
+                all_results, self.cfg.save_dir, rank=self.local_rank
+            )
+            metric = eval_results[self.cfg.evaluator.save_key]
+            # save best model
+            if metric > self.save_flag:
+                self.save_flag = metric
+                best_save_path = os.path.join(self.cfg.save_dir, "model_best")
+                mkdir(self.local_rank, best_save_path)
+                self.trainer.save_checkpoint(
+                    os.path.join(best_save_path, "model_best.ckpt")
+                )
+                self.save_model_state(
+                    os.path.join(best_save_path, "nanodet_model_best.pth")
+                )
+                txt_path = os.path.join(best_save_path, "eval_results.txt")
+                if self.local_rank < 1:
+                    with open(txt_path, "a") as f:
+                        f.write("Epoch:{}\n".format(self.current_epoch + 1))
+                        for k, v in eval_results.items():
+                            f.write("{}: {}\n".format(k, v))
+            else:
+                warnings.warn(
+                    "Warning! Save_key is not in eval results! Only save model last!"
+                )
+            self.logger.log_metrics(eval_results, self.current_epoch + 1)
+        else:
+            self.logger.info("Skip val on rank {}".format(self.local_rank))
+
+        self.validation_step_outputs.clear()  # free memory
+
     def on_test_epoch_start(self) -> None:
         if self.weight_averager:
             self.on_load_checkpoint({"state_dict": self.state_dict()})
             self.weight_averager.apply_to(self.model)
+
+    def on_test_epoch_end(self):
+        results = {}
+        for res in self.test_step_outputs:
+            results.update(res)
+        all_results = (
+            gather_results(results)
+            if dist.is_available() and dist.is_initialized()
+            else results
+        )
+        if all_results:
+            res_json = self.evaluator.results2json(all_results)
+            json_path = os.path.join(self.cfg.save_dir, "results.json")
+            json.dump(res_json, open(json_path, "w"))
+
+            if self.cfg.test_mode == "val":
+                eval_results = self.evaluator.evaluate(
+                    all_results, self.cfg.save_dir, rank=self.local_rank
+                )
+                txt_path = os.path.join(self.cfg.save_dir, "eval_results.txt")
+                with open(txt_path, "a") as f:
+                    for k, v in eval_results.items():
+                        f.write("{}: {}\n".format(k, v))
+        else:
+            self.logger.info("Skip test on rank {}".format(self.local_rank))
+        self.test_step_outputs.clear()  # free memory
 
     def on_load_checkpoint(self, checkpointed_state: Dict[str, Any]) -> None:
         if self.weight_averager:

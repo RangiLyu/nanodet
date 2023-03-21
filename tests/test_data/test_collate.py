@@ -1,33 +1,18 @@
 import numpy as np
-import torch
 
-from nanodet.data.collate import collate_function
+from nanodet.data.collate import naive_collate
 
 
-def test_collate():
-    batch = [1.2, 2.3, 3.4]
-    out = collate_function(batch)
-    assert isinstance(out, torch.Tensor)
-
-    batch = [1, 2, 3]
-    out = collate_function(batch)
-    assert isinstance(out, torch.Tensor)
-
-    batch = ["1", "2", "3"]
-    out = collate_function(batch)
-    assert out == batch
-
-    batch = [{"1": 1, "2": 1.2, "3": 1.2}, {"1": 2, "2": 1.3, "3": 1.4}]
-    out = collate_function(batch)
-    assert isinstance(out, dict)
-    for k, v in out.items():
-        assert isinstance(v, torch.Tensor)
-
-    batch = [np.array([1, 2, 3]), np.array([4, 6, 8])]
-    out = collate_function(batch)
-    assert out == batch
-
-    batch = [torch.randn((3, 20, 20)), torch.randn((3, 20, 20))]
-    out = collate_function(batch)
-    assert isinstance(out, torch.Tensor)
-    assert out.shape == (2, 3, 20, 20)
+def test_naive_collate():
+    batch = [
+        {"bbox": np.zeros((5, 4))},
+        {"bbox": np.zeros((3, 4))},
+        {"bbox": np.zeros((6, 4))},
+    ]
+    batch = naive_collate(batch)
+    assert isinstance(batch, dict)
+    assert isinstance(batch["bbox"], list)
+    assert len(batch["bbox"]) == 3
+    assert batch["bbox"][0].shape == (5, 4)
+    assert batch["bbox"][1].shape == (3, 4)
+    assert batch["bbox"][2].shape == (6, 4)

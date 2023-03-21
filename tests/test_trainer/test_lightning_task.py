@@ -58,18 +58,25 @@ class DummyRunner:
         self.task.scalar_summary = func
         self.task.training_step(dummy_batch, 0)
 
-        self.task.optimizer_step(optimizer=optimizer)
-        self.task.training_epoch_end([])
+        self.task.optimizer_step(
+            epoch=0, batch_idx=0, optimizer=optimizer, optimizer_closure=None
+        )
+        self.task.on_train_epoch_end()
 
         self.task.validation_step(dummy_batch, 0)
-        self.task.validation_epoch_end([])
+        self.task.on_validation_epoch_end()
 
         self.task.test_step(dummy_batch, 0)
-        self.task.test_epoch_end([])
+        self.task.on_test_epoch_end()
 
 
 def test_lightning_training_task():
     load_config(cfg, "./config/legacy_v0.x_configs/nanodet-m.yml")
-    task = TrainingTask(cfg)
+    cfg.defrost()
+    cfg.test_mode = "val"
+    evaluator = Mock()
+    evaluator.evaluate = Mock(return_value={"mAP": 0.0})
+    evaluator.results2json = Mock(return_value={})
+    task = TrainingTask(cfg, evaluator=evaluator)
     runner = DummyRunner(task)
     runner.test()

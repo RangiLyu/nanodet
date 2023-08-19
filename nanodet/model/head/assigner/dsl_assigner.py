@@ -14,11 +14,14 @@ class DynamicSoftLabelAssigner(BaseAssigner):
         topk (int): Select top-k predictions to calculate dynamic k
             best matchs for each gt. Default 13.
         iou_factor (float): The scale factor of iou cost. Default 3.0.
+        ignore_iof_thr (int): whether ignore max overlaps or not.
+            Default -1 (1 or -1).
     """
 
-    def __init__(self, topk=13, iou_factor=3.0):
+    def __init__(self, topk=13, iou_factor=3.0, ignore_iof_thr=-1):
         self.topk = topk
         self.iou_factor = iou_factor
+        self.ignore_iof_thr = ignore_iof_thr
 
     def assign(
         self,
@@ -27,6 +30,7 @@ class DynamicSoftLabelAssigner(BaseAssigner):
         decoded_bboxes,
         gt_bboxes,
         gt_labels,
+        gt_bboxes_ignore=None,
     ):
         """Assign gt to priors with dynamic soft label assignment.
         Args:
@@ -38,6 +42,8 @@ class DynamicSoftLabelAssigner(BaseAssigner):
                 [num_priors, 4] in [tl_x, tl_y, br_x, br_y] format.
             gt_bboxes (Tensor): Ground truth bboxes of one image, a 2D-Tensor
                 with shape [num_gts, 4] in [tl_x, tl_y, br_x, br_y] format.
+            gt_bboxes_ignore (Tensor, optional): Ground truth bboxes that are
+                labelled as `ignored`, e.g., crowd boxes in COCO.
             gt_labels (Tensor): Ground truth labels of one image, a Tensor
                 with shape [num_gts].
 
@@ -91,9 +97,9 @@ class DynamicSoftLabelAssigner(BaseAssigner):
         valid_pred_scores = valid_pred_scores.unsqueeze(1).repeat(1, num_gt, 1)
 
         soft_label = gt_onehot_label * pairwise_ious[..., None]
-        scale_factor = soft_label - valid_pred_scores
+        scale_factor = soft_label - valid_pred_scores.sigmoid()
 
-        cls_cost = F.binary_cross_entropy(
+        cls_cost = F.binary_cross_entropy_with_logits(
             valid_pred_scores, soft_label, reduction="none"
         ) * scale_factor.abs().pow(2.0)
 
@@ -113,6 +119,20 @@ class DynamicSoftLabelAssigner(BaseAssigner):
             (num_bboxes,), -INF, dtype=torch.float32
         )
         max_overlaps[valid_mask] = matched_pred_ious
+
+        if (
+            self.ignore_iof_thr > 0
+            and gt_bboxes_ignore is not None
+            and gt_bboxes_ignore.numel() > 0
+            and num_bboxes > 0
+        ):
+            ignore_overlaps = bbox_overlaps(
+                valid_decoded_bbox, gt_bboxes_ignore, mode="iof"
+            )
+            ignore_max_overlaps, _ = ignore_overlaps.max(dim=1)
+            ignore_idxs = ignore_max_overlaps > self.ignore_iof_thr
+            assigned_gt_inds[ignore_idxs] = -1
+
         return AssignResult(
             num_gt, assigned_gt_inds, max_overlaps, labels=assigned_labels
         )

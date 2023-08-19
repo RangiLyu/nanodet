@@ -67,6 +67,7 @@ head:
     scales_per_octave: 1
     strides: [8, 16, 32]
     reg_max: 7
+    ignore_iof_thr: -1
     norm_cfg:
       type: BN
     loss:
@@ -91,6 +92,8 @@ head:
 `strides`: down sample stride of each feature map level
 
 `reg_max`: max value of per-level l-r-t-b distance
+
+`ignore_iof_thr`: thresh of iof for ignore box, default value -1
 
 `norm_cfg`: normalization layer setting
 
@@ -140,6 +143,7 @@ device:
     gpu_ids: [0]
     workers_per_gpu: 12
     batchsize_per_gpu: 160
+    precision: 32
 ```
 
 `gpu_ids`: CUDA device id. For multi-gpu training, set [0, 1, 2...].
@@ -147,6 +151,8 @@ device:
 `workers_per_gpu`: how many dataloader processes for each gpu
 
 `batchsize_per_gpu`: amount of images in one batch for each gpu
+
+`precision`: Training precision. The default value `32` means FP32 training. Set to `16` to enable AMP training.
 
 ## schedule
 

@@ -105,6 +105,7 @@ class GFLHead(nn.Module):
         conv_cfg=None,
         norm_cfg=dict(type="GN", num_groups=32, requires_grad=True),
         reg_max=16,
+        ignore_iof_thr=-1,
         **kwargs
     ):
         super(GFLHead, self).__init__()
@@ -120,12 +121,13 @@ class GFLHead(nn.Module):
         self.conv_cfg = conv_cfg
         self.norm_cfg = norm_cfg
         self.use_sigmoid = self.loss_cfg.loss_qfl.use_sigmoid
+        self.ignore_iof_thr = ignore_iof_thr
         if self.use_sigmoid:
             self.cls_out_channels = num_classes
         else:
             self.cls_out_channels = num_classes + 1
 
-        self.assigner = ATSSAssigner(topk=9)
+        self.assigner = ATSSAssigner(topk=9, ignore_iof_thr=ignore_iof_thr)
         self.distribution_project = Integral(self.reg_max)
 
         self.loss_qfl = QualityFocalLoss(
@@ -209,9 +211,9 @@ class GFLHead(nn.Module):
         )
         device = cls_scores.device
         gt_bboxes = gt_meta["gt_bboxes"]
+        gt_bboxes_ignore = gt_meta["gt_bboxes_ignore"]
         gt_labels = gt_meta["gt_labels"]
         input_height, input_width = gt_meta["img"].shape[2:]
-        gt_bboxes_ignore = None
 
         featmap_sizes = [
             (math.ceil(input_height / stride), math.ceil(input_width) / stride)
@@ -464,6 +466,9 @@ class GFLHead(nn.Module):
         device = grid_cells.device
         gt_bboxes = torch.from_numpy(gt_bboxes).to(device)
         gt_labels = torch.from_numpy(gt_labels).to(device)
+
+        if gt_bboxes_ignore is not None:
+            gt_bboxes_ignore = torch.from_numpy(gt_bboxes_ignore).to(device)
 
         assign_result = self.assigner.assign(
             grid_cells, num_level_cells, gt_bboxes, gt_bboxes_ignore, gt_labels

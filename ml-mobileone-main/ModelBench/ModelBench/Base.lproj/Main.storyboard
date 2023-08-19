@@ -1,0 +1,331 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="20037" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="20020"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="UIMenu" message="Requires Xcode 11 or later." minToolsVersion="11.0" requiredIntegratedClassName="UICommandDiff"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--View Controller-->
+        <scene sceneID="tne-QT-ifu">
+            <objects>
+                <viewController id="BYZ-38-t0r" customClass="ViewController" customModule="ModelBench" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Latency (ms)" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" highlighted="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="E1o-x2-Fig">
+                                <rect key="frame" x="142.5" y="33" width="129" height="31"/>
+                                <color key="backgroundColor" systemColor="systemGray5Color"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="31" id="5TQ-wF-TU5"/>
+                                    <constraint firstAttribute="width" constant="129" id="goL-kO-fMS"/>
+                                </constraints>
+                                <edgeInsets key="layoutMargins" top="8" left="20" bottom="8" right="20"/>
+                                <fontDescription key="fontDescription" name=".AppleSystemUIFont" family=".AppleSystemUIFont" pointSize="18"/>
+                                <color key="textColor" systemColor="systemBlueColor"/>
+                                <nil key="highlightedColor"/>
+                                <color key="shadowColor" name="AccentColor"/>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                        <integer key="value" value="12"/>
+                                    </userDefinedRuntimeAttribute>
+                                </userDefinedRuntimeAttributes>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Average: " textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" highlighted="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Xat-Kz-gaV" userLabel="Latency Average Label">
+                                <rect key="frame" x="20" y="102" width="89" height="31"/>
+                                <color key="backgroundColor" systemColor="systemGray5Color"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="89" id="B24-TT-l8G"/>
+                                    <constraint firstAttribute="height" constant="31" id="aPC-UW-c4D"/>
+                                </constraints>
+                                <edgeInsets key="layoutMargins" top="8" left="20" bottom="8" right="20"/>
+                                <fontDescription key="fontDescription" name=".AppleSystemUIFont" family=".AppleSystemUIFont" pointSize="18"/>
+                                <color key="textColor" systemColor="systemBlueColor"/>
+                                <nil key="highlightedColor"/>
+                                <color key="shadowColor" name="AccentColor"/>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                        <integer key="value" value="12"/>
+                                    </userDefinedRuntimeAttribute>
+                                </userDefinedRuntimeAttributes>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="All" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" highlighted="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yHY-0t-oNe" userLabel="Average All Label">
+                                <rect key="frame" x="117" y="102" width="51" height="31"/>
+                                <color key="backgroundColor" systemColor="systemGray5Color"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="51" id="ekO-z3-JZ5"/>
+                                    <constraint firstAttribute="height" constant="31" id="lDn-Fb-qJR"/>
+                                </constraints>
+                                <edgeInsets key="layoutMargins" top="8" left="20" bottom="8" right="20"/>
+                                <fontDescription key="fontDescription" name=".AppleSystemUIFont" family=".AppleSystemUIFont" pointSize="18"/>
+                                <color key="textColor" systemColor="systemBlueColor"/>
+                                <nil key="highlightedColor"/>
+                                <color key="shadowColor" name="AccentColor"/>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                        <integer key="value" value="12"/>
+                                    </userDefinedRuntimeAttribute>
+                                </userDefinedRuntimeAttributes>
+                            </label>
+                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" minimumFontSize="20" translatesAutoresizingMaskIntoConstraints="NO" id="8P0-eH-xh9" userLabel="Average All Value">
+                                <rect key="frame" x="174" y="102" width="66" height="31"/>
+                                <color key="backgroundColor" systemColor="opaqueSeparatorColor"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="66" id="DCx-LC-76z"/>
+                                    <constraint firstAttribute="height" constant="31" id="PbX-wn-Ycr"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="16"/>
+                                <textInputTraits key="textInputTraits" keyboardType="numberPad"/>
+                            </textField>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Last" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" highlighted="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Dp9-SO-Pfp" userLabel="Average Last Label">
+                                <rect key="frame" x="250" y="102" width="51" height="31"/>
+                                <color key="backgroundColor" systemColor="systemGray5Color"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="51" id="Ird-dI-wbu"/>
+                                    <constraint firstAttribute="height" constant="31" id="pnU-k5-rFW"/>
+                                </constraints>
+                                <edgeInsets key="layoutMargins" top="8" left="20" bottom="8" right="20"/>
+                                <fontDescription key="fontDescription" name=".AppleSystemUIFont" family=".AppleSystemUIFont" pointSize="18"/>
+                                <color key="textColor" systemColor="systemBlueColor"/>
+                                <nil key="highlightedColor"/>
+                                <color key="shadowColor" name="AccentColor"/>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                        <integer key="value" value="12"/>
+                                    </userDefinedRuntimeAttribute>
+                                </userDefinedRuntimeAttributes>
+                            </label>
+                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" minimumFontSize="20" translatesAutoresizingMaskIntoConstraints="NO" id="GaF-Vh-fGg" userLabel="Average Last Value">
+                                <rect key="frame" x="307" y="102" width="66" height="31"/>
+                                <color key="backgroundColor" systemColor="opaqueSeparatorColor"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="31" id="1Dc-O8-8GO"/>
+                                    <constraint firstAttribute="width" constant="66" id="Cb0-xn-Abl"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="16"/>
+                                <textInputTraits key="textInputTraits" keyboardType="numberPad"/>
+                            </textField>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Low" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" highlighted="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="m2b-ME-s17" userLabel="Latency Low Label">
+                                <rect key="frame" x="38" y="69" width="71" height="31"/>
+                                <color key="backgroundColor" systemColor="systemGray5Color"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="31" id="jX9-6E-mbb"/>
+                                </constraints>
+                                <edgeInsets key="layoutMargins" top="8" left="20" bottom="8" right="20"/>
+                                <fontDescription key="fontDescription" name=".AppleSystemUIFont" family=".AppleSystemUIFont" pointSize="18"/>
+                                <color key="textColor" systemColor="systemBlueColor"/>
+                                <nil key="highlightedColor"/>
+                                <color key="shadowColor" name="AccentColor"/>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                        <integer key="value" value="12"/>
+                                    </userDefinedRuntimeAttribute>
+                                </userDefinedRuntimeAttributes>
+                            </label>
+                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" minimumFontSize="20" translatesAutoresizingMaskIntoConstraints="NO" id="M42-L8-9kW" userLabel="Latency Low Value">
+                                <rect key="frame" x="117" y="69" width="66" height="31"/>
+                                <color key="backgroundColor" systemColor="opaqueSeparatorColor"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="31" id="OfL-0e-AnT"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="16"/>
+                                <textInputTraits key="textInputTraits" keyboardType="numberPad"/>
+                            </textField>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="High" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" highlighted="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="wcS-hO-QIy" userLabel="Latency High Label">
+                                <rect key="frame" x="202" y="69" width="65" height="31"/>
+                                <color key="backgroundColor" systemColor="systemGray5Color"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="31" id="GH1-Ct-ZZe"/>
+                                </constraints>
+                                <edgeInsets key="layoutMargins" top="8" left="20" bottom="8" right="20"/>
+                                <fontDescription key="fontDescription" name=".AppleSystemUIFont" family=".AppleSystemUIFont" pointSize="18"/>
+                                <color key="textColor" systemColor="systemBlueColor"/>
+                                <nil key="highlightedColor"/>
+                                <color key="shadowColor" name="AccentColor"/>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                        <integer key="value" value="12"/>
+                                    </userDefinedRuntimeAttribute>
+                                </userDefinedRuntimeAttributes>
+                            </label>
+                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" minimumFontSize="20" translatesAutoresizingMaskIntoConstraints="NO" id="7vr-nM-ir1" userLabel="Latency High Value">
+                                <rect key="frame" x="275" y="69" width="72" height="31"/>
+                                <color key="backgroundColor" systemColor="opaqueSeparatorColor"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="31" id="JtH-PR-2qn"/>
+                                    <constraint firstAttribute="width" constant="72" id="mR6-Ng-ugN"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="16"/>
+                                <textInputTraits key="textInputTraits" keyboardType="numberPad"/>
+                            </textField>
+                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" keyboardDismissMode="onDrag" usesAttributedText="YES" translatesAutoresizingMaskIntoConstraints="NO" id="JMi-se-VB0" userLabel="Latencies View">
+                                <rect key="frame" x="20" y="141" width="374" height="653"/>
+                                <accessibility key="accessibilityConfiguration">
+                                    <accessibilityTraits key="traits" notEnabled="YES"/>
+                                </accessibility>
+                                <attributedString key="attributedText">
+                                    <fragment content="Sorted latency numbers on runs.">
+                                        <attributes>
+                                            <color key="NSColor" systemColor="labelColor"/>
+                                            <font key="NSFont" metaFont="system" size="14"/>
+                                        </attributes>
+                                    </fragment>
+                                </attributedString>
+                                <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                            </textView>
+                            <button opaque="NO" alpha="0.75" contentMode="scaleToFill" contentHorizontalAlignment="fill" contentVerticalAlignment="fill" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="vjz-AY-izp" userLabel="SettingsButton">
+                                <rect key="frame" x="20" y="811" width="60" height="60"/>
+                                <accessibility key="accessibilityConfiguration">
+                                    <accessibilityTraits key="traits" image="YES"/>
+                                </accessibility>
+                                <constraints>
+                                    <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="60" id="4Gn-Od-fOv"/>
+                                    <constraint firstAttribute="height" constant="60" id="DtN-Vz-EaH"/>
+                                    <constraint firstAttribute="width" constant="60" id="PrO-N9-kxs"/>
+                                    <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="60" id="fPa-LM-4kh"/>
+                                </constraints>
+                                <color key="tintColor" red="1" green="0.96853616909999996" blue="0.4198115724" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="plain" title=" ">
+                                    <backgroundConfiguration key="background" image="gear.circle" catalog="system"/>
+                                </buttonConfiguration>
+                                <connections>
+                                    <action selector="settingButtonTouched:" destination="BYZ-38-t0r" eventType="touchUpInside" id="yC9-a7-vTc"/>
+                                </connections>
+                            </button>
+                            <button toolTip="Click to run benchmark on the model" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" reversesTitleShadowWhenHighlighted="YES" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" pointerInteraction="YES" changesSelectionAsPrimaryAction="YES" role="primary" translatesAutoresizingMaskIntoConstraints="NO" id="jnB-71-TBh">
+                                <rect key="frame" x="284" y="820" width="110" height="42"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="110" id="6aQ-gE-VLm"/>
+                                    <constraint firstAttribute="height" constant="42" id="eja-0r-Fr0"/>
+                                </constraints>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="tinted" title="RUN" cornerStyle="medium" titleAlignment="center">
+                                    <backgroundConfiguration key="background">
+                                        <color key="backgroundColor" systemColor="opaqueSeparatorColor"/>
+                                    </backgroundConfiguration>
+                                    <fontDescription key="titleFontDescription" name="Helvetica" family="Helvetica" pointSize="32"/>
+                                    <color key="baseForegroundColor" systemColor="systemGreenColor"/>
+                                    <color key="baseBackgroundColor" systemColor="systemGray2Color"/>
+                                </buttonConfiguration>
+                                <connections>
+                                    <action selector="RunButtonClicked:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Fao-dc-duP"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" alpha="0.90000000000000002" contentMode="scaleToFill" showsMenuAsPrimaryAction="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" changesSelectionAsPrimaryAction="YES" translatesAutoresizingMaskIntoConstraints="NO" id="QII-gN-B1x" userLabel="ModelPopupButton">
+                                <rect key="frame" x="84" y="824" width="196" height="34"/>
+                                <color key="backgroundColor" systemColor="opaqueSeparatorColor"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="18"/>
+                                <menu key="menu" title="Model" id="5b8-wF-Hak">
+                                    <menuOptions key="menuOptions" singleSelection="YES"/>
+                                    <children>
+                                        <command title="MobileNet-S0" id="rg3-tC-ZvR" userLabel="MobileNet-S0"/>
+                                        <command title="MobileNet-S1" id="vw9-t3-Ueb" userLabel="MobileNet-S1"/>
+                                        <command title="MobileNet-S2" id="bEG-ZD-dd8" userLabel="MobileNet-S2"/>
+                                    </children>
+                                </menu>
+                                <state key="normal" title="MobileNet-S0">
+                                    <color key="titleColor" systemColor="systemGreenColor"/>
+                                </state>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                        <integer key="value" value="5"/>
+                                    </userDefinedRuntimeAttribute>
+                                </userDefinedRuntimeAttributes>
+                            </button>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="QII-gN-B1x" firstAttribute="centerY" secondItem="vjz-AY-izp" secondAttribute="centerY" id="0g5-8h-Fsv"/>
+                            <constraint firstItem="wcS-hO-QIy" firstAttribute="width" secondItem="m2b-ME-s17" secondAttribute="width" constant="-6" id="0gS-dM-qdp"/>
+                            <constraint firstItem="vjz-AY-izp" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="2IZ-Fw-5Fa"/>
+                            <constraint firstItem="E1o-x2-Fig" firstAttribute="centerX" secondItem="JMi-se-VB0" secondAttribute="centerX" id="3Ee-dk-H0G"/>
+                            <constraint firstItem="7vr-nM-ir1" firstAttribute="leading" secondItem="wcS-hO-QIy" secondAttribute="trailing" constant="8" id="5Kj-hN-5cY"/>
+                            <constraint firstItem="wcS-hO-QIy" firstAttribute="leading" secondItem="M42-L8-9kW" secondAttribute="trailing" constant="19" id="5Zi-9f-GBC"/>
+                            <constraint firstItem="M42-L8-9kW" firstAttribute="width" secondItem="GaF-Vh-fGg" secondAttribute="width" id="5y8-ef-LDx"/>
+                            <constraint firstItem="GaF-Vh-fGg" firstAttribute="centerY" secondItem="Xat-Kz-gaV" secondAttribute="centerY" id="9Gd-z0-wJV"/>
+                            <constraint firstItem="wcS-hO-QIy" firstAttribute="centerY" secondItem="m2b-ME-s17" secondAttribute="centerY" id="9TZ-1S-OHy"/>
+                            <constraint firstItem="Dp9-SO-Pfp" firstAttribute="leading" secondItem="8P0-eH-xh9" secondAttribute="trailing" constant="10" id="9bO-P2-Pn5"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="JMi-se-VB0" secondAttribute="bottom" constant="68" id="9kW-nk-NWL"/>
+                            <constraint firstItem="M42-L8-9kW" firstAttribute="leading" secondItem="m2b-ME-s17" secondAttribute="trailing" constant="8" id="9y8-Pg-CWg"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="jnB-71-TBh" secondAttribute="trailing" constant="20" id="DID-Ku-OK6"/>
+                            <constraint firstItem="Dp9-SO-Pfp" firstAttribute="centerY" secondItem="Xat-Kz-gaV" secondAttribute="centerY" id="DiX-R7-fe3"/>
+                            <constraint firstItem="m2b-ME-s17" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="38" id="FNO-AW-3oc"/>
+                            <constraint firstItem="M42-L8-9kW" firstAttribute="centerY" secondItem="m2b-ME-s17" secondAttribute="centerY" id="JIb-3K-mEE"/>
+                            <constraint firstItem="QII-gN-B1x" firstAttribute="leading" secondItem="vjz-AY-izp" secondAttribute="trailing" constant="4" id="Kip-q8-o9a"/>
+                            <constraint firstItem="8P0-eH-xh9" firstAttribute="centerY" secondItem="GaF-Vh-fGg" secondAttribute="centerY" id="Myh-7E-w8c"/>
+                            <constraint firstItem="yHY-0t-oNe" firstAttribute="centerY" secondItem="Xat-Kz-gaV" secondAttribute="centerY" id="NTg-Mq-sKw"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="JMi-se-VB0" secondAttribute="trailing" constant="20" id="OwJ-bt-F8k"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="jnB-71-TBh" secondAttribute="bottom" id="PJS-KR-nOr"/>
+                            <constraint firstItem="jnB-71-TBh" firstAttribute="centerY" secondItem="vjz-AY-izp" secondAttribute="centerY" id="ReW-fq-yNm"/>
+                            <constraint firstItem="M42-L8-9kW" firstAttribute="leading" secondItem="GaF-Vh-fGg" secondAttribute="trailing" constant="-256" id="SVe-Ke-k2i"/>
+                            <constraint firstItem="vjz-AY-izp" firstAttribute="bottom" secondItem="6Tk-OE-BBY" secondAttribute="bottom" constant="9" id="SaE-f7-88P"/>
+                            <constraint firstItem="yHY-0t-oNe" firstAttribute="leading" secondItem="Xat-Kz-gaV" secondAttribute="trailing" constant="8" symbolic="YES" id="Sg3-nx-DMF"/>
+                            <constraint firstItem="Xat-Kz-gaV" firstAttribute="top" secondItem="E1o-x2-Fig" secondAttribute="bottom" constant="38" id="UJ4-Hf-vbS"/>
+                            <constraint firstItem="7vr-nM-ir1" firstAttribute="width" secondItem="GaF-Vh-fGg" secondAttribute="width" constant="6" id="Upz-D7-UJC"/>
+                            <constraint firstItem="Xat-Kz-gaV" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="bjJ-dz-dYt"/>
+                            <constraint firstItem="JMi-se-VB0" firstAttribute="top" secondItem="m2b-ME-s17" secondAttribute="bottom" constant="41" id="eC5-Xv-c0k"/>
+                            <constraint firstItem="7vr-nM-ir1" firstAttribute="top" secondItem="wcS-hO-QIy" secondAttribute="top" id="esZ-en-JH7"/>
+                            <constraint firstItem="7vr-nM-ir1" firstAttribute="centerY" secondItem="m2b-ME-s17" secondAttribute="centerY" id="ftg-LK-gpx"/>
+                            <constraint firstItem="GaF-Vh-fGg" firstAttribute="leading" secondItem="Xat-Kz-gaV" secondAttribute="trailing" constant="198" id="gjJ-ZQ-ate"/>
+                            <constraint firstItem="GaF-Vh-fGg" firstAttribute="leading" secondItem="Dp9-SO-Pfp" secondAttribute="trailing" constant="6" id="hY4-OL-Abf"/>
+                            <constraint firstItem="m2b-ME-s17" firstAttribute="top" secondItem="Xat-Kz-gaV" secondAttribute="bottom" constant="-64" id="ic5-Xl-xT9"/>
+                            <constraint firstItem="JMi-se-VB0" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="saD-2C-Skb"/>
+                            <constraint firstItem="Xat-Kz-gaV" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" constant="58" id="uEl-hD-Inb"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="QII-gN-B1x" secondAttribute="bottom" constant="4" id="vre-g8-pDf"/>
+                            <constraint firstItem="7vr-nM-ir1" firstAttribute="baseline" secondItem="M42-L8-9kW" secondAttribute="baseline" id="wPe-UN-F1k"/>
+                            <constraint firstItem="m2b-ME-s17" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="38" id="woh-Ka-0Eb"/>
+                            <constraint firstItem="jnB-71-TBh" firstAttribute="leading" secondItem="QII-gN-B1x" secondAttribute="trailing" constant="4" id="yBE-z8-mya"/>
+                            <constraint firstItem="jnB-71-TBh" firstAttribute="bottom" secondItem="6Tk-OE-BBY" secondAttribute="bottom" id="zth-cj-lwK"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="averageAllLatencyField" destination="8P0-eH-xh9" id="CUf-xk-R8I"/>
+                        <outlet property="averageLastLatencyField" destination="GaF-Vh-fGg" id="idy-Ym-5D6"/>
+                        <outlet property="latenciesTextView" destination="JMi-se-VB0" id="maR-Gc-Pop"/>
+                        <outlet property="latencyHighField" destination="7vr-nM-ir1" id="trk-Zh-MuN"/>
+                        <outlet property="latencyLowField" destination="M42-L8-9kW" id="Ndv-p5-avs"/>
+                        <outlet property="modelPopupButton" destination="QII-gN-B1x" id="fuR-iC-3ny"/>
+                        <outlet property="runButton" destination="jnB-71-TBh" id="sad-7B-xay"/>
+                        <outlet property="settingButton" destination="vjz-AY-izp" id="qtp-aN-8Hd"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="28.985507246376812" y="73.660714285714278"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="gear.circle" catalog="system" width="128" height="121"/>
+        <namedColor name="AccentColor">
+            <color red="0.0" green="0.46000000000000002" blue="0.89000000000000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <systemColor name="labelColor">
+            <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+        <systemColor name="opaqueSeparatorColor">
+            <color red="0.77647058823529413" green="0.77647058823529413" blue="0.78431372549019607" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+        <systemColor name="systemBlueColor">
+            <color red="0.0" green="0.47843137254901963" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="systemGray2Color">
+            <color red="0.68235294117647061" green="0.68235294117647061" blue="0.69803921568627447" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="systemGray5Color">
+            <color red="0.89803921568627454" green="0.89803921568627454" blue="0.91764705882352937" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="systemGreenColor">
+            <color red="0.20392156862745098" green="0.7803921568627451" blue="0.34901960784313724" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+    </resources>
+</document>

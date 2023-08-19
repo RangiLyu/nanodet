@@ -17,10 +17,11 @@ import os
 import time
 
 import numpy as np
+from lightning_fabric.utilities.cloud_io import get_filesystem
+#from lightning_fabric.utilities.cloud_io import _load as pl_load
 from pytorch_lightning.loggers import Logger as LightningLoggerBase
 from pytorch_lightning.loggers.logger import rank_zero_experiment
 from pytorch_lightning.utilities import rank_zero_only
-from pytorch_lightning.utilities.cloud_io import get_filesystem
 from termcolor import colored
 
 from .path import mkdir
@@ -115,10 +116,10 @@ class NanoDetLightningLogger(LightningLoggerBase):
         super().__init__()
         self._name = "NanoDet"
         self._version = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
-        self.log_dir = os.path.join(save_dir, f"logs-{self._version}")
+        self._save_dir = os.path.join(save_dir, f"logs-{self._version}")
 
         self._fs = get_filesystem(save_dir)
-        self._fs.makedirs(self.log_dir, exist_ok=True)
+        self._fs.makedirs(self._save_dir, exist_ok=True)
         self._init_logger()
 
         self._experiment = None
@@ -154,20 +155,19 @@ class NanoDetLightningLogger(LightningLoggerBase):
                 "(applicable to PyTorch 1.1 or higher)"
             ) from None
 
-        self._experiment = SummaryWriter(log_dir=self.log_dir, **self._kwargs)
+        self._experiment = SummaryWriter(log_dir=self._save_dir, **self._kwargs)
         return self._experiment
 
     @property
     def version(self):
         return self._version
 
-    @rank_zero_only
     def _init_logger(self):
         self.logger = logging.getLogger(name=self.name)
         self.logger.setLevel(logging.INFO)
 
         # create file handler
-        fh = logging.FileHandler(os.path.join(self.log_dir, "logs.txt"))
+        fh = logging.FileHandler(os.path.join(self._save_dir, "logs.txt"))
         fh.setLevel(logging.INFO)
         # set file formatter
         f_fmt = "[%(name)s][%(asctime)s]%(levelname)s: %(message)s"
@@ -201,7 +201,7 @@ class NanoDetLightningLogger(LightningLoggerBase):
 
     @rank_zero_only
     def dump_cfg(self, cfg_node):
-        with open(os.path.join(self.log_dir, "train_cfg.yml"), "w") as f:
+        with open(os.path.join(self._save_dir, "train_cfg.yml"), "w") as f:
             cfg_node.dump(stream=f)
 
     @rank_zero_only

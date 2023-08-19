@@ -185,6 +185,11 @@ def warp_and_resize(
     if "gt_bboxes" in meta:
         boxes = meta["gt_bboxes"]
         meta["gt_bboxes"] = warp_boxes(boxes, M, dst_shape[0], dst_shape[1])
+    if "gt_bboxes_ignore" in meta:
+        bboxes_ignore = meta["gt_bboxes_ignore"]
+        meta["gt_bboxes_ignore"] = warp_boxes(
+            bboxes_ignore, M, dst_shape[0], dst_shape[1]
+        )
     if "gt_masks" in meta:
         for i, mask in enumerate(meta["gt_masks"]):
             meta["gt_masks"][i] = cv2.warpPerspective(mask, M, dsize=tuple(dst_shape))
@@ -343,6 +348,11 @@ class ShapeTransform:
         if "gt_bboxes" in meta_data:
             boxes = meta_data["gt_bboxes"]
             meta_data["gt_bboxes"] = warp_boxes(boxes, M, dst_shape[0], dst_shape[1])
+        if "gt_bboxes_ignore" in meta_data:
+            bboxes_ignore = meta_data["gt_bboxes_ignore"]
+            meta_data["gt_bboxes_ignore"] = warp_boxes(
+                bboxes_ignore, M, dst_shape[0], dst_shape[1]
+            )
         if "gt_masks" in meta_data:
             for i, mask in enumerate(meta_data["gt_masks"]):
                 meta_data["gt_masks"][i] = cv2.warpPerspective(

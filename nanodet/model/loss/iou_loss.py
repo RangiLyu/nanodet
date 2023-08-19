@@ -271,7 +271,7 @@ def diou_loss(pred, target, eps=1e-7):
     cw = enclose_wh[:, 0]
     ch = enclose_wh[:, 1]
 
-    c2 = cw ** 2 + ch ** 2 + eps
+    c2 = cw**2 + ch**2 + eps
 
     b1_x1, b1_y1 = pred[:, 0], pred[:, 1]
     b1_x2, b1_y2 = pred[:, 2], pred[:, 3]
@@ -326,7 +326,7 @@ def ciou_loss(pred, target, eps=1e-7):
     cw = enclose_wh[:, 0]
     ch = enclose_wh[:, 1]
 
-    c2 = cw ** 2 + ch ** 2 + eps
+    c2 = cw**2 + ch**2 + eps
 
     b1_x1, b1_y1 = pred[:, 0], pred[:, 1]
     b1_x2, b1_y2 = pred[:, 2], pred[:, 3]
@@ -340,155 +340,13 @@ def ciou_loss(pred, target, eps=1e-7):
     right = ((b2_y1 + b2_y2) - (b1_y1 + b1_y2)) ** 2 / 4
     rho2 = left + right
 
-    factor = 4 / math.pi ** 2
+    factor = 4 / math.pi**2
     v = factor * torch.pow(torch.atan(w2 / h2) - torch.atan(w1 / h1), 2)
 
     # CIoU
-    cious = ious - (rho2 / c2 + v ** 2 / (1 - ious + v))
+    cious = ious - (rho2 / c2 + v**2 / (1 - ious + v))
     loss = 1 - cious
     return loss
-
-
-@weighted_loss
-def eiou_loss(pred, target, eps=1e-7):
-    r"""`Focal and Efficient IOU Loss for Accurate Bounding Box Regression
-    Segmentation <https://arxiv.org/abs/2101.08158>`_.
-
-
-
-    Args:
-        pred (Tensor): Predicted bboxes of format (x1, y1, x2, y2),
-            shape (n, 4).
-        target (Tensor): Corresponding gt bboxes, shape (n, 4).
-        eps (float): Eps to avoid log(0).
-    Return:
-        Tensor: Loss tensor.
-    """
-
-
-
-    # overlap
-    lt = torch.max(pred[:, :2], target[:, :2])
-    rb = torch.min(pred[:, 2:], target[:, 2:])
-    wh = (rb - lt).clamp(min=0)
-    overlap = wh[:, 0] * wh[:, 1]
-
-    # union
-    ap = (pred[:, 2] - pred[:, 0]) * (pred[:, 3] - pred[:, 1])
-    ag = (target[:, 2] - target[:, 0]) * (target[:, 3] - target[:, 1])
-    union = ap + ag - overlap + eps
-
-    # IoU
-    ious = overlap / union
-
-    # enclose area
-    enclose_x1y1 = torch.min(pred[:, :2], target[:, :2])
-    enclose_x2y2 = torch.max(pred[:, 2:], target[:, 2:])
-    enclose_wh = (enclose_x2y2 - enclose_x1y1).clamp(min=0)
-
-    cw = enclose_wh[:, 0]
-    ch = enclose_wh[:, 1]
-
-    c2 = cw ** 2 + ch ** 2 + eps
-
-    b1_x1, b1_y1 = pred[:, 0], pred[:, 1]
-    b1_x2, b1_y2 = pred[:, 2], pred[:, 3]
-    b2_x1, b2_y1 = target[:, 0], target[:, 1]
-    b2_x2, b2_y2 = target[:, 2], target[:, 3]
-
-    b1_center_x = (b1_x1 + b1_x2)/float(2)
-    b1_center_y = (b1_y1 + b1_y2)/float(2)
-
-    b2_center_x = (b2_x1 + b2_x2)/float(2)
-    b2_center_y = (b2_y1 + b2_y2)/float(2)
-
-    dist_square_center_b1_b2 = pow(b1_center_x-b2_center_x,2) + pow(b1_center_y-b2_center_y,2)
-    dist_square_center_loss = dist_square_center_b1_b2/(pow(cw,2) + pow(ch,2)+eps)
-
-    
-    w1, h1 = b1_x2 - b1_x1, b1_y2 - b1_y1 + eps
-    w2, h2 = b2_x2 - b2_x1, b2_y2 - b2_y1 + eps
-
-    dist_square_width_loss = pow(w1-w2, 2)/(pow(cw, 2) + eps)
-    dist_square_height_loss = pow(h1-h2,2)/(pow(ch, 2) + eps)
-
-    # EIOU
-    eiou = 1 - ious + dist_square_center_loss + dist_square_width_loss + dist_square_height_loss
-
-    return eiou
-
-
-
-@weighted_loss
-def focal_eiou_loss(pred, target, eps=1e-7, gama=0.5):
-    r"""`Focal and Efficient IOU Loss for Accurate Bounding Box Regression
-    Segmentation <https://arxiv.org/abs/2101.08158>`_.
-
-
-
-    Args:
-        pred (Tensor): Predicted bboxes of format (x1, y1, x2, y2),
-            shape (n, 4).
-        target (Tensor): Corresponding gt bboxes, shape (n, 4).
-        eps (float): Eps to avoid log(0).
-    Return:
-        Tensor: Loss tensor.
-    """
-
-    # overlap
-    lt = torch.max(pred[:, :2], target[:, :2])
-    rb = torch.min(pred[:, 2:], target[:, 2:])
-    wh = (rb - lt).clamp(min=0)
-    overlap = wh[:, 0] * wh[:, 1]
-
-    # union
-    ap = (pred[:, 2] - pred[:, 0]) * (pred[:, 3] - pred[:, 1])
-    ag = (target[:, 2] - target[:, 0]) * (target[:, 3] - target[:, 1])
-    union = ap + ag - overlap + eps
-
-    # IoU
-    ious = overlap / union
-
-    # enclose area
-    enclose_x1y1 = torch.min(pred[:, :2], target[:, :2])
-    enclose_x2y2 = torch.max(pred[:, 2:], target[:, 2:])
-    enclose_wh = (enclose_x2y2 - enclose_x1y1).clamp(min=0)
-
-    cw = enclose_wh[:, 0]
-    ch = enclose_wh[:, 1]
-
-    c2 = cw ** 2 + ch ** 2 + eps
-
-    b1_x1, b1_y1 = pred[:, 0], pred[:, 1]
-    b1_x2, b1_y2 = pred[:, 2], pred[:, 3]
-    b2_x1, b2_y1 = target[:, 0], target[:, 1]
-    b2_x2, b2_y2 = target[:, 2], target[:, 3]
-
-    b1_center_x = (b1_x1 + b1_x2)/float(2)
-    b1_center_y = (b1_y1 + b1_y2)/float(2)
-
-    b2_center_x = (b2_x1 + b2_x2)/float(2)
-    b2_center_y = (b2_y1 + b2_y2)/float(2)
-
-    dist_square_center_b1_b2 = pow(b1_center_x-b2_center_x,2) + pow(b1_center_y-b2_center_y,2)
-    dist_square_center_loss = dist_square_center_b1_b2/(pow(cw,2) + pow(ch,2)+eps)
-
-    
-    w1, h1 = b1_x2 - b1_x1, b1_y2 - b1_y1 + eps
-    w2, h2 = b2_x2 - b2_x1, b2_y2 - b2_y1 + eps
-
-    dist_square_width_loss = pow(w1-w2, 2)/(pow(cw, 2) + eps)
-    dist_square_height_loss = pow(h1-h2,2)/(pow(ch, 2) + eps)
-
-    # EIOU
-    eiou = 1 - ious + dist_square_center_loss + dist_square_width_loss + dist_square_height_loss
-
-    #  Eiou
-    EIou_Loss = eiou
-    # Focal EIou Loss
-    Focal_EIou_Loss = pow(ious,gama)*EIou_Loss
-
-    return Focal_EIou_Loss
 
 
 class IoULoss(nn.Module):
@@ -683,77 +541,6 @@ class CIoULoss(nn.Module):
             target,
             weight,
             eps=self.eps,
-            reduction=reduction,
-            avg_factor=avg_factor,
-            **kwargs,
-        )
-        return loss
-
-
-class EIoULoss(nn.Module):
-    def __init__(self, eps=1e-6, reduction="mean", loss_weight=1.0):
-        super(EIoULoss, self).__init__()
-        self.eps = eps
-        self.reduction = reduction
-        self.loss_weight = loss_weight
-
-    def forward(
-        self,
-        pred,
-        target,
-        weight=None,
-        avg_factor=None,
-        reduction_override=None,
-        **kwargs,
-    ):
-        if weight is not None and not torch.any(weight > 0):
-            if pred.dim() == weight.dim() + 1:
-                weight = weight.unsqueeze(1)
-            return (pred * weight).sum()  # 0
-        assert reduction_override in (None, "none", "mean", "sum")
-        reduction = reduction_override if reduction_override else self.reduction
-        loss = self.loss_weight * eiou_loss(
-            pred,
-            target,
-            weight,
-            eps=self.eps,
-            reduction=reduction,
-            avg_factor=avg_factor,
-            **kwargs,
-        )
-        return loss
-
-
-
-class FocalEIoULoss(nn.Module):
-    def __init__(self, eps=1e-6, gama=0.5, reduction="mean", loss_weight=1.0):
-        super(FocalEIoULoss, self).__init__()
-        self.eps = eps
-        self.gama = gama
-        self.reduction = reduction
-        self.loss_weight = loss_weight
-
-    def forward(
-        self,
-        pred,
-        target,
-        weight=None,
-        avg_factor=None,
-        reduction_override=None,
-        **kwargs,
-    ):
-        if weight is not None and not torch.any(weight > 0):
-            if pred.dim() == weight.dim() + 1:
-                weight = weight.unsqueeze(1)
-            return (pred * weight).sum()  # 0
-        assert reduction_override in (None, "none", "mean", "sum")
-        reduction = reduction_override if reduction_override else self.reduction
-        loss = self.loss_weight * focal_eiou_loss(
-            pred,
-            target,
-            weight,
-            eps=self.eps,
-            gama=self.gama,
             reduction=reduction,
             avg_factor=avg_factor,
             **kwargs,

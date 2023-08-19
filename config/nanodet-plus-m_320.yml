@@ -91,6 +91,7 @@ device:
   gpu_ids: [0] # Set like [0, 1, 2, 3] if you have multi-GPUs
   workers_per_gpu: 10
   batchsize_per_gpu: 96
+  precision: 32 # set to 16 to use AMP training
 schedule:
 #  resume:
 #  load_model:

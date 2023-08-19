@@ -28,10 +28,14 @@ from nanodet.util import (
     NanoDetLightningLogger,
     cfg,
     convert_old_model,
+    env_utils,
     load_config,
     load_model_weight,
     mkdir,
 )
+
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 
 def parse_args():
@@ -112,9 +116,23 @@ def main(args):
     )
     if cfg.device.gpu_ids == -1:
         logger.info("Using CPU training")
-        accelerator, devices, strategy = "cpu", None, None
+        accelerator, devices, strategy, precision = (
+            "cpu",
+            None,
+            None,
+            cfg.device.precision,
+        )
     else:
-        accelerator, devices, strategy = "gpu", cfg.device.gpu_ids, "ddp"
+        accelerator, devices, strategy, precision = (
+            "gpu",
+            cfg.device.gpu_ids,
+            None,
+            cfg.device.precision,
+        )
+
+    if devices and len(devices) > 1:
+        strategy = "ddp"
+        env_utils.set_multi_processing(distributed=True)
 
     trainer = pl.Trainer(
         default_root_dir=cfg.save_dir,
@@ -124,15 +142,15 @@ def main(args):
         devices=devices,
         log_every_n_steps=cfg.log.interval,
         num_sanity_val_steps=0,
-        resume_from_checkpoint=model_resume_path,
         callbacks=[TQDMProgressBar(refresh_rate=0)],  # disable tqdm bar
         logger=logger,
         benchmark=cfg.get("cudnn_benchmark", True),
         gradient_clip_val=cfg.get("grad_clip", 0.0),
         strategy=strategy,
+        precision=precision,
     )
 
-    trainer.fit(task, train_dataloader, val_dataloader)
+    trainer.fit(task, train_dataloader, val_dataloader, ckpt_path=model_resume_path)
 
 
 if __name__ == "__main__":

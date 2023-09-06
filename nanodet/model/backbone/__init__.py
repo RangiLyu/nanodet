@@ -21,6 +21,7 @@ from .mobilenetv2 import MobileNetV2
 from .repvgg import RepVGG
 from .resnet import ResNet
 from .shufflenetv2 import ShuffleNetV2
+from .shufflenetv2_dense import ShuffleNetV2Dense
 from .timm_wrapper import TIMMWrapper
 
 
@@ -43,5 +44,7 @@ def build_backbone(cfg):
         return RepVGG(**backbone_cfg)
     elif name == "TIMMWrapper":
         return TIMMWrapper(**backbone_cfg)
+    elif name == "ShuffleNetV2Dense":
+        return ShuffleNetV2Dense(**backbone_cfg)
     else:
         raise NotImplementedError

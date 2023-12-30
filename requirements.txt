@@ -1,4 +1,5 @@
 Cython
+imagesize
 matplotlib
 numpy
 omegaconf>=2.0.1

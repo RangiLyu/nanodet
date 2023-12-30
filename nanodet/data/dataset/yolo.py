@@ -18,8 +18,8 @@ import time
 from collections import defaultdict
 from typing import Optional, Sequence
 
-import cv2
 import numpy as np
+from imagesize import imagesize
 from pycocotools.coco import COCO
 
 from .coco import CocoDataset
@@ -53,8 +53,8 @@ class YoloDataset(CocoDataset):
 
     @staticmethod
     def _find_image(
-        image_prefix: str,
-        image_types: Sequence[str] = (".png", ".jpg", ".jpeg", ".bmp", ".tiff"),
+            image_prefix: str,
+            image_types: Sequence[str] = (".png", ".jpg", ".jpeg", ".bmp", ".tiff"),
     ) -> Optional[str]:
         for image_type in image_types:
             path = f"{image_prefix}{image_type}"
@@ -92,8 +92,7 @@ class YoloDataset(CocoDataset):
             with open(ann_file, "r") as f:
                 lines = f.readlines()
 
-            image = cv2.imread(image_file)
-            height, width = image.shape[:2]
+            width, height = imagesize.get(image_file)
 
             file_name = os.path.basename(image_file)
             info = {

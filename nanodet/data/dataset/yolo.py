@@ -53,8 +53,8 @@ class YoloDataset(CocoDataset):
 
     @staticmethod
     def _find_image(
-            image_prefix: str,
-            image_types: Sequence[str] = (".png", ".jpg", ".jpeg", ".bmp", ".tiff"),
+        image_prefix: str,
+        image_types: Sequence[str] = (".png", ".jpg", ".jpeg", ".bmp", ".tiff"),
     ) -> Optional[str]:
         for image_type in image_types:
             path = f"{image_prefix}{image_type}"

@@ -299,6 +299,19 @@ Please refer to [android_demo](demo_android_ncnn/README.md).
 
 ****
 
+## Contribution
+Please format the code using the `pre-commit' command when opening a PR for the project:
+
+```bash
+# install pre-commit
+pip install pre-commit
+
+# run pre-commit
+pre-commit
+```
+
+If you encounter errors while running the pre-commit script, try bumping the `isort` revision to `5.12.0`.
+
 ## Citation
 
 If you find this project useful in your research, please consider cite:

@@ -18,8 +18,8 @@ import time
 from collections import defaultdict
 from typing import Optional, Sequence
 
-import cv2
 import numpy as np
+from imagesize import imagesize
 from pycocotools.coco import COCO
 
 from .coco import CocoDataset
@@ -92,8 +92,7 @@ class YoloDataset(CocoDataset):
             with open(ann_file, "r") as f:
                 lines = f.readlines()
 
-            image = cv2.imread(image_file)
-            height, width = image.shape[:2]
+            width, height = imagesize.get(image_file)
 
             file_name = os.path.basename(image_file)
             info = {

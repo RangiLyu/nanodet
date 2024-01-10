@@ -160,9 +160,9 @@ void NanoDet::decode_infer(ncnn::Mat& feats, std::vector<CenterPrior>& center_pr
         int cur_label = 0;
         for (int label = 0; label < this->num_class; label++)
         {
-            if (scores[label] > score)
+            if (sigmoid(scores[label]) > score)
             {
-                score = scores[label];
+                score = sigmoid(scores[label]);
                 cur_label = label;
             }
         }

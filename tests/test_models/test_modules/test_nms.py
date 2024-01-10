@@ -57,3 +57,28 @@ def test_multiclass_nms():
     )
     assert boxes.shape[0] == 0
     assert keep.shape[0] == 0
+
+def test_class_agnostic_nms():
+    file = open("./tests/assets/data/batched_nms_data.pkl", "rb")
+    results = pickle.load(file)
+
+    nms_cfg = dict(iou_threshold=0.7)
+    boxes, keep = batched_nms(
+        torch.from_numpy(results["boxes"]),
+        torch.from_numpy(results["scores"]),
+        torch.from_numpy(results["idxs"]),
+        nms_cfg,
+        class_agnostic=True,
+    )
+
+    nms_cfg.update(split_thr=100)
+    seq_boxes, seq_keep = batched_nms(
+        torch.from_numpy(results["boxes"]),
+        torch.from_numpy(results["scores"]),
+        torch.from_numpy(results["idxs"]),
+        nms_cfg,
+        class_agnostic=True,
+    )
+
+    assert torch.equal(keep, seq_keep)
+    assert torch.equal(boxes, seq_boxes)

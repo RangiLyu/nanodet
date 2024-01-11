@@ -104,7 +104,10 @@ Inference using [OpenVINO](https://01.org/openvinotoolkit) is in ***demo_openvin
 
 ### Web browser demo
 
-https://nihui.github.io/ncnn-webassembly-nanodet/
+https://nihui.github.io/ncnn-webassembly-nanodet/ 
+
+### TNN C++ Demo 
+https://github.com/DefTruth/nanodet.lite.ai.toolkit
 
 ### Pytorch demo
 

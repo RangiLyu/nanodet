@@ -161,6 +161,32 @@ const int color_list[80][3] =
     {127 ,127 ,  0},
 };
 
+#include <fstream> // for std::ofstream
+
+#include <stdint.h> // for uint32_t
+#include <sys/ioctl.h> // for ioctl
+#include <linux/fb.h> // for fb_
+#include <fcntl.h> // for O_RDWR
+struct framebuffer_info {
+    uint32_t bits_per_pixel; uint32_t xres_virtual;
+};
+struct framebuffer_info get_framebuffer_info(const char* framebuffer_device_path) {
+    struct framebuffer_info info;
+    struct fb_var_screeninfo screen_info;
+    int fd = -1;
+    fd = open(framebuffer_device_path, O_RDWR);
+    if (fd >= 0) {
+        if (!ioctl(fd, FBIOGET_VSCREENINFO, &screen_info)) {
+            info.xres_virtual = screen_info.xres_virtual;
+            info.bits_per_pixel = screen_info.bits_per_pixel;
+        }
+    }
+    return info;
+};
+
+static framebuffer_info fb_info = get_framebuffer_info("/dev/fb0");
+std::ofstream ofs("/dev/fb0");
+
 void draw_bboxes(const cv::Mat& bgr, const std::vector<BoxInfo>& bboxes, object_rect effect_roi)
 {
     static const char* class_names[] = { "person", "bicycle", "car", "motorcycle", "airplane", "bus",
@@ -218,7 +244,17 @@ void draw_bboxes(const cv::Mat& bgr, const std::vector<BoxInfo>& bboxes, object_
             cv::FONT_HERSHEY_SIMPLEX, 0.4, cv::Scalar(255, 255, 255));
     }
 
-    cv::imshow("image", image);
+    //cv::imshow("image", image);
+    int framebuffer_width = fb_info.xres_virtual;
+    int framebuffer_depth = fb_info.bits_per_pixel;
+    cv::Size2f frame_size = image.size();
+    cv::Mat framebuffer_compat;
+
+    cv::cvtColor(image, framebuffer_compat, 12);
+    for (int y = 0; y < frame_size.height ; y++) {
+        ofs.seekp(y*framebuffer_width*2);
+        ofs.write(reinterpret_cast<char*>(framebuffer_compat.ptr(y)),frame_size.width*2);
+    }
 }
 
 
@@ -250,12 +286,39 @@ int image_demo(NanoDet &detector, const char* imagepath)
     return 0;
 }
 
+std::string gstreamer_pipeline(int capture_width, int capture_height, int framerate, int display_width, int display_height) {
+    return
+            " libcamerasrc ! video/x-raw, "
+            " width=" + std::to_string(capture_width) + ","
+            " height=" + std::to_string(capture_height) + ","
+            " framerate=" + std::to_string(framerate) +"/1 !"
+            " videoconvert ! videoscale ! "
+            " video/x-raw,"
+            " width=(int)" + std::to_string(display_width) + ","
+            " height=(int)" + std::to_string(display_height) + " ! appsink";
+}
+
 int webcam_demo(NanoDet& detector, int cam_id)
 {
+    int capture_width = 2592; //1280 ;
+    int capture_height = 1944; //720 ;
+    int framerate = 30 ;
+    int display_width = 190; //1280 ;
+    int display_height = 190; //720 ;
+
+    std::string pipeline = gstreamer_pipeline(capture_width, capture_height, framerate,
+                                              display_width, display_height);
+
     cv::Mat image;
-    cv::VideoCapture cap(cam_id);
+    //cv::VideoCapture cap(cam_id);
+    cv::VideoCapture cap(pipeline, cv::CAP_GSTREAMER);
     int height = detector.input_size[0];
     int width = detector.input_size[1];
+
+    if(!cap.isOpened()) {
+        std::cerr << "Could not open video device." << std::endl;
+        return 1;
+    } 
 
     while (true)
     {

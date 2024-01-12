@@ -83,7 +83,8 @@ class YoloDataset(CocoDataset):
 
         for idx, txt_name in enumerate(ann_file_names):
             ann_file = os.path.join(ann_path, txt_name)
-            image_file = self._find_image(os.path.splitext(ann_file)[0])
+            image_file = self._find_image(os.path.join(
+                self.img_path, os.path.splitext(txt_name)[0]))
 
             if image_file is None:
                 logging.warning(f"Could not find image for {ann_file}")

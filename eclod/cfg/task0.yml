@@ -1,0 +1,195 @@
+class_names:
+- aereoplane
+- bicycle
+- bird
+- boat
+- bottle
+- bus
+- car
+- cat
+- chair
+- cow
+- diningtable
+- dog
+- horse
+- motorbike
+- person
+data:
+  train:
+    ann_path: C:/Dataset/VOC/VOCtrainval_06-Nov-2007/VOCdevkit/VOC2007/annotations
+    class_names:
+    - aereoplane
+    - bicycle
+    - bird
+    - boat
+    - bottle
+    - bus
+    - car
+    - cat
+    - chair
+    - cow
+    - diningtable
+    - dog
+    - horse
+    - motorbike
+    - person
+    img_path: C:/Dataset/VOC/VOCtrainval_06-Nov-2007/VOCdevkit/VOC2007/JPEGImages
+    input_size:
+    - 320
+    - 320
+    keep_ratio: true
+    name: XMLDataset
+    pipeline:
+      brightness: 0.2
+      contrast:
+      - 0.8
+      - 1.2
+      flip: 0.5
+      normalize:
+      - - 103.53
+        - 116.28
+        - 123.675
+      - - 57.375
+        - 57.12
+        - 58.395
+      perspective: 0.0
+      rotation: 0
+      saturation:
+      - 0.8
+      - 1.2
+      scale:
+      - 0.6
+      - 1.4
+      shear: 0
+      stretch:
+      - - 1
+        - 1
+      - - 1
+        - 1
+      translate: 0.2
+  val:
+    ann_path: C:/Dataset/VOC/VOCtest_06-Nov-2007/VOCdevkit/VOC2007/annotations
+    class_names:
+    - aereoplane
+    - bicycle
+    - bird
+    - boat
+    - bottle
+    - bus
+    - car
+    - cat
+    - chair
+    - cow
+    - diningtable
+    - dog
+    - horse
+    - motorbike
+    - person
+    img_path: C:/Dataset/VOC/VOCtest_06-Nov-2007/VOCdevkit/VOC2007/JPEGImages
+    input_size:
+    - 320
+    - 320
+    keep_ratio: true
+    name: XMLDataset
+    pipeline:
+      normalize:
+      - - 103.53
+        - 116.28
+        - 123.675
+      - - 57.375
+        - 57.12
+        - 58.395
+device:
+  batchsize_per_gpu: 16
+  gpu_ids: -1
+  precision: 32
+  workers_per_gpu: 4
+evaluator:
+  name: CocoDetectionEvaluator
+  save_key: mAP
+grad_clip: 35
+log:
+  interval: 10
+model:
+  arch:
+    aux_head:
+      activation: LeakyReLU
+      feat_channels: 192
+      input_channel: 192
+      name: SimpleConvHead
+      num_classes: 15
+      reg_max: 7
+      stacked_convs: 4
+      strides:
+      - 8
+      - 16
+      - 32
+      - 64
+    backbone:
+      activation: LeakyReLU
+      model_size: 1.0x
+      name: ShuffleNetV2
+      out_stages:
+      - 2
+      - 3
+      - 4
+    detach_epoch: 10
+    fpn:
+      activation: LeakyReLU
+      in_channels:
+      - 116
+      - 232
+      - 464
+      kernel_size: 5
+      name: GhostPAN
+      num_extra_level: 1
+      out_channels: 96
+      use_depthwise: true
+    head:
+      activation: LeakyReLU
+      feat_channels: 96
+      input_channel: 96
+      kernel_size: 5
+      loss:
+        loss_bbox:
+          loss_weight: 2.0
+          name: GIoULoss
+        loss_dfl:
+          loss_weight: 0.25
+          name: DistributionFocalLoss
+        loss_qfl:
+          beta: 2.0
+          loss_weight: 1.0
+          name: QualityFocalLoss
+          use_sigmoid: true
+      name: NanoDetPlusHead
+      norm_cfg:
+        type: BN
+      num_classes: 15
+      reg_max: 7
+      stacked_convs: 2
+      strides:
+      - 8
+      - 16
+      - 32
+      - 64
+    name: NanoDetPlus
+  weight_averager:
+    decay: 0.9998
+    name: ExpMovingAverager
+save_dir: models/task0
+schedule:
+  lr_schedule:
+    T_max: 300
+    eta_min: 5.0e-05
+    name: CosineAnnealingLR
+  optimizer:
+    lr: 0.001
+    name: AdamW
+    weight_decay: 0.05
+  total_epochs: 100
+  val_intervals: 10
+  warmup:
+    name: linear
+    ratio: 0.0001
+    steps: 500

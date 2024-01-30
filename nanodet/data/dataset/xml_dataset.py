@@ -75,6 +75,7 @@ class XMLDataset(CocoDataset):
             categories.append(
                 {"supercategory": supercat, "id": idx + 1, "name": supercat}
             )
+        logging.warning("WARNING! Keeping only annotations of these categories {}! ".format(categories))
         ann_id = 1
         for idx, xml_name in enumerate(ann_file_names):
             tree = ET.parse(os.path.join(ann_path, xml_name))
@@ -92,10 +93,6 @@ class XMLDataset(CocoDataset):
             for _object in root.findall("object"):
                 category = _object.find("name").text
                 if category not in self.class_names:
-                    logging.warning(
-                        "WARNING! {} is not in class_names! "
-                        "Pass this box annotation.".format(category)
-                    )
                     continue
                 for cat in categories:
                     if category == cat["name"]:

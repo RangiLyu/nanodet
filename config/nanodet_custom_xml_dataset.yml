@@ -55,13 +55,13 @@ model:
       activation: LeakyReLU
       reg_max: 7
 
-class_names: &class_names ['NAME1', 'NAME2', 'NAME3', 'NAME4', '...']  #Please fill in the category names (not include background category)
+class_names: &class_names ["aereoplane", "bicycle", "bird", "boat", "bottle", "bus", "car", "cat", "chair", "cow", "diningtable", "dog", "horse", "motorbike", "person"]  #Please fill in the category names (not include background category)
 data:
   train:
     name: XMLDataset
     class_names: *class_names
-    img_path: TRAIN_IMAGE_FOLDER  #Please fill in train image path
-    ann_path: TRAIN_XML_FOLDER  #Please fill in train xml path
+    img_path: C:/Dataset/VOC/VOCtrainval_06-Nov-2007/VOCdevkit/VOC2007/JPEGImages  #Please fill in train image path
+    ann_path: C:/Dataset/VOC/VOCtrainval_06-Nov-2007/VOCdevkit/VOC2007/annotations  #Please fill in train xml path
     input_size: [320,320] #[w,h]
     keep_ratio: True
     pipeline:
@@ -79,14 +79,14 @@ data:
   val:
     name: XMLDataset
     class_names: *class_names
-    img_path: VAL_IMAGE_FOLDER #Please fill in val image path
-    ann_path: VAL_XML_FOLDER #Please fill in val xml path
+    img_path: C:/Dataset/VOC/VOCtest_06-Nov-2007/VOCdevkit/VOC2007/JPEGImages #Please fill in val image path
+    ann_path: C:/Dataset/VOC/VOCtest_06-Nov-2007/VOCdevkit/VOC2007/annotations #Please fill in val xml path
     input_size: [320,320] #[w,h]
     keep_ratio: True
     pipeline:
       normalize: [[103.53, 116.28, 123.675], [57.375, 57.12, 58.395]]
 device:
-  gpu_ids: [0] # Set like [0, 1, 2, 3] if you have multi-GPUs
+  gpu_ids: -1 # Set like [0, 1, 2, 3] if you have multi-GPUs
   workers_per_gpu: 8
   batchsize_per_gpu: 96
   precision: 32 # set to 16 to use AMP training

@@ -266,10 +266,9 @@ class NanoDetPlusHead(nn.Module):
             (labels >= 0) & (labels < self.num_classes), as_tuple=False
         ).squeeze(1)
 
+        weight_targets = cls_preds[pos_inds].detach().sigmoid().max(dim=1)[0]
+        bbox_avg_factor = max(reduce_mean(weight_targets.sum()).item(), 1.0)
         if len(pos_inds) > 0:
-            weight_targets = cls_preds[pos_inds].detach().sigmoid().max(dim=1)[0]
-            bbox_avg_factor = max(reduce_mean(weight_targets.sum()).item(), 1.0)
-
             loss_bbox = self.loss_bbox(
                 decoded_bboxes[pos_inds],
                 bbox_targets[pos_inds],

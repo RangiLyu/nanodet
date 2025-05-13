@@ -41,7 +41,7 @@ def main(config, model_path: str, output_path: str, input_shape=(320, 320)):
     # TorchScript: tracing the model with dummy inputs
     with torch.no_grad():
         dummy_input = torch.zeros(
-            1, 3, input_shape[0], input_shape[1]
+            1, 3, input_shape[1], input_shape[0]
         )  # Batch size = 1
         model.eval().cpu()
         model_traced = torch.jit.trace(model, example_inputs=dummy_input).eval()

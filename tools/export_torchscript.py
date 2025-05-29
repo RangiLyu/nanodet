@@ -44,7 +44,7 @@ def main(config, model_path: str, output_path: str, input_shape=(320, 320)):
             1, 3, input_shape[0], input_shape[1]
         )  # Batch size = 1
         model.eval().cpu()
-        model_traced = torch.jit.trace(model, example_inputs=dummy_input).eval()
+        model_traced = torch.jit.trace(model, check_trace=False, example_inputs=dummy_input).eval()
         model_traced.save(output_path)
         print("Finished export to TorchScript")
 

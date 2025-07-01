@@ -179,7 +179,6 @@ class NanoDetHead(GFLHead):
                 cls_pred = gfl_cls(cls_feat)
                 reg_pred = gfl_reg(reg_feat)
 
-            cls_pred = cls_pred.sigmoid()
             out = torch.cat([cls_pred, reg_pred], dim=1)
             outputs.append(out.flatten(start_dim=2))
         return torch.cat(outputs, dim=2).permute(0, 2, 1)

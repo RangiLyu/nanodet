@@ -546,10 +546,5 @@ class NanoDetPlusHead(nn.Module):
             for conv in cls_convs:
                 feat = conv(feat)
             output = gfl_cls(feat)
-            cls_pred, reg_pred = output.split(
-                [self.num_classes, 4 * (self.reg_max + 1)], dim=1
-            )
-            cls_pred = cls_pred.sigmoid()
-            out = torch.cat([cls_pred, reg_pred], dim=1)
-            outputs.append(out.flatten(start_dim=2))
+            outputs.append(output.flatten(start_dim=2))
         return torch.cat(outputs, dim=2).permute(0, 2, 1)
